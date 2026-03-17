@@ -1,0 +1,58 @@
+# Core Admin Portal — AGENT.md
+
+## Project
+Internal admin dashboard for Core, a Nigerian fintech lending app by Princeps Credit Systems.
+Manages users, loans, wallets, VAS transactions, notifications and audit logs.
+
+## Stack
+- Next.js 14 (App Router, TypeScript)
+- Tailwind CSS
+- shadcn/ui as component base
+- Hugeicons Pro (@hugeicons/react + @hugeicons-pro/core-stroke-rounded)
+- Plus Jakarta Sans via @fontsource/plus-jakarta-sans
+
+## Fonts
+- Headings: SN Pro (self-hosted in /public/fonts/, weights 400 500 600 700)
+- Body/UI: Plus Jakarta Sans (npm, weights 400 500 600)
+- @font-face rules already in globals.css
+
+## Design Tokens
+primary: #00B3FF | primaryHover: #009FE6 | primary10: rgba(0,179,255,0.10)
+textPrimary: #0F172A | textSecondary: #475569 | textPlaceholder: #94A3B8
+appBg: #F8FAFC | cardBg: #F2F7F9 | white: #FFFFFF
+border: #E2E8F0 | divider: #E2E8F0
+success: #22C55E | warning: #F59E0B | error: #EF4444 | info: #00B3FF
+
+## Typography
+SN Pro — H1 24/130% H2 20/130% H2.5 18/130% H3 16/130% H4 15/130%
+Plus Jakarta Sans — Body Large 15/140% Regular 14/140% Secondary 13/140% Small 12/150%
+
+## Hugeicons
+import { HugeiconsIcon } from "@hugeicons/react"
+import { IconName } from "@hugeicons-pro/core-stroke-rounded"
+<HugeiconsIcon icon={IconName} size={20} color="currentColor" strokeWidth={1.5} />
+Activate license in layout.tsx: hugeiconsConfig.licenseKey = "YOUR_KEY"
+
+## Logo
+/public/images/core-logo.png
+
+## Modules (9 modules, 38 screens)
+1. Auth — Login, Password Reset, Change Password
+2. User Management & Roles
+3. Dashboard & Metrics
+4. Customer Management
+5. Loans Management
+6. Wallet & Accounts
+7. VAS / Bill Payments
+8. Notifications
+9. Activity & Audit Logs
+
+## FRD Rules
+- Currency: ₦ 2dp + thousands separator e.g. ₦1,234,567.00
+- All lists: search + filter + sort + pagination
+- Filters persist on back navigation
+- BVN/KYC masked unless role permits
+- Confirm modal before: delete admin, role change, suspend customer, bulk notification
+- Export disabled when no data
+- 5 failed logins = 15min lockout
+- 15min inactivity = session timeout
