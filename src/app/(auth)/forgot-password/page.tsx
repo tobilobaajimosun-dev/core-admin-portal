@@ -95,63 +95,66 @@ export default function ForgotPasswordPage() {
           onClick={() => setShowModal(false)}
         >
           <div
-            className="bg-white rounded-2xl p-10 w-full max-w-[440px] flex flex-col items-center text-center shadow-xl relative"
+            className="bg-white rounded-xl w-full max-w-[480px] border border-[#E2E8F0] shadow-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#F2F7F9] transition-colors"
-            >
-              <HugeiconsIcon
-                icon={Cancel01Icon}
-                size={16}
-                color="#94A3B8"
-                strokeWidth={1.5}
-              />
-            </button>
-
-            {/* Success icon */}
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mb-5"
-              style={{ backgroundColor: "rgba(0, 179, 255, 0.05)" }}
-            >
-              <HugeiconsIcon
-                icon={MailSend01Icon}
-                size={28}
-                color="#00B3FF"
-                strokeWidth={0}
-              />
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+              <h2 className="text-[15px] font-semibold text-[#0F172A]">
+                Reset link sent
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1 rounded-md hover:bg-[#F2F7F9] transition-colors"
+              >
+                <HugeiconsIcon
+                  icon={Cancel01Icon}
+                  size={16}
+                  color="#94A3B8"
+                  strokeWidth={1.5}
+                />
+              </button>
             </div>
 
-            {/* Title */}
-            <h2 className="font-[SN_Pro] text-[20px] font-semibold text-[#0F172A] mb-2">
-              Reset link sent
-            </h2>
+            {/* Body */}
+            <div className="px-5 py-5 flex flex-col items-center text-center">
+              {/* Success icon */}
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+                style={{ backgroundColor: "rgba(0, 179, 255, 0.08)" }}
+              >
+                <HugeiconsIcon
+                  icon={MailSend01Icon}
+                  size={22}
+                  color="#00B3FF"
+                  strokeWidth={0}
+                />
+              </div>
 
-            {/* Subtitle */}
-            <p className="text-[14px] text-[#475569] mb-1 leading-relaxed">
-              We&apos;ve sent a password reset link to
-            </p>
-            <p className="text-[14px] font-semibold text-[#0F172A] mb-6">
-              tobilobaajimosun@gmail.com
-            </p>
+              <p className="text-[13px] text-[#475569] mb-1 leading-relaxed">
+                We&apos;ve sent a password reset link to
+              </p>
+              <p className="text-[13px] font-semibold text-[#0F172A] mb-6">
+                tobilobaajimosun@gmail.com
+              </p>
 
-            {/* Buttons */}
-            <CoreButton
-              variant="filled"
-              className="w-full mb-3"
-              onClick={() => setShowModal(false)}
-            >
-              Done
-            </CoreButton>
-            <CoreButton
-              variant="ghost"
-              className="w-full"
-              onClick={() => setShowModal(false)}
-            >
-              Resend email
-            </CoreButton>
+              <div className="flex gap-2 w-full">
+                <CoreButton
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowModal(false)}
+                >
+                  Resend email
+                </CoreButton>
+                <CoreButton
+                  variant="filled"
+                  className="flex-1"
+                  onClick={() => setShowModal(false)}
+                >
+                  Done
+                </CoreButton>
+              </div>
+            </div>
           </div>
         </div>
       )}

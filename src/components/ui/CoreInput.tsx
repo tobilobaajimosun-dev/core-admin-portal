@@ -41,17 +41,17 @@ const CoreInput = forwardRef<HTMLInputElement, CoreInputProps>(
     return (
       <div className={["w-full", className].filter(Boolean).join(" ")}>
         {label && (
-          <label className="block text-[13px] font-medium text-[#0F172A] mb-1.5">
+          <label className="block text-[12px] font-medium text-[#475569] mb-1">
             {label}
           </label>
         )}
 
         <div className="relative">
           {hasLeftIcon && (
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
               <HugeiconsIcon
                 icon={iconLeft!}
-                size={18}
+                size={15}
                 color="#94A3B8"
                 strokeWidth={1.5}
               />
@@ -62,18 +62,18 @@ const CoreInput = forwardRef<HTMLInputElement, CoreInputProps>(
             ref={ref}
             type={inputType}
             className={[
-              "h-12 w-full rounded-xl px-4",
-              "bg-[#F2F7F9]",
-              "border-2 border-transparent outline-none",
-              "text-[14px] text-[#0F172A] font-normal",
+              "h-9 w-full rounded-lg px-3",
+              "bg-[#F8FAFC]",
+              "border border-[#E2E8F0] outline-none",
+              "text-[13px] text-[#0F172A] font-normal",
               "placeholder:text-[#94A3B8]",
               "transition-all duration-150",
-              "focus:border-[#00B3FF] focus:shadow-[0_0_0_3px_rgba(0,179,255,0.10)]",
+              "focus:border-[#00B3FF] focus:ring-2 focus:ring-[rgba(0,179,255,0.12)]",
               error
-                ? "border-[#EF4444] shadow-[0_0_0_3px_rgba(239,68,68,0.08)]"
+                ? "border-[#EF4444] ring-2 ring-[rgba(239,68,68,0.08)]"
                 : "",
-              hasLeftIcon ? "pl-10" : "",
-              hasRightIcon ? "pr-11" : "",
+              hasLeftIcon ? "pl-8" : "",
+              hasRightIcon ? "pr-9" : "",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -85,12 +85,12 @@ const CoreInput = forwardRef<HTMLInputElement, CoreInputProps>(
               type="button"
               tabIndex={-1}
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
             >
               <HugeiconsIcon
                 icon={showPassword ? ViewOffIcon : ViewIcon}
-                size={18}
-                color="#94A3B8"
+                size={15}
+                color="currentColor"
                 strokeWidth={1.5}
               />
             </button>
@@ -98,10 +98,10 @@ const CoreInput = forwardRef<HTMLInputElement, CoreInputProps>(
         </div>
 
         {error && (
-          <p className="text-[12px] text-[#EF4444] mt-1.5">{error}</p>
+          <p className="text-[12px] text-[#EF4444] mt-1">{error}</p>
         )}
         {!error && helperText && (
-          <p className="text-[12px] text-[#94A3B8] mt-1.5">{helperText}</p>
+          <p className="text-[12px] text-[#94A3B8] mt-1">{helperText}</p>
         )}
       </div>
     );

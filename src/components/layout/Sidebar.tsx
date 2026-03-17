@@ -64,7 +64,7 @@ export default function Sidebar() {
   return (
     <aside className="w-[240px] h-screen fixed left-0 top-0 bg-[#F8FAFC] border-r border-[#E2E8F0] flex flex-col">
       {/* Logo */}
-      <div className="px-5 py-5">
+      <div className="px-4 py-5">
         <Image
           src="/images/core-logo.png"
           width={100}
@@ -75,11 +75,11 @@ export default function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 overflow-y-auto px-3 py-2">
         {navGroups.map((group, gi) => (
           <div key={gi}>
             {group.heading && (
-              <p className="text-[10px] font-medium tracking-[0.08em] text-[#94A3B8] px-3 mb-1 mt-5">
+              <p className="text-[10px] font-medium tracking-[0.08em] text-[#94A3B8] uppercase px-3 mt-4 mb-1">
                 {group.heading}
               </p>
             )}
@@ -90,16 +90,15 @@ export default function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={[
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl w-full transition-all duration-150",
+                    "flex items-center gap-2.5 px-3 py-1.5 rounded-lg w-full transition-all duration-150 text-[13px]",
                     active
-                      ? "bg-white text-[#0F172A] font-semibold shadow-sm"
-                      : "text-[#475569] font-medium hover:bg-white hover:text-[#0F172A]",
-                    "text-[14px]",
+                      ? "bg-[#F2F7F9] text-[#0F172A] font-medium"
+                      : "text-[#64748B] font-normal hover:bg-[#F8FAFC] hover:text-[#0F172A]",
                   ].join(" ")}
                 >
                   <HugeiconsIcon
                     icon={item.icon}
-                    size={18}
+                    size={16}
                     color="currentColor"
                     strokeWidth={1.5}
                   />
@@ -113,8 +112,8 @@ export default function Sidebar() {
 
       {/* User footer */}
       <div className="px-4 py-4 border-t border-[#E2E8F0]">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#00B3FF] flex items-center justify-center text-white text-[12px] font-semibold flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-[#00B3FF] flex items-center justify-center text-white text-[11px] font-semibold flex-shrink-0">
             LA
           </div>
           <div className="flex-1 min-w-0">
@@ -126,7 +125,7 @@ export default function Sidebar() {
           <button className="ml-auto flex-shrink-0 hover:opacity-70 transition-opacity">
             <HugeiconsIcon
               icon={Logout01Icon}
-              size={16}
+              size={15}
               color="#94A3B8"
               strokeWidth={1.5}
             />

@@ -16,6 +16,16 @@ Manages users, loans, wallets, VAS transactions, notifications and audit logs.
 - Body/UI: Plus Jakarta Sans (npm, weights 400 500 600)
 - @font-face rules already in globals.css
 
+## Design Language
+Linear-inspired: quiet, restrained, compact. Primary color #00B3FF.
+- Buttons: rounded-lg (NOT pills). h-10/h-8, text-[13px] font-medium.
+- Inputs: h-9, rounded-lg, bg-[#F8FAFC], border border-[#E2E8F0], label text-[12px] text-[#475569].
+- Sidebar active: bg-[#F2F7F9] text-[#0F172A] (grey, NOT blue). Icons 16px. Items py-1.5 text-[13px].
+- Modals: rounded-xl, border border-[#E2E8F0], shadow-sm, max-w-[480px].
+  Header: px-5 py-4 border-b, title text-[15px] font-semibold.
+  Close: Cancel01Icon size=16, hover:bg-[#F2F7F9] rounded-md p-1.
+  Body: px-5 py-5.
+
 ## Design Tokens
 primary: #00B3FF | primaryHover: #009FE6 | primary10: rgba(0,179,255,0.10)
 textPrimary: #0F172A | textSecondary: #475569 | textPlaceholder: #94A3B8

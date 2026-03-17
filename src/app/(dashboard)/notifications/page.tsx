@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import PageShell from "@/components/layout/PageShell";
 import { CoreButton } from "@/components/ui/CoreButton";
 import { CoreInput } from "@/components/ui/CoreInput";
@@ -153,14 +155,24 @@ export default function NotificationsPage() {
       {/* Confirm modal */}
       {showConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4" onClick={() => setShowConfirm(false)}>
-          <div className="bg-white rounded-2xl p-8 w-full max-w-[400px] shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h2 className="font-[SN_Pro] text-[20px] font-semibold text-[#0F172A] mb-2">Confirm send</h2>
-            <p className="text-[14px] text-[#475569] mb-6">
-              You are about to send a notification to <strong>~18,204 users</strong>. This action cannot be undone.
-            </p>
-            <div className="flex gap-3">
-              <CoreButton variant="secondary" className="flex-1" onClick={() => setShowConfirm(false)}>Cancel</CoreButton>
-              <CoreButton variant="filled" className="flex-1" onClick={() => setShowConfirm(false)}>Confirm &amp; send</CoreButton>
+          <div className="bg-white rounded-xl w-full max-w-[480px] border border-[#E2E8F0] shadow-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+              <h2 className="text-[15px] font-semibold text-[#0F172A]">Confirm send</h2>
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="p-1 rounded-md hover:bg-[#F2F7F9] transition-colors"
+              >
+                <HugeiconsIcon icon={Cancel01Icon} size={16} color="#94A3B8" strokeWidth={1.5} />
+              </button>
+            </div>
+            <div className="px-5 py-5">
+              <p className="text-[13px] text-[#475569] mb-5">
+                You are about to send a notification to <span className="font-semibold text-[#0F172A]">~18,204 users</span>. This action cannot be undone.
+              </p>
+              <div className="flex gap-2">
+                <CoreButton variant="outline" className="flex-1" onClick={() => setShowConfirm(false)}>Cancel</CoreButton>
+                <CoreButton variant="filled" className="flex-1" onClick={() => setShowConfirm(false)}>Confirm &amp; send</CoreButton>
+              </div>
             </div>
           </div>
         </div>
