@@ -38,7 +38,7 @@ const navGroups: NavGroup[] = [
     items: [
       { label: "Customers", href: "/customers", icon: UserMultiple02Icon },
       { label: "Loans", href: "/loans", icon: Money02Icon },
-      { label: "Wallet & Accounts", href: "/wallet", icon: Wallet02Icon },
+      { label: "Wallet & Accounts", href: "/wallets", icon: Wallet02Icon },
       { label: "VAS / Bill Payments", href: "/vas", icon: ReceiptTextIcon },
     ],
   },
@@ -53,7 +53,7 @@ const navGroups: NavGroup[] = [
     heading: "SYSTEM",
     items: [
       { label: "Settings", href: "/settings", icon: Settings02Icon },
-      { label: "Activity Logs", href: "/activity-logs", icon: FileSearchIcon },
+      { label: "Activity Logs", href: "/activity", icon: FileSearchIcon },
     ],
   },
 ];
