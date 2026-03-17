@@ -7,7 +7,7 @@ import {
   ArrowLeft02Icon,
   Mail01Icon,
   MailSend01Icon,
-  InformationCircleIcon,
+  Cancel01Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { CoreButton } from "@/components/ui/CoreButton";
 import { CoreInput } from "@/components/ui/CoreInput";
@@ -95,17 +95,35 @@ export default function ForgotPasswordPage() {
           onClick={() => setShowModal(false)}
         >
           <div
-            className="bg-white rounded-2xl p-8 w-full max-w-[400px] flex flex-col items-center text-center shadow-xl"
+            className="relative bg-white rounded-2xl p-8 w-full max-w-[400px] flex flex-col items-center text-center shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Success icon */}
-            <div className="w-14 h-14 bg-[#F0FDF4] rounded-2xl flex items-center justify-center mb-5">
+            {/* Close button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#F2F7F9] transition-colors"
+            >
               <HugeiconsIcon
-                icon={MailSend01Icon}
-                size={28}
-                color="#22C55E"
+                icon={Cancel01Icon}
+                size={16}
+                color="#94A3B8"
                 strokeWidth={1.5}
               />
+            </button>
+
+            {/* Success icon */}
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mb-5"
+              style={{ backgroundColor: "rgba(0, 179, 255, 0.03)" }}
+            >
+              <div className="w-12 h-12 rounded-full bg-[#22C55E] flex items-center justify-center">
+                <HugeiconsIcon
+                  icon={MailSend01Icon}
+                  size={22}
+                  color="white"
+                  strokeWidth={1.5}
+                />
+              </div>
             </div>
 
             {/* Title */}
@@ -120,21 +138,6 @@ export default function ForgotPasswordPage() {
             <p className="text-[14px] font-semibold text-[#0F172A] mb-6">
               tobilobaajimosun@gmail.com
             </p>
-
-            {/* Info card */}
-            <div className="w-full bg-[#F2F7F9] rounded-xl px-4 py-3 flex items-start gap-2.5 text-left mb-6">
-              <HugeiconsIcon
-                icon={InformationCircleIcon}
-                size={15}
-                color="#475569"
-                strokeWidth={1.5}
-                className="mt-0.5 flex-shrink-0"
-              />
-              <span className="text-[12px] text-[#475569] leading-relaxed">
-                Didn&apos;t receive it? Check your spam folder or wait 60
-                seconds before requesting a new link.
-              </span>
-            </div>
 
             {/* Buttons */}
             <CoreButton
