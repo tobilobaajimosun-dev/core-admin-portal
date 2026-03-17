@@ -1,427 +1,250 @@
 "use client";
 
 import { useState } from "react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  UserMultiple02Icon,
-  UserCheck01Icon,
-  Activity01Icon,
-  UserAdd01Icon,
-  Money02Icon,
-  Wallet02Icon,
-  BankIcon,
-  ReceiptTextIcon,
-  CheckmarkCircle02Icon,
-  AlertCircleIcon,
-  ArrowTurnBackwardIcon,
-  DocumentValidationIcon,
-  HourglassIcon,
-  UserIcon,
+  ArrowDown01Icon,
+  FilterIcon,
+  ArrowUpRight01Icon,
+  ArrowDownLeft01Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import PageShell from "@/components/layout/PageShell";
-import MetricCard from "@/components/ui/MetricCard";
-import FinanceSummaryCard from "@/components/ui/FinanceSummaryCard";
-import { CoreButton } from "@/components/ui/CoreButton";
+import CoreBadge from "@/components/ui/CoreBadge";
 
-const periods = [
-  { id: "today", label: "Today" },
-  { id: "week", label: "This Week" },
-  { id: "month", label: "This Month" },
-] as const;
+// ─── Data ────────────────────────────────────────────────────────────────────
 
-type Period = (typeof periods)[number]["id"];
+const tabs = ["Overview", "Loans", "Customers", "Activity"] as const;
+type Tab = (typeof tabs)[number];
 
-const chartData = [
-  { month: "Oct", disbursed: 820, repaid: 650 },
-  { month: "Nov", disbursed: 950, repaid: 720 },
-  { month: "Dec", disbursed: 880, repaid: 800 },
-  { month: "Jan", disbursed: 1100, repaid: 900 },
-  { month: "Feb", disbursed: 1250, repaid: 980 },
-  { month: "Mar", disbursed: 1400, repaid: 1100 },
+const stats = [
+  { label: "Total Users",    value: "24,531", delta: "+12%",  up: true  },
+  { label: "Active Loans",   value: "8,921",  delta: "+18%",  up: true  },
+  { label: "Disbursed MTD",  value: "₦7.3B",  delta: "+31%",  up: true  },
+  { label: "Default Rate",   value: "4.2%",   delta: "-0.8%", up: true  },
+  { label: "VAS Success",    value: "96.4%",  delta: "+1.2%", up: true  },
+  { label: "New Users MTD",  value: "632",    delta: "+24%",  up: true  },
 ];
 
-const SectionLabel = ({ children }: { children: string }) => (
-  <p className="text-[11px] font-medium text-[#94A3B8] uppercase tracking-[0.08em] mb-3">
-    {children}
-  </p>
-);
+const attention = [
+  { id: "LN-8820",   color: "#EF4444", title: "Loan overdue",            detail: "Biodun Adeyemi · ₦3,500 · 3 days overdue",       date: "May 8" },
+  { id: "USR-3041",  color: "#F59E0B", title: "KYC pending review",       detail: "Grace Eze · Submitted 2 days ago",               date: "May 6" },
+  { id: "VAS-8813",  color: "#EF4444", title: "Failed VAS transaction",   detail: "Ifunanya Okonkwo · ₦500 · 9mobile Airtime",      date: "May 5" },
+];
+
+const loans = [
+  { id: "LN-8821", customer: "Amaka Obi",        amount: "₦150,000", status: "pending",  date: "May 8" },
+  { id: "LN-8819", customer: "Chidi Nwosu",       amount: "₦200,000", status: "approved", date: "May 7" },
+  { id: "LN-8818", customer: "Dupe Afolabi",      amount: "₦80,000",  status: "approved", date: "May 7" },
+  { id: "LN-8817", customer: "Emmanuel Okafor",   amount: "₦50,000",  status: "pending",  date: "May 7" },
+  { id: "LN-8816", customer: "Fatima Aliyu",      amount: "₦120,000", status: "review",   date: "May 6" },
+  { id: "LN-8815", customer: "Grace Eze",         amount: "₦300,000", status: "approved", date: "May 5" },
+  { id: "LN-8814", customer: "Henry Babatunde",   amount: "₦75,000",  status: "rejected", date: "May 5" },
+  { id: "LN-8813", customer: "Ifunanya Okonkwo",  amount: "₦250,000", status: "pending",  date: "May 4" },
+];
+
+const customers = [
+  { id: "USR-3041", name: "Amaka Obi",        email: "amaka.obi@gmail.com",     kyc: "verified",   date: "May 8" },
+  { id: "USR-3040", name: "Biodun Adeyemi",   email: "biodun@gmail.com",         kyc: "pending",    date: "May 7" },
+  { id: "USR-3039", name: "Chidi Nwosu",      email: "chidi.nwosu@gmail.com",    kyc: "verified",   date: "May 7" },
+  { id: "USR-3038", name: "Dupe Afolabi",     email: "dupe.afolabi@gmail.com",   kyc: "unverified", date: "May 6" },
+  { id: "USR-3037", name: "Emmanuel Okafor",  email: "emma.okafor@gmail.com",    kyc: "verified",   date: "May 6" },
+];
+
+const loanDot: Record<string, string> = {
+  pending: "#F59E0B", approved: "#22C55E", rejected: "#EF4444", review: "#00B3FF",
+};
+const loanBadge: Record<string, "warning" | "success" | "error" | "info"> = {
+  pending: "warning", approved: "success", rejected: "error", review: "info",
+};
+const kycDot: Record<string, string> = {
+  verified: "#22C55E", pending: "#F59E0B", unverified: "#94A3B8",
+};
+const kycBadge: Record<string, "success" | "warning" | "neutral"> = {
+  verified: "success", pending: "warning", unverified: "neutral",
+};
+
+// ─── Group header ─────────────────────────────────────────────────────────────
+
+function GroupHeader({
+  label, count, open, onToggle, href,
+}: {
+  label: string; count: number; open: boolean; onToggle: () => void; href?: string;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between px-6 h-9 hover:bg-[#F8FAFC] cursor-pointer select-none"
+      onClick={onToggle}
+    >
+      <div className="flex items-center gap-2">
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          size={12}
+          color="#94A3B8"
+          strokeWidth={2}
+          className={["transition-transform duration-150", open ? "" : "-rotate-90"].join(" ")}
+        />
+        <span className="text-[13px] font-medium text-[#0F172A]">{label}</span>
+        <span className="text-[12px] text-[#94A3B8]">{count}</span>
+      </div>
+      {href && (
+        <Link
+          href={href}
+          onClick={(e) => e.stopPropagation()}
+          className="text-[12px] text-[#94A3B8] hover:text-[#00B3FF] transition-colors"
+        >
+          View all
+        </Link>
+      )}
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const [period, setPeriod] = useState<Period>("today");
+  const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const [open, setOpen] = useState({ attention: true, loans: true, customers: true });
+  const toggle = (k: keyof typeof open) => setOpen((s) => ({ ...s, [k]: !s[k] }));
 
   return (
     <PageShell title="Dashboard">
-      {/* Period tabs */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="inline-flex bg-white border border-[#E2E8F0] rounded-full p-1 gap-1">
-          {periods.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setPeriod(p.id)}
-              className={[
-                "px-4 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150",
-                period === p.id
-                  ? "bg-[#00B3FF] text-white"
-                  : "text-[#475569] hover:text-[#0F172A]",
-              ].join(" ")}
-            >
-              {p.label}
-            </button>
+      {/* Bleed to fill PageShell's px-6 py-6 padding */}
+      <div className="bg-white -mx-6 -my-6 min-h-full flex flex-col">
+
+        {/* ── Tab bar ── */}
+        <div className="flex items-center justify-between border-b border-[#E2E8F0] px-6 flex-shrink-0">
+          <div className="flex items-center">
+            {tabs.map((t) => (
+              <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={[
+                  "mr-5 py-3 text-[13px] border-b-2 transition-colors duration-150",
+                  activeTab === t
+                    ? "border-[#0F172A] text-[#0F172A] font-medium"
+                    : "border-transparent text-[#64748B] hover:text-[#0F172A]",
+                ].join(" ")}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <button className="flex items-center gap-1.5 text-[12px] text-[#64748B] hover:text-[#0F172A] px-2 py-1.5 rounded-md hover:bg-[#F8FAFC] transition-colors">
+            <HugeiconsIcon icon={FilterIcon} size={13} color="currentColor" strokeWidth={1.5} />
+            Filter
+          </button>
+        </div>
+
+        {/* ── Stats strip ── */}
+        <div className="flex items-stretch border-b border-[#E2E8F0] flex-shrink-0">
+          {stats.map((s, i) => (
+            <div key={i} className="flex-1 px-5 py-4 border-r border-[#E2E8F0] last:border-r-0">
+              <p className="text-[11px] font-medium text-[#94A3B8] uppercase tracking-[0.06em] mb-1.5">{s.label}</p>
+              <p className="font-[SN_Pro] text-[20px] font-semibold text-[#0F172A] leading-none">{s.value}</p>
+              <div className="flex items-center gap-1 mt-1.5">
+                <HugeiconsIcon
+                  icon={s.up ? ArrowUpRight01Icon : ArrowDownLeft01Icon}
+                  size={11}
+                  color={s.up ? "#22C55E" : "#EF4444"}
+                  strokeWidth={1.5}
+                />
+                <span className={["text-[11px] font-medium", s.up ? "text-[#22C55E]" : "text-[#EF4444]"].join(" ")}>
+                  {s.delta}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
-      </div>
 
-      {/* ── USERS ── */}
-      <SectionLabel>Users</SectionLabel>
-      <div className="grid grid-cols-4 gap-4 mb-3">
-        <MetricCard
-          label="Total Users"
-          value="24,531"
-          icon={UserMultiple02Icon}
-          tag="All time"
-          delta="+12%"
-          deltaLabel="vs last month"
-          deltaType="up"
-        />
-        <MetricCard
-          label="Verified Users"
-          value="18,204"
-          icon={UserCheck01Icon}
-          delta="+8%"
-          deltaLabel="vs last month"
-          deltaType="up"
-        />
-        <MetricCard
-          label="Active Today"
-          value="1,847"
-          icon={Activity01Icon}
-          delta="-3%"
-          deltaLabel="vs yesterday"
-          deltaType="down"
-        />
-        <MetricCard
-          label="New This Month"
-          value="632"
-          icon={UserAdd01Icon}
-          delta="+24%"
-          deltaLabel="vs last month"
-          deltaType="up"
-        />
-      </div>
+        {/* ── Groups ── */}
+        <div className="flex-1 py-2">
 
-      {/* ── LOANS ── */}
-      <div className="mt-6">
-        <SectionLabel>Loans</SectionLabel>
-        <div className="grid grid-cols-4 gap-4 mb-3">
-          <MetricCard
-            label="Total Applications"
-            value="8,921"
-            icon={DocumentValidationIcon}
-            delta="+18%"
-            deltaLabel="vs last month"
-            deltaType="up"
+          {/* Requires Attention */}
+          <GroupHeader
+            label="Requires Attention"
+            count={attention.length}
+            open={open.attention}
+            onToggle={() => toggle("attention")}
           />
-          <MetricCard
-            label="Amount Disbursed"
-            value="₦7.3B"
-            icon={Money02Icon}
-            delta="+31%"
-            deltaLabel="vs last month"
-            deltaType="up"
-          />
-          <MetricCard
-            label="Default Rate"
-            value="4.2%"
-            icon={AlertCircleIcon}
-            delta="-0.8%"
-            deltaLabel="improving"
-            deltaType="up"
-          />
-          <MetricCard
-            label="Recovery Rate"
-            value="78%"
-            icon={ArrowTurnBackwardIcon}
-            delta="+5%"
-            deltaLabel="vs last month"
-            deltaType="up"
-          />
-        </div>
-      </div>
-
-      {/* ── WALLET & VAS ── */}
-      <div className="mt-6">
-        <SectionLabel>Wallet &amp; VAS</SectionLabel>
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <MetricCard
-            label="Total Wallets"
-            value="21,403"
-            icon={Wallet02Icon}
-            delta="+9%"
-            deltaLabel="vs last month"
-            deltaType="up"
-          />
-          <MetricCard
-            label="Total Balance"
-            value="₦2.1B"
-            icon={BankIcon}
-            delta="+14%"
-            deltaLabel="vs last month"
-            deltaType="up"
-          />
-          <MetricCard
-            label="VAS Transactions"
-            value="45,231"
-            icon={ReceiptTextIcon}
-            delta="+22%"
-            deltaLabel="vs last month"
-            deltaType="up"
-          />
-          <MetricCard
-            label="Success Rate"
-            value="96.4%"
-            icon={CheckmarkCircle02Icon}
-            delta="+1.2%"
-            deltaLabel="vs last month"
-            deltaType="up"
-          />
-        </div>
-      </div>
-
-      {/* ── TRENDS ── */}
-      <SectionLabel>Trends</SectionLabel>
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {/* Area chart */}
-        <div className="col-span-2 bg-white rounded-2xl border border-[#E2E8F0] p-5">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-[SN_Pro] text-[15px] font-semibold text-[#0F172A]">
-              Loan Disbursement vs Repayment
-            </h3>
-            <span className="text-[11px] font-medium text-[#94A3B8] bg-[#F2F7F9] px-2 py-0.5 rounded-full">
-              Last 6 months
-            </span>
-          </div>
-
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart
-              data={chartData}
-              margin={{ top: 4, right: 4, left: -32, bottom: 0 }}
+          {open.attention && attention.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center px-6 h-10 hover:bg-[#F8FAFC] cursor-pointer border-b border-[#F1F5F9] last:border-b-0 transition-colors"
             >
-              <defs>
-                <linearGradient id="disbGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00B3FF" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#00B3FF" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="repayGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22C55E" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#F2F7F9"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 12, fill: "#94A3B8" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "#fff",
-                  border: "1px solid #E2E8F0",
-                  borderRadius: 12,
-                  fontSize: 13,
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-                }}
-                formatter={(value) => [`₦${value}M`]}
-              />
-              <Area
-                type="monotone"
-                dataKey="disbursed"
-                name="Disbursed"
-                stroke="#00B3FF"
-                strokeWidth={2}
-                fill="url(#disbGrad)"
-                dot={false}
-                activeDot={{ r: 4, fill: "#00B3FF" }}
-              />
-              <Area
-                type="monotone"
-                dataKey="repaid"
-                name="Repaid"
-                stroke="#22C55E"
-                strokeWidth={2}
-                fill="url(#repayGrad)"
-                dot={false}
-                activeDot={{ r: 4, fill: "#22C55E" }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-
-          {/* Legend */}
-          <div className="flex items-center gap-5 mt-3 justify-center">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#00B3FF]" />
-              <span className="text-[12px] text-[#475569]">Disbursed</span>
+              <span className="text-[#CBD5E1] text-[11px] tracking-widest w-10 flex-shrink-0">···</span>
+              <div className="w-2 h-2 rounded-full flex-shrink-0 mr-3" style={{ background: item.color }} />
+              <span className="text-[13px] font-medium text-[#0F172A] w-[200px] flex-shrink-0">{item.title}</span>
+              <span className="text-[12px] text-[#94A3B8] flex-1 truncate">{item.detail}</span>
+              <span className="text-[12px] text-[#94A3B8] ml-6 flex-shrink-0 w-[52px] text-right">{item.date}</span>
+              <span className="text-[11px] font-mono text-[#CBD5E1] ml-4 flex-shrink-0 w-[68px] text-right">{item.id}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
-              <span className="text-[12px] text-[#475569]">Repaid</span>
-            </div>
-          </div>
-        </div>
+          ))}
 
-        {/* Finance Summary */}
-        <div className="col-span-1">
-          <FinanceSummaryCard
-            title="Today's Activity"
-            subtitle="Live snapshot"
-            items={[
-              {
-                label: "Amount Disbursed",
-                value: "₦24,500,000.00",
-                delta: "+₦3.2M vs yesterday",
-                deltaType: "up",
-                icon: Money02Icon,
-                iconBg: "rgba(0,179,255,0.08)",
-                iconColor: "#00B3FF",
-              },
-              {
-                label: "Repayments Received",
-                value: "₦18,750,000.00",
-                delta: "+₦1.8M vs yesterday",
-                deltaType: "up",
-                icon: ArrowTurnBackwardIcon,
-                iconBg: "rgba(34,197,94,0.08)",
-                iconColor: "#22C55E",
-              },
-              {
-                label: "Bills Paid (VAS)",
-                value: "₦4,320,000.00",
-                delta: "+234 transactions",
-                deltaType: "up",
-                icon: ReceiptTextIcon,
-                iconBg: "rgba(245,158,11,0.08)",
-                iconColor: "#F59E0B",
-              },
-            ]}
+          <div className="h-3" />
+
+          {/* Recent Loans */}
+          <GroupHeader
+            label="Recent Loan Applications"
+            count={loans.length}
+            open={open.loans}
+            onToggle={() => toggle("loans")}
+            href="/loans"
           />
-        </div>
-      </div>
-
-      {/* ── REQUIRES ATTENTION ── */}
-      <SectionLabel>Requires Attention</SectionLabel>
-      <div className="grid grid-cols-3 gap-4">
-        {/* Pending Approvals */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden">
-          <div className="px-5 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+          {open.loans && loans.map((loan) => (
+            <div
+              key={loan.id}
+              className="flex items-center px-6 h-10 hover:bg-[#F8FAFC] cursor-pointer border-b border-[#F1F5F9] last:border-b-0 transition-colors"
+            >
+              <span className="text-[#CBD5E1] text-[11px] tracking-widest w-10 flex-shrink-0">···</span>
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: "rgba(245,158,11,0.08)" }}
-              >
-                <HugeiconsIcon
-                  icon={HourglassIcon}
-                  size={16}
-                  color="#F59E0B"
-                  strokeWidth={1.5}
-                />
+                className="w-2 h-2 rounded-full border-[1.5px] flex-shrink-0 mr-3"
+                style={{
+                  borderColor: loanDot[loan.status],
+                  backgroundColor: loan.status === "approved" ? loanDot[loan.status] : "transparent",
+                }}
+              />
+              <span className="text-[11px] font-mono text-[#94A3B8] w-[68px] flex-shrink-0">{loan.id}</span>
+              <span className="text-[13px] text-[#0F172A] flex-1">{loan.customer}</span>
+              <span className="text-[13px] font-medium text-[#0F172A] mr-5">{loan.amount}</span>
+              <div className="mr-4 flex-shrink-0">
+                <CoreBadge variant={loanBadge[loan.status]}>
+                  {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                </CoreBadge>
               </div>
-              <span className="text-[13px] font-medium text-[#475569]">
-                Pending Approvals
-              </span>
+              <span className="text-[12px] text-[#94A3B8] w-[52px] text-right flex-shrink-0">{loan.date}</span>
             </div>
-            <span className="text-[11px] font-semibold text-[#B45309] bg-[#FFFBEB] px-2 py-0.5 rounded-full">
-              47
-            </span>
-          </div>
-          <div className="h-px bg-[#E2E8F0]" />
-          <div className="px-5 py-4">
-            <p className="text-[13px] text-[#475569]">
-              Loan applications awaiting review
-            </p>
-            <CoreButton variant="outline" size="sm" className="mt-3 w-full">
-              Review applications
-            </CoreButton>
-          </div>
-        </div>
+          ))}
 
-        {/* Failed Transactions */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden">
-          <div className="px-5 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: "rgba(239,68,68,0.08)" }}
-              >
-                <HugeiconsIcon
-                  icon={AlertCircleIcon}
-                  size={16}
-                  color="#EF4444"
-                  strokeWidth={1.5}
-                />
-              </div>
-              <span className="text-[13px] font-medium text-[#475569]">
-                Failed Today
-              </span>
-            </div>
-            <span className="text-[11px] font-semibold text-[#DC2626] bg-[#FEF2F2] px-2 py-0.5 rounded-full">
-              12
-            </span>
-          </div>
-          <div className="h-px bg-[#E2E8F0]" />
-          <div className="px-5 py-4">
-            <p className="text-[13px] text-[#475569]">
-              VAS transactions failed in the last 24 hours
-            </p>
-            <CoreButton variant="outline" size="sm" className="mt-3 w-full">
-              Investigate
-            </CoreButton>
-          </div>
-        </div>
+          <div className="h-3" />
 
-        {/* Dormant Users */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden">
-          <div className="px-5 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: "#F1F5F9" }}
-              >
-                <HugeiconsIcon
-                  icon={UserIcon}
-                  size={16}
-                  color="#475569"
-                  strokeWidth={1.5}
-                />
+          {/* New Customers */}
+          <GroupHeader
+            label="New Customers"
+            count={customers.length}
+            open={open.customers}
+            onToggle={() => toggle("customers")}
+            href="/customers"
+          />
+          {open.customers && customers.map((c) => (
+            <div
+              key={c.id}
+              className="flex items-center px-6 h-10 hover:bg-[#F8FAFC] cursor-pointer border-b border-[#F1F5F9] last:border-b-0 transition-colors"
+            >
+              <span className="text-[#CBD5E1] text-[11px] tracking-widest w-10 flex-shrink-0">···</span>
+              <div className="w-2 h-2 rounded-full flex-shrink-0 mr-3" style={{ background: kycDot[c.kyc] }} />
+              <span className="text-[11px] font-mono text-[#94A3B8] w-[80px] flex-shrink-0">{c.id}</span>
+              <span className="text-[13px] text-[#0F172A] w-[180px] flex-shrink-0">{c.name}</span>
+              <span className="text-[12px] text-[#94A3B8] flex-1">{c.email}</span>
+              <div className="mr-4 flex-shrink-0">
+                <CoreBadge variant={kycBadge[c.kyc]}>
+                  {c.kyc.charAt(0).toUpperCase() + c.kyc.slice(1)}
+                </CoreBadge>
               </div>
-              <span className="text-[13px] font-medium text-[#475569]">
-                Dormant Users
-              </span>
+              <span className="text-[12px] text-[#94A3B8] w-[52px] text-right flex-shrink-0">{c.date}</span>
             </div>
-            <span className="text-[11px] font-semibold text-[#475569] bg-[#F1F5F9] px-2 py-0.5 rounded-full">
-              3,241
-            </span>
-          </div>
-          <div className="h-px bg-[#E2E8F0]" />
-          <div className="px-5 py-4">
-            <p className="text-[13px] text-[#475569]">
-              Users inactive for 30+ days
-            </p>
-            <CoreButton variant="outline" size="sm" className="mt-3 w-full">
-              View list
-            </CoreButton>
-          </div>
+          ))}
+
         </div>
       </div>
     </PageShell>
