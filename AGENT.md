@@ -23,9 +23,30 @@ appBg: #F8FAFC | cardBg: #F2F7F9 | white: #FFFFFF
 border: #E2E8F0 | divider: #E2E8F0
 success: #22C55E | warning: #F59E0B | error: #EF4444 | info: #00B3FF
 
-## Typography
-SN Pro — H1 24/130% H2 20/130% H2.5 18/130% H3 16/130% H4 15/130%
-Plus Jakarta Sans — Body Large 15/140% Regular 14/140% Secondary 13/140% Small 12/150%
+## Typography — Web Scale
+Headings — SN Pro
+H1: 32px / 130% / 700
+H2: 24px / 130% / 600
+H3: 20px / 130% / 600
+H4: 18px / 130% / 600
+H5: 16px / 130% / 600
+H6: 15px / 130% / 600
+
+Body — Plus Jakarta Sans
+Body XL:   18px / 150% / 400
+Body LG:   16px / 150% / 400
+Body MD:   14px / 150% / 400
+Body SM:   13px / 150% / 400
+Body XS:   12px / 150% / 400
+
+UI Labels — Plus Jakarta Sans
+Label LG:  14px / 130% / 500
+Label MD:  13px / 130% / 500
+Label SM:  12px / 130% / 500
+Caption:   11px / 130% / 400
+
+## Spacing — Web Scale
+4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80px
 
 ## Hugeicons
 import { HugeiconsIcon } from "@hugeicons/react"

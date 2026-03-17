@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
+  ArrowLeft02Icon,
   LockPasswordIcon,
   CheckmarkCircle01Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
@@ -14,14 +15,24 @@ export default function ResetPasswordPage() {
         {/* Back link */}
         <a
           href="/login"
-          className="flex items-center gap-1.5 text-[13px] text-[#475569] hover:text-[#0F172A] mb-8 self-start"
+          className="group flex items-center gap-1.5 text-[14px] text-[#475569] hover:text-[#0F172A] mb-8 self-start px-3 py-1.5 rounded-full hover:bg-[#F2F7F9] transition-all duration-150 cursor-pointer"
         >
-          <HugeiconsIcon
-            icon={ArrowLeft01Icon}
-            size={16}
-            color="currentColor"
-            strokeWidth={1.5}
-          />
+          <span className="group-hover:hidden">
+            <HugeiconsIcon
+              icon={ArrowLeft02Icon}
+              size={15}
+              color="currentColor"
+              strokeWidth={1.5}
+            />
+          </span>
+          <span className="hidden group-hover:block">
+            <HugeiconsIcon
+              icon={ArrowLeft01Icon}
+              size={15}
+              color="currentColor"
+              strokeWidth={2}
+            />
+          </span>
           Back to sign in
         </a>
 
