@@ -1,10 +1,31 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AiSecurityIcon } from "@hugeicons-pro/core-stroke-rounded";
 import { CoreButton } from "@/components/ui/CoreButton";
 import { CoreInput } from "@/components/ui/CoreInput";
+import Toast from "@/components/ui/Toast";
+import { useToast } from "@/hooks/useToast";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { toastProps, showToast, hideToast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      showToast("success", "Sign in successful", "Welcome back, Lademi");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center">
       <div className="w-full max-w-[400px] px-6 py-12 flex flex-col items-center">
@@ -61,7 +82,12 @@ export default function LoginPage() {
         </div>
 
         {/* Sign in button */}
-        <CoreButton variant="filled" className="w-full mt-6">
+        <CoreButton
+          variant="filled"
+          className="w-full mt-6"
+          loading={loading}
+          onClick={handleSignIn}
+        >
           Sign in
         </CoreButton>
 
@@ -95,6 +121,8 @@ export default function LoginPage() {
           </span>
         </div>
       </div>
+
+      <Toast {...toastProps} onClose={hideToast} />
     </div>
   );
 }
