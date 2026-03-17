@@ -6,9 +6,9 @@ import {
   ArrowLeft01Icon,
   ArrowLeft02Icon,
   Mail01Icon,
-  MailSend01Icon,
   Cancel01Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
+import { MailSend01Icon } from "@hugeicons-pro/core-solid-rounded";
 import { CoreButton } from "@/components/ui/CoreButton";
 import { CoreInput } from "@/components/ui/CoreInput";
 
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
           onClick={() => setShowModal(false)}
         >
           <div
-            className="relative bg-white rounded-2xl p-8 w-full max-w-[400px] flex flex-col items-center text-center shadow-xl"
+            className="bg-white rounded-2xl p-10 w-full max-w-[440px] flex flex-col items-center text-center shadow-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
@@ -114,16 +114,14 @@ export default function ForgotPasswordPage() {
             {/* Success icon */}
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center mb-5"
-              style={{ backgroundColor: "rgba(0, 179, 255, 0.03)" }}
+              style={{ backgroundColor: "rgba(0, 179, 255, 0.05)" }}
             >
-              <div className="w-12 h-12 rounded-full bg-[#22C55E] flex items-center justify-center">
-                <HugeiconsIcon
-                  icon={MailSend01Icon}
-                  size={22}
-                  color="white"
-                  strokeWidth={1.5}
-                />
-              </div>
+              <HugeiconsIcon
+                icon={MailSend01Icon}
+                size={28}
+                color="#00B3FF"
+                strokeWidth={0}
+              />
             </div>
 
             {/* Title */}
