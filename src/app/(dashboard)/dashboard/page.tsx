@@ -6,8 +6,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowDown01Icon,
   FilterIcon,
-  ArrowUpRight01Icon,
-  ArrowDownLeft01Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import PageShell from "@/components/layout/PageShell";
 import CoreBadge from "@/components/ui/CoreBadge";
@@ -152,22 +150,21 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* ── Stats strip ── */}
-        <div className="flex items-stretch border-b border-[#E2E8F0] flex-shrink-0">
+        {/* ── Stats cards ── */}
+        <div className="flex gap-3 px-8 py-5 bg-[#F7F8FA] border-b border-[#E2E8F0] flex-shrink-0">
           {stats.map((s, i) => (
-            <div key={i} className="flex-1 px-5 py-4 border-r border-[#E2E8F0] last:border-r-0">
-              <p className="text-[11px] font-medium text-[#94A3B8] uppercase tracking-[0.06em] mb-1.5">{s.label}</p>
-              <p className="font-[SN_Pro] text-[20px] font-semibold text-[#0F172A] leading-none">{s.value}</p>
-              <div className="flex items-center gap-1 mt-1.5">
-                <HugeiconsIcon
-                  icon={s.up ? ArrowUpRight01Icon : ArrowDownLeft01Icon}
-                  size={11}
-                  color={s.up ? "#22C55E" : "#EF4444"}
-                  strokeWidth={1.5}
-                />
-                <span className={["text-[11px] font-medium", s.up ? "text-[#22C55E]" : "text-[#EF4444]"].join(" ")}>
+            <div key={i} className="flex-1 bg-white border border-[#E2E8F0] rounded-xl px-4 py-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <p className="text-[11px] font-medium text-[#94A3B8] uppercase tracking-[0.08em] mb-3">
+                {s.label}
+              </p>
+              <p className="font-[SN_Pro] text-[22px] font-semibold text-[#0F172A] leading-none mb-2">
+                {s.value}
+              </p>
+              <div className="flex items-center gap-1.5">
+                <span className={`text-[12px] font-semibold ${s.up ? "text-[#16A34A]" : "text-[#DC2626]"}`}>
                   {s.delta}
                 </span>
+                <span className="text-[11px] text-[#94A3B8]">vs last month</span>
               </div>
             </div>
           ))}
