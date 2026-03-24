@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
-  ArrowLeft02Icon,
-  Mail01Icon,
   Cancel01Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { MailSend01Icon } from "@hugeicons-pro/core-solid-rounded";
@@ -14,78 +13,89 @@ import { CoreInput } from "@/components/ui/CoreInput";
 
 export default function ForgotPasswordPage() {
   const [showModal, setShowModal] = useState(false);
+  const [email, setEmail] = useState("");
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-      <div className="w-full max-w-[400px] px-6 flex flex-col items-center">
-        {/* Back link */}
-        <a
-          href="/login"
-          className="group flex items-center gap-1.5 text-[14px] text-[#475569] hover:text-[#0F172A] mb-8 self-start px-3 py-1.5 rounded-full hover:bg-[#F2F7F9] transition-all duration-150 cursor-pointer"
-        >
-          <span className="group-hover:hidden">
-            <HugeiconsIcon
-              icon={ArrowLeft02Icon}
-              size={15}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-          </span>
-          <span className="hidden group-hover:block">
+    <div className="relative min-h-screen bg-white flex flex-col">
+      {/* Logo — top left */}
+      <div className="absolute top-6 left-6">
+        <Image
+          src="/images/core-logo.png"
+          width={100}
+          height={34}
+          alt="Core"
+          priority
+        />
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="w-full max-w-[380px] mx-auto px-6 flex flex-col">
+          {/* Back link */}
+          <a
+            href="/login"
+            className="group flex items-center gap-1.5 text-[13px] text-[#475569] hover:text-[#0F172A] px-3 py-1.5 rounded-full hover:bg-[#F2F7F9] transition-all mb-8 self-start -ml-3 cursor-pointer"
+          >
             <HugeiconsIcon
               icon={ArrowLeft01Icon}
               size={15}
               color="currentColor"
-              strokeWidth={2}
+              strokeWidth={1.5}
             />
-          </span>
-          Back to sign in
-        </a>
-
-        {/* Icon */}
-        <div className="w-14 h-14 bg-[#F2F7F9] rounded-2xl flex items-center justify-center mb-6">
-          <HugeiconsIcon
-            icon={Mail01Icon}
-            size={28}
-            color="#00B3FF"
-            strokeWidth={1.5}
-          />
-        </div>
-
-        {/* Title */}
-        <h1 className="font-[SN_Pro] text-[24px] font-semibold text-[#0F172A] text-center mb-2 leading-[130%]">
-          Reset your password
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-[14px] text-[#475569] text-center mb-8">
-          Enter your email and we&apos;ll send you a reset link
-        </p>
-
-        {/* Email field */}
-        <CoreInput
-          label="Email address"
-          type="email"
-          placeholder="name@princepsfinance.com"
-          className="w-full"
-        />
-
-        {/* CTA */}
-        <CoreButton
-          variant="filled"
-          className="w-full mt-6"
-          onClick={() => setShowModal(true)}
-        >
-          Send reset link
-        </CoreButton>
-
-        {/* Sign in link */}
-        <p className="text-[13px] text-[#475569] text-center mt-6">
-          Remember your password?{" "}
-          <a href="/login" className="text-[#00B3FF] font-semibold hover:underline">
-            Sign in
+            Back to sign in
           </a>
-        </p>
+
+          <h1 className="font-[SN_Pro] text-[22px] font-semibold text-[#0F172A] text-center mb-1 tracking-[-0.3px]">
+            Reset your password
+          </h1>
+          <p className="text-[14px] text-[#475569] text-center mb-8">
+            Enter your email and we&apos;ll send a reset link
+          </p>
+
+          <CoreInput
+            floatingLabel
+            label="Email address"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full"
+          />
+
+          <CoreButton
+            variant="filled"
+            className="w-full h-14 rounded-xl text-[15px] font-semibold mt-4"
+            onClick={() => setShowModal(true)}
+          >
+            Send reset link
+          </CoreButton>
+
+          <p className="text-[13px] text-[#475569] text-center mt-6">
+            Remember your password?{" "}
+            <a
+              href="/login"
+              className="text-[#00B3FF] font-semibold hover:underline"
+            >
+              Sign in
+            </a>
+          </p>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex flex-col items-center gap-3 py-6">
+        <button className="text-[13px] text-[#475569] bg-[#F2F7F9] px-4 py-1.5 rounded-full hover:bg-[#E8EEF2] transition-colors">
+          Help
+        </button>
+        <div className="flex items-center gap-4">
+          {["Terms", "Privacy", "Cookies"].map((link) => (
+            <a
+              key={link}
+              className="text-[13px] text-[#94A3B8] hover:text-[#475569] cursor-pointer transition-colors"
+            >
+              {link}
+            </a>
+          ))}
+        </div>
       </div>
 
       {/* Modal */}
@@ -95,65 +105,60 @@ export default function ForgotPasswordPage() {
           onClick={() => setShowModal(false)}
         >
           <div
-            className="bg-white rounded-xl w-full max-w-[480px] border border-[#E2E8F0] shadow-sm"
+            className="bg-white rounded-2xl border border-[#E2E8F0] shadow-xl w-full max-w-[400px] p-8 relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
-              <h2 className="text-[15px] font-semibold text-[#0F172A]">
-                Reset link sent
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1 rounded-md hover:bg-[#F2F7F9] transition-colors"
-              >
-                <HugeiconsIcon
-                  icon={Cancel01Icon}
-                  size={16}
-                  color="#94A3B8"
-                  strokeWidth={1.5}
-                />
-              </button>
-            </div>
+            {/* Close button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-md hover:bg-[#F2F7F9] transition-colors"
+            >
+              <HugeiconsIcon
+                icon={Cancel01Icon}
+                size={16}
+                color="#94A3B8"
+                strokeWidth={1.5}
+              />
+            </button>
 
-            {/* Body */}
-            <div className="px-5 py-5 flex flex-col items-center text-center">
-              {/* Success icon */}
+            {/* Content */}
+            <div className="flex flex-col items-center text-center">
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
-                style={{ backgroundColor: "rgba(0, 179, 255, 0.08)" }}
+                className="w-14 h-14 rounded-full flex items-center justify-center mb-5"
+                style={{ backgroundColor: "rgba(0,179,255,0.05)" }}
               >
                 <HugeiconsIcon
                   icon={MailSend01Icon}
-                  size={22}
+                  size={26}
                   color="#00B3FF"
                   strokeWidth={0}
                 />
               </div>
 
-              <p className="text-[13px] text-[#475569] mb-1 leading-relaxed">
-                We&apos;ve sent a password reset link to
+              <h2 className="font-[SN_Pro] text-[20px] font-semibold text-[#0F172A] mb-2">
+                Reset link sent
+              </h2>
+              <p className="text-[14px] text-[#475569] mb-1">
+                We&apos;ve sent a link to
               </p>
-              <p className="text-[13px] font-semibold text-[#0F172A] mb-6">
-                tobilobaajimosun@gmail.com
+              <p className="text-[14px] font-semibold text-[#0F172A]">
+                {email || "your email"}
               </p>
 
-              <div className="flex gap-2 w-full">
-                <CoreButton
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowModal(false)}
-                >
-                  Resend email
-                </CoreButton>
-                <CoreButton
-                  variant="filled"
-                  className="flex-1"
-                  onClick={() => setShowModal(false)}
-                >
-                  Done
-                </CoreButton>
-              </div>
+              <CoreButton
+                variant="filled"
+                className="w-full h-12 rounded-xl font-semibold mt-6"
+                onClick={() => setShowModal(false)}
+              >
+                Done
+              </CoreButton>
+              <CoreButton
+                variant="ghost"
+                className="w-full mt-2"
+                onClick={() => setShowModal(false)}
+              >
+                Resend email
+              </CoreButton>
             </div>
           </div>
         </div>

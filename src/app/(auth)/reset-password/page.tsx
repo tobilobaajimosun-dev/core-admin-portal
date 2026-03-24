@@ -1,101 +1,134 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
-  ArrowLeft02Icon,
-  LockPasswordIcon,
   CheckmarkCircle01Icon,
 } from "@hugeicons-pro/core-stroke-rounded";
 import { CoreButton } from "@/components/ui/CoreButton";
 import { CoreInput } from "@/components/ui/CoreInput";
 
+const rules = [
+  { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
+  { label: "One uppercase letter", test: (p: string) => /[A-Z]/.test(p) },
+  {
+    label: "One number or symbol",
+    test: (p: string) => /[0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(p),
+  },
+];
+
 export default function ResetPasswordPage() {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-      <div className="w-full max-w-[400px] px-6 flex flex-col items-center">
-        {/* Back link */}
-        <a
-          href="/login"
-          className="group flex items-center gap-1.5 text-[14px] text-[#475569] hover:text-[#0F172A] mb-8 self-start px-3 py-1.5 rounded-full hover:bg-[#F2F7F9] transition-all duration-150 cursor-pointer"
-        >
-          <span className="group-hover:hidden">
-            <HugeiconsIcon
-              icon={ArrowLeft02Icon}
-              size={15}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-          </span>
-          <span className="hidden group-hover:block">
+    <div className="relative min-h-screen bg-white flex flex-col">
+      {/* Logo — top left */}
+      <div className="absolute top-6 left-6">
+        <Image
+          src="/images/core-logo.png"
+          width={100}
+          height={34}
+          alt="Core"
+          priority
+        />
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="w-full max-w-[380px] mx-auto px-6 flex flex-col">
+          {/* Back link */}
+          <a
+            href="/login"
+            className="group flex items-center gap-1.5 text-[13px] text-[#475569] hover:text-[#0F172A] px-3 py-1.5 rounded-full hover:bg-[#F2F7F9] transition-all mb-8 self-start -ml-3 cursor-pointer"
+          >
             <HugeiconsIcon
               icon={ArrowLeft01Icon}
               size={15}
               color="currentColor"
-              strokeWidth={2}
+              strokeWidth={1.5}
             />
-          </span>
-          Back to sign in
-        </a>
+            Back to sign in
+          </a>
 
-        {/* Icon */}
-        <div className="w-14 h-14 bg-[#F2F7F9] rounded-2xl flex items-center justify-center mb-6">
-          <HugeiconsIcon
-            icon={LockPasswordIcon}
-            size={28}
-            color="#00B3FF"
-            strokeWidth={1.5}
-          />
+          <h1 className="font-[SN_Pro] text-[22px] font-semibold text-[#0F172A] text-center mb-1 tracking-[-0.3px]">
+            Create new password
+          </h1>
+          <p className="text-[14px] text-[#475569] text-center mb-8">
+            Must be different from your previous password
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <CoreInput
+              floatingLabel
+              label="New password"
+              type="password"
+              passwordToggle
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full"
+            />
+            <CoreInput
+              floatingLabel
+              label="Confirm password"
+              type="password"
+              passwordToggle
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          {/* Password rules */}
+          <div className="flex flex-col gap-2 mt-4">
+            {rules.map((rule) => {
+              const met = rule.test(password);
+              return (
+                <div key={rule.label} className="flex items-center gap-2">
+                  <HugeiconsIcon
+                    icon={CheckmarkCircle01Icon}
+                    size={15}
+                    color={met ? "#22C55E" : "#E2E8F0"}
+                    strokeWidth={1.5}
+                  />
+                  <span
+                    className={`text-[13px] ${
+                      met ? "text-[#0F172A]" : "text-[#94A3B8]"
+                    }`}
+                  >
+                    {rule.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <CoreButton
+            variant="filled"
+            className="w-full h-14 rounded-xl text-[15px] font-semibold mt-6"
+          >
+            Set new password
+          </CoreButton>
         </div>
+      </div>
 
-        {/* Title */}
-        <h1 className="font-[SN_Pro] text-[24px] font-semibold text-[#0F172A] text-center mb-2 leading-[130%]">
-          Create new password
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-[14px] text-[#475569] text-center mb-8">
-          Your new password must be different from previous ones
-        </p>
-
-        {/* New password */}
-        <CoreInput
-          label="New password"
-          type="password"
-          passwordToggle
-          className="w-full"
-        />
-
-        {/* Confirm password */}
-        <CoreInput
-          label="Confirm password"
-          type="password"
-          passwordToggle
-          className="w-full mt-4"
-        />
-
-        {/* Password rules card */}
-        <div className="mt-4 w-full bg-[#F2F7F9] rounded-xl px-4 py-3 flex flex-col gap-2">
-          {[
-            "At least 8 characters",
-            "One uppercase letter",
-            "One number or special character",
-          ].map((rule) => (
-            <div key={rule} className="flex items-center gap-2">
-              <HugeiconsIcon
-                icon={CheckmarkCircle01Icon}
-                size={14}
-                color="#94A3B8"
-                strokeWidth={1.5}
-                className="flex-shrink-0"
-              />
-              <span className="text-[12px] text-[#94A3B8]">{rule}</span>
-            </div>
+      {/* Footer */}
+      <div className="flex flex-col items-center gap-3 py-6">
+        <button className="text-[13px] text-[#475569] bg-[#F2F7F9] px-4 py-1.5 rounded-full hover:bg-[#E8EEF2] transition-colors">
+          Help
+        </button>
+        <div className="flex items-center gap-4">
+          {["Terms", "Privacy", "Cookies"].map((link) => (
+            <a
+              key={link}
+              className="text-[13px] text-[#94A3B8] hover:text-[#475569] cursor-pointer transition-colors"
+            >
+              {link}
+            </a>
           ))}
         </div>
-
-        {/* CTA */}
-        <CoreButton variant="filled" className="w-full mt-6">
-          Set new password
-        </CoreButton>
       </div>
     </div>
   );
