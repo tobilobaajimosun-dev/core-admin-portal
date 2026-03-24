@@ -31,7 +31,12 @@ const statusVariant: Record<string, "success" | "error"> = { success: "success",
 
 export default function WalletDetailPage() {
   return (
-    <PageShell title="Wallet Detail">
+    <PageShell>
+      <div className="mb-4">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Wallet Detail
+        </h1>
+      </div>
       <Link href="/wallets" className="inline-flex items-center gap-1.5 text-[13px] text-[#475569] hover:text-[#0F172A] mb-6 transition-colors">
         <HugeiconsIcon icon={ArrowLeft01Icon} size={15} color="currentColor" strokeWidth={1.5} />
         All wallets

@@ -23,7 +23,12 @@ const failed = [
 
 export default function FailedTransactionsPage() {
   return (
-    <PageShell title="Failed Transactions">
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Failed Transactions
+        </h1>
+      </div>
       {/* Banner */}
       <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-2xl px-5 py-4 flex items-center gap-3 mb-6">
         <HugeiconsIcon icon={AlertCircleIcon} size={20} color="#EF4444" strokeWidth={1.5} className="flex-shrink-0" />

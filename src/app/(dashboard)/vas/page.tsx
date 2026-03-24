@@ -55,7 +55,12 @@ export default function VASPage() {
   });
 
   return (
-    <PageShell title="VAS / Bill Payments">
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          VAS / Bill Payments
+        </h1>
+      </div>
       <div className="grid grid-cols-4 gap-4 mb-6">
         <MetricCard label="Total Transactions" value="45,231" icon={ReceiptTextIcon} delta="+22%" deltaLabel="vs last month" deltaType="up" />
         <MetricCard label="Success Rate" value="96.4%" icon={CheckmarkCircle02Icon} delta="+1.2%" deltaLabel="vs last month" deltaType="up" />

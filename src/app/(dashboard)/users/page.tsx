@@ -56,10 +56,11 @@ export default function UsersPage() {
   );
 
   return (
-    <PageShell title="User Management">
-      {/* Header */}
+    <PageShell>
       <div className="flex justify-between items-center mb-6">
-        <div />
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          User Management
+        </h1>
         <CoreButton variant="filled" size="sm" iconLeft={UserAdd01Icon}>
           Invite user
         </CoreButton>

@@ -78,6 +78,13 @@ Activate license in layout.tsx: hugeiconsConfig.licenseKey = "YOUR_KEY"
 8. Notifications
 9. Activity & Audit Logs
 
+## Layout Shell
+- Sidebar: 220px, bg #F5F5F5, no border, admin card (white pill) at top
+- Active nav: bg-white + shadow-sm pill, inactive: text-[#64748B] hover:bg-white
+- Topbar: white, h-14, border-b #E2E8F0, search (left, max-w-400) + bell + avatar (right)
+- Content: white bg, px-8 py-7
+- Page title: H1 22px SN Pro tracking-[-0.3px] in each page, date subtitle on dashboard only
+
 ## FRD Rules
 - Currency: ₦ 2dp + thousands separator e.g. ₦1,234,567.00
 - All lists: search + filter + sort + pagination

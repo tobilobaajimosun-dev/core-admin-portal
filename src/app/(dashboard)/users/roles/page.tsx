@@ -122,10 +122,11 @@ export default function RolesPage() {
   const [selectedRole, setSelectedRole] = useState(roles[0].name);
 
   return (
-    <PageShell title="Roles & Permissions">
-      {/* Header */}
+    <PageShell>
       <div className="flex justify-between items-center mb-6">
-        <div />
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Roles &amp; Permissions
+        </h1>
         <CoreButton variant="filled" size="sm">Create role</CoreButton>
       </div>
 

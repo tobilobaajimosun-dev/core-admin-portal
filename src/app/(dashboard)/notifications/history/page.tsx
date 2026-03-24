@@ -26,7 +26,12 @@ const statusVariant: Record<string, "success" | "info" | "error" | "neutral"> = 
 
 export default function NotificationHistoryPage() {
   return (
-    <PageShell title="Notification History">
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Notification History
+        </h1>
+      </div>
       <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden">
         <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
           <h2 className="font-[SN_Pro] text-[15px] font-semibold text-[#0F172A]">All Notifications</h2>

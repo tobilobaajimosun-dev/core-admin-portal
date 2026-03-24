@@ -48,7 +48,12 @@ export default function WalletsPage() {
   );
 
   return (
-    <PageShell title="Wallet & Accounts">
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Wallet &amp; Accounts
+        </h1>
+      </div>
       <div className="grid grid-cols-4 gap-4 mb-6">
         <MetricCard label="Total Wallets" value="21,403" icon={Wallet02Icon} delta="+9%" deltaLabel="vs last month" deltaType="up" />
         <MetricCard label="Active Wallets" value="18,291" icon={CheckmarkCircle02Icon} delta="+7%" deltaLabel="vs last month" deltaType="up" />

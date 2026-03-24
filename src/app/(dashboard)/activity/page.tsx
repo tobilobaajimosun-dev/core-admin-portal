@@ -72,7 +72,12 @@ export default function ActivityLogsPage() {
   });
 
   return (
-    <PageShell title="Activity Logs">
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Activity Logs
+        </h1>
+      </div>
       <div className="grid grid-cols-3 gap-4 mb-6">
         <MetricCard label="Total Events Today" value="142" icon={UserAccountIcon} delta="+18" deltaLabel="vs yesterday" deltaType="up" />
         <MetricCard label="Admin Sessions" value="9" icon={ShieldKeyIcon} delta="+2" deltaLabel="active now" deltaType="up" />

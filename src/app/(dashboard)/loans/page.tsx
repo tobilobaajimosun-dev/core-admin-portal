@@ -55,7 +55,12 @@ export default function LoansPage() {
   });
 
   return (
-    <PageShell title="Loans">
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Loans
+        </h1>
+      </div>
       <div className="grid grid-cols-4 gap-4 mb-6">
         <MetricCard label="Total Applications" value="8,921" icon={DocumentValidationIcon} delta="+18%" deltaLabel="vs last month" deltaType="up" />
         <MetricCard label="Amount Disbursed" value="₦7.3B" icon={Money02Icon} delta="+31%" deltaLabel="vs last month" deltaType="up" />

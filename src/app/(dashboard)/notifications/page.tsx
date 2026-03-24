@@ -15,7 +15,12 @@ export default function NotificationsPage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   return (
-    <PageShell title="Notifications">
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Notifications
+        </h1>
+      </div>
       <div className="grid grid-cols-3 gap-6">
         {/* LEFT — compose */}
         <div className="col-span-2">

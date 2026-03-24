@@ -50,7 +50,12 @@ const diffRows = [
 
 export default function ActivityDetailPage() {
   return (
-    <PageShell title="Audit Log Detail">
+    <PageShell>
+      <div className="mb-4">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Audit Log Detail
+        </h1>
+      </div>
       <Link href="/activity" className="inline-flex items-center gap-1.5 text-[13px] text-[#475569] hover:text-[#0F172A] mb-6 transition-colors">
         <HugeiconsIcon icon={ArrowLeft01Icon} size={15} color="currentColor" strokeWidth={1.5} />
         Activity Logs

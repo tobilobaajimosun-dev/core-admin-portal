@@ -36,7 +36,12 @@ const txVariant: Record<string, "success" | "error"> = { success: "success", fai
 
 export default function CustomerProfilePage() {
   return (
-    <PageShell title="Customer Profile">
+    <PageShell>
+      <div className="mb-4">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Customer Profile
+        </h1>
+      </div>
       {/* Back link */}
       <Link
         href="/customers"

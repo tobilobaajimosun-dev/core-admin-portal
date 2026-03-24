@@ -107,10 +107,26 @@ export default function DashboardPage() {
   const [open, setOpen] = useState({ attention: true, loans: true, customers: true });
   const toggle = (k: keyof typeof open) => setOpen((s) => ({ ...s, [k]: !s[k] }));
 
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
-    <PageShell title="Dashboard">
-      {/* Bleed to fill PageShell's px-6 py-6 padding */}
-      <div className="bg-white -mx-6 -my-6 min-h-full flex flex-col">
+    <PageShell>
+      {/* Bleed to fill PageShell's px-8 py-7 padding */}
+      <div className="bg-white -mx-8 -my-7 min-h-full flex flex-col">
+
+        {/* Page title */}
+        <div className="px-8 pt-7 mb-4 flex-shrink-0">
+          <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+            Dashboard
+          </h1>
+          <p className="text-[13px] text-[#94A3B8] mt-1">{dateStr}</p>
+        </div>
 
         {/* ── Tab bar ── */}
         <div className="flex items-center justify-between border-b border-[#E2E8F0] px-6 flex-shrink-0">

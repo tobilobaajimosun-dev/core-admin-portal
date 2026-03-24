@@ -53,7 +53,12 @@ export default function CustomersPage() {
   );
 
   return (
-    <PageShell title="Customers">
+    <PageShell>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-semibold text-[#0F172A] font-[SN_Pro] tracking-[-0.3px]">
+          Customers
+        </h1>
+      </div>
       {/* Metric cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <MetricCard label="Total Customers" value="24,531" icon={UserMultiple02Icon} delta="+12%" deltaLabel="vs last month" deltaType="up" />
