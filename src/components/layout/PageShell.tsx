@@ -54,7 +54,9 @@ export default function PageShell({ children }: PageShellProps) {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto px-8 py-7">{children}</main>
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-[1280px] mx-auto px-8 py-7">{children}</div>
+        </main>
       </div>
     </div>
   );
