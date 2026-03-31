@@ -49,17 +49,17 @@ export default function LoginPage() {
 
           <div className="flex flex-col gap-3">
             <CoreInput
-              floatingLabel
               label="Email address"
               type="email"
+              placeholder="Enter your email"
               className="w-full"
             />
 
             <CoreInput
-              floatingLabel
               label="Password"
               type="password"
               passwordToggle
+              placeholder="Enter your password"
               className="w-full"
             />
 

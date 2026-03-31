@@ -53,9 +53,9 @@ export default function ForgotPasswordPage() {
           </p>
 
           <CoreInput
-            floatingLabel
             label="Email address"
             type="email"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full"

@@ -62,19 +62,19 @@ export default function ResetPasswordPage() {
 
           <div className="flex flex-col gap-3">
             <CoreInput
-              floatingLabel
               label="New password"
               type="password"
               passwordToggle
+              placeholder="Enter new password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full"
             />
             <CoreInput
-              floatingLabel
               label="Confirm password"
               type="password"
               passwordToggle
+              placeholder="Confirm new password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               className="w-full"
