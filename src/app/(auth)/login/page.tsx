@@ -31,7 +31,7 @@ export default function LoginPage() {
       {/* ── Left panel — form ─────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col">
         {/* Logo */}
-        <div className="px-10 pt-8 pb-0">
+        <div className="px-[100px] pt-8 pb-0">
           <Image
             src="/images/core-logo.png"
             width={100}
@@ -42,7 +42,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form area */}
-        <div className="flex-1 flex items-center px-10">
+        <div className="flex-1 flex items-center px-[100px]">
           <div className="w-full max-w-[507px]">
             {/* Heading */}
             <h1 className="font-[SN_Pro] text-[36px] font-bold text-[#00B3FF] tracking-[-0.5px] leading-[1.1] mb-2">

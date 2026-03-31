@@ -16,9 +16,9 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
 
   return (
-    <div className="relative min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Logo — top left */}
-      <div className="absolute top-6 left-6">
+      <div className="px-[100px] pt-8">
         <Image
           src="/images/core-logo.png"
           width={100}
@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-full max-w-[380px] mx-auto px-6 flex flex-col">
+        <div className="w-full max-w-[507px] px-[100px] flex flex-col">
           {/* Back link */}
           <a
             href="/login"
