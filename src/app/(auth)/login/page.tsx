@@ -28,79 +28,74 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Logo */}
-      <div className="px-[100px] pt-8">
-        <Image
-          src="/images/core-logo.png"
-          width={100}
-          height={34}
-          alt="Core"
-          priority
-        />
-      </div>
+      {/* Topbar — 52px empty white strip (Figma: Frame 4) */}
+      <div className="h-[52px] shrink-0" />
 
-      {/* Main content — both columns inside the same 100px-padded container */}
+      {/* Main content — both columns in single px-[100px] container */}
       <div className="flex-1 flex items-center justify-between px-[100px]">
-        {/* ── Form — 507px ─────────────────────────────────────────────── */}
-        <div className="w-[507px]">
-          <h1 className="font-[SN_Pro] text-[36px] font-bold text-[#00B3FF] tracking-[-0.5px] leading-[1.1] mb-2">
-            Hi there.
-          </h1>
-          <p className="text-[16px] text-[#272932] mb-8 leading-[1.5]">
-            Enter your details to access the dashboard.
-          </p>
+        {/* ── Left column — logo + form (507px) ──────────────────────── */}
+        <div className="w-[507px] flex flex-col">
+          {/* Logo — 149×56 as per Figma */}
+          <Image
+            src="/images/core-logo.png"
+            width={149}
+            height={56}
+            alt="Core"
+            priority
+          />
 
-          <div className="flex flex-col gap-4">
-            <CoreInput label="Email" type="email" placeholder="Work email" />
-            <CoreInput
-              label="Password"
-              type="password"
-              passwordToggle
-              placeholder="Enter your password"
-            />
-          </div>
+          {/* Form — 36px below logo */}
+          <div className="mt-9">
+            <h1 className="font-[SN_Pro] text-[36px] font-bold text-[#00B3FF] tracking-[-0.5px] leading-[1.1] mb-2">
+              Hi there.
+            </h1>
+            <p className="text-[16px] text-[#272932] mb-8 leading-[1.5]">
+              Enter your details to access the dashboard.
+            </p>
 
-          <div className="flex justify-end mt-3 mb-5">
-            <a
-              href="/forgot-password"
-              className="text-[14px] font-semibold text-[#00B3FF] hover:underline cursor-pointer"
-            >
-              Forgot password?
-            </a>
-          </div>
-
-          <CoreButton
-            variant="primary"
-            size="lg"
-            className="w-full"
-            loading={loading}
-            onClick={handleSignIn}
-          >
-            Sign in
-            {!loading && (
-              <HugeiconsIcon
-                icon={ArrowRight02Icon}
-                size={18}
-                color="currentColor"
-                strokeWidth={1.5}
+            <div className="flex flex-col gap-4">
+              <CoreInput label="Email" type="email" placeholder="Work email" />
+              <CoreInput
+                label="Password"
+                type="password"
+                passwordToggle
+                placeholder="Enter your password"
               />
-            )}
-          </CoreButton>
+            </div>
 
-          <p className="text-[13px] text-[#475569] mt-6 text-center">
-            Don&apos;t have access?{" "}
-            <a className="text-[#00B3FF] font-semibold hover:underline cursor-pointer">
-              Contact your admin
-            </a>
-          </p>
+            <div className="flex justify-end mt-3 mb-5">
+              <a
+                href="/forgot-password"
+                className="text-[14px] font-semibold text-[#00B3FF] hover:underline cursor-pointer"
+              >
+                Forgot password?
+              </a>
+            </div>
+
+            <CoreButton
+              variant="primary"
+              size="lg"
+              className="w-full"
+              loading={loading}
+              onClick={handleSignIn}
+            >
+              Sign in
+              {!loading && (
+                <HugeiconsIcon
+                  icon={ArrowRight02Icon}
+                  size={18}
+                  color="currentColor"
+                  strokeWidth={1.5}
+                />
+              )}
+            </CoreButton>
+          </div>
         </div>
 
-        {/* ── Decorative — 507px ──────────────────────────────────────── */}
-        <div className="hidden lg:flex w-[507px] items-center justify-center relative">
-          {/* Outer blurred glow */}
+        {/* ── Right column — decorative circle (507px) ────────────────── */}
+        <div className="hidden lg:flex w-[507px] h-[508px] items-center justify-center relative">
           <div className="absolute w-[520px] h-[520px] rounded-full bg-[#EBF8FF] opacity-50 blur-[60px]" />
 
-          {/* Main circle */}
           <div className="relative w-[508px] h-[508px] rounded-full bg-[#F5F7FA] flex items-center justify-center">
             <div className="absolute w-[380px] h-[380px] rounded-full bg-white border border-[#E8EDF2] shadow-sm" />
 
@@ -146,16 +141,13 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="flex flex-col items-center gap-3 py-6">
-        <button className="text-[13px] text-[#475569] bg-[#F2F7F9] px-4 py-1.5 rounded-full hover:bg-[#E8EEF2] transition-colors">
-          Help
-        </button>
-        <div className="flex items-center gap-4">
+      {/* Footer — 56px, right-aligned Terms/Privacy/Cookies (Figma: Frame 15) */}
+      <div className="h-[56px] shrink-0 px-[100px] flex items-center justify-end">
+        <div className="flex items-center gap-[48px]">
           {["Terms", "Privacy", "Cookies"].map((link) => (
             <a
               key={link}
-              className="text-[13px] text-[#94A3B8] hover:text-[#475569] cursor-pointer transition-colors"
+              className="text-[14px] font-semibold text-[#00B3FF] hover:underline cursor-pointer transition-colors"
             >
               {link}
             </a>
