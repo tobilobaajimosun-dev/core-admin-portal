@@ -64,6 +64,17 @@ import { IconName } from "@hugeicons-pro/core-stroke-rounded"
 <HugeiconsIcon icon={IconName} size={20} color="currentColor" strokeWidth={1.5} />
 Activate license in layout.tsx: hugeiconsConfig.licenseKey = "YOUR_KEY"
 
+## Icon Rules
+- ONLY use Hugeicons Pro — no other icon library permitted (no Lucide, Heroicons, Phosphor, Feather, React Icons, etc.)
+- Import renderer: @hugeicons/react
+- Import icons: @hugeicons-pro/core-stroke-rounded (stroke) or @hugeicons-pro/core-solid-rounded (solid/filled)
+- Standard sizes: 16px inline/sidebar, 18px buttons/inputs, 20px empty states
+- strokeWidth: 1.5 always
+- Pattern:
+  import { HugeiconsIcon } from "@hugeicons/react"
+  import { IconName } from "@hugeicons-pro/core-stroke-rounded"
+  <HugeiconsIcon icon={IconName} size={18} color="currentColor" strokeWidth={1.5} />
+
 ## Logo
 /public/images/core-logo.png
 
