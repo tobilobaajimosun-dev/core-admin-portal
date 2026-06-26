@@ -95,5 +95,5 @@ jobs:
           script: |
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u princeps-finance --password-stdin
             docker pull ghcr.io/princeps-finance/${{ github.repository }}:dev
-            docker compose -f apps/mobile-admin-portal/dev-compose.dev.yml up -d --force-recreate
+            docker compose -f apps/mobile-admin-portal/dev-compose.yml up -d --force-recreate
             docker image prune -f
