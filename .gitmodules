@@ -1,0 +1,3 @@
+[submodule "pcsl-ui"]
+	path = pcsl-ui
+	url = https://github.com/Princeps-Finance/frontend-shared-libraries.git
