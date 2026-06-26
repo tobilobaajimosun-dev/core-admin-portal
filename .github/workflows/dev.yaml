@@ -93,7 +93,8 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script_stop: true
           script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u princeps-finance --password-stdin
+            # echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u princeps-finance --password-stdin
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/princeps-finance/core-admin-portal:dev
             docker compose -f apps/mobile-admin-portal/dev-compose.yml up -d --force-recreate
             docker image prune -f
