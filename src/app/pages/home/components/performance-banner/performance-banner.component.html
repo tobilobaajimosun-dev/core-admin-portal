@@ -1,0 +1,84 @@
+<div class="w-full">
+  <div class="px-6 py-9">
+
+    <div class="mx-auto bg-white rounded-xl border border-[#ECF1F5] overflow-hidden w-full max-w-[1128px] py-6">
+
+      <p class="text-sm font-bold text-[#131719] text-center mb-6">
+        Your daily product performance at a glance
+      </p>
+
+      <div class="mx-auto border border-[#ECF1F5] rounded-lg overflow-hidden w-3/4">
+
+        @if (isLoading()) {
+
+          <!-- Skeleton thead -->
+          <div class="bg-[#F8FAFB] flex items-center gap-4 px-4 py-3 border-b border-[#ECF1F5]">
+            <div class="h-3 w-24 rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="h-3 w-24 rounded-full bg-gray-200 animate-pulse mx-auto"></div>
+            <div class="h-3 w-24 rounded-full bg-gray-200 animate-pulse ml-auto"></div>
+          </div>
+
+          <!-- Skeleton rows -->
+          @for (row of skeletonRows; track $index) {
+            <div class="flex items-center px-4 py-4 border-b border-[#ECF1F5] last:border-0"
+              [class.bg-white]="$even" [class.bg-[#F8FCFE]]="$odd">
+              <div class="h-2.5 w-28 rounded-full bg-gray-200 animate-pulse"></div>
+              <div class="h-2.5 w-10 rounded-full bg-gray-200 animate-pulse mx-auto"></div>
+              <div class="h-2.5 w-20 rounded-full bg-gray-200 animate-pulse ml-auto"></div>
+            </div>
+          }
+
+        } @else if (productPerformance().length === 0) {
+
+          <ps-empty description="No data to display"></ps-empty>
+
+        } @else {
+
+          <table class="w-full">
+            <thead>
+              <tr class="bg-[#F8FAFB]">
+                <th class="text-left px-4 py-3 text-xs font-bold text-[#131719] border-b border-[#ECF1F5]">
+                  Loan Product
+                </th>
+                <th class="text-center px-4 py-3 text-xs font-bold text-[#131719] border-b border-l border-[#ECF1F5]">
+                  Loans Disbursed
+                </th>
+                <th class="text-right px-4 py-3 text-xs font-bold text-[#131719] border-b border-l border-[#ECF1F5]">
+                  Amount Disbursed
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of productPerformance(); track product.id; let odd = $odd) {
+                <tr [class]="odd ? 'bg-[#F8FCFE]' : 'bg-white'" class="border-b border-[#ECF1F5] last:border-0">
+                  <td class="px-4 py-4 text-sm font-medium text-[#131719]">
+                    {{ product.title }}
+                  </td>
+                  <td class="px-4 py-4 text-sm font-medium text-[#131719] text-center border-l border-[#ECF1F5]">
+                    {{ product.total_disbursed_count | number }}
+                  </td>
+                  <td class="px-4 py-4 text-sm font-bold text-[#131719] text-right border-l border-[#ECF1F5]">
+                    ₦{{ product.total_disbursed_amount | number:'1.2-2' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+        }
+
+      </div>
+
+      <div class="flex items-center justify-center gap-2 mt-5">
+        <span class="text-xs font-medium text-[#7E868B]">Last updated at:</span>
+        <span class="text-xs font-medium text-[#51575B]">{{ lastUpdated() }}</span>
+        <button type="button" (click)="refresh()"
+          class="text-[#7E868B] cursor-pointer hover:text-[#131719] transition-colors">
+          <ps-svg-icon name="refresh-icon"></ps-svg-icon>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,135 @@
+<div class="flex flex-col bg-white border border-[#ECF0F3] rounded-2xl overflow-hidden w-[560px]">
+
+  <!-- ── Header ── -->
+  <div class="flex items-start justify-between px-6 pt-6 pb-5">
+    <h3 class="font-semibold text-[#131719] leading-none text-[18.46px] tracking-[-0.005em]">
+      Update balance
+    </h3>
+
+    <button
+      type="button"
+      (click)="close()"
+      class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+             bg-gray-100 hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+             disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+      aria-label="Close">
+      <span class="sr-only">Close</span>
+      <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666"
+          stroke="#121212" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="flex flex-col gap-5 px-6 pb-2">
+
+    <!-- Select Action -->
+    <div class="flex flex-col gap-2">
+      <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
+        Select Action
+      </label>
+      <div class="flex gap-3">
+
+        <!-- Credit -->
+        <button
+          type="button"
+          (click)="selectAction('credit')"
+          class="flex-1 flex flex-col items-center justify-center gap-0.5 bg-[#F8FAFB] cursor-pointer
+                 transition-colors rounded-xl border py-5 px-3"
+          [class.border-[#00ABF5]]="selectedAction() === 'credit'"
+          [class.bg-[#F0FBFF]]="selectedAction() === 'credit'"
+          [class.border-[#ECF0F3]]="selectedAction() !== 'credit'">
+          <span class="font-semibold text-[#131719] text-sm leading-[136%]">Credit</span>
+          <span class="font-normal text-[#9CA3AF] text-xs leading-[140%]">Manual Funding</span>
+        </button>
+
+        <!-- Debit -->
+        <button
+          type="button"
+          (click)="selectAction('debit')"
+          class="flex-1 flex flex-col items-center justify-center gap-0.5 bg-[#F8FAFB] cursor-pointer
+                 transition-colors rounded-xl border py-5 px-3"
+          [class.border-[#00ABF5]]="selectedAction() === 'debit'"
+          [class.bg-[#F0FBFF]]="selectedAction() === 'debit'"
+          [class.border-[#ECF0F3]]="selectedAction() !== 'debit'">
+          <span class="font-semibold text-[#131719] text-sm leading-[136%]">Debit</span>
+          <span class="font-normal text-[#9CA3AF] text-xs leading-[140%]">Manual Deduction</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Amount -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
+        Amount
+      </label>
+      <input
+        type="text"
+        inputmode="numeric"
+        [ngModel]="amount()"
+        (ngModelChange)="onAmountChange($event)"
+        placeholder="Input amount"
+        class="w-full bg-white outline-none transition-colors font-normal text-[#2B3033]
+               placeholder-[#D2DBE1] focus:border-[#00ABF5] focus:ring-1 focus:ring-[#00ABF5]
+               h-10 rounded-lg border border-[#D2DBE1] px-3
+               text-[13.33px] leading-[140%] tracking-[-0.005em]" />
+    </div>
+
+    <!-- Select a reason -->
+    <div class="flex flex-col gap-3">
+      <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
+        Select a reason
+      </label>
+      <div class="flex flex-col gap-3">
+        @for (reason of reasons; track reason.value) {
+          <label class="flex items-center gap-2.5 cursor-pointer group">
+            <input
+              type="radio"
+              name="update-balance-reason"
+              [value]="reason.value"
+              [checked]="selectedReason() === reason.value"
+              (change)="selectReason(reason.value)"
+              class="w-4 h-4 accent-[#00ABF5] cursor-pointer shrink-0" />
+            <span class="text-sm font-normal text-[#2B3033] leading-[136%]
+              group-hover:text-[#131719] transition-colors">
+              {{ reason.label }}
+            </span>
+          </label>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="flex items-center justify-end gap-3 px-6 py-5 mt-2">
+
+    <!-- Cancel -->
+    <button
+      type="button"
+      (click)="close()"
+      class="px-5 py-2.5 rounded-lg border border-[#E2E8F0] bg-white font-medium
+             text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer text-[13px]">
+      Cancel
+    </button>
+
+    <!-- Update Balance -->
+    <button
+      type="button"
+      (click)="submit()"
+      [disabled]="!canSubmit()"
+      class="flex items-center justify-center gap-2 font-semibold transition-all
+             duration-200 cursor-pointer disabled:cursor-not-allowed
+             w-[160px] h-10 rounded-lg border-none text-[13px]"
+      [class.bg-[#00ABF5]]="canSubmit()"
+      [class.text-white]="canSubmit()"
+      [class.bg-black/5]="!canSubmit()"
+      [class.text-[#2B3033]/40]="!canSubmit()">
+      Update Balance
+    </button>
+
+  </div>
+
+</div>

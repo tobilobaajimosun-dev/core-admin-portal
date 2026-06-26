@@ -1,0 +1,89 @@
+<div class="w-full">
+
+  <!-- ── Toolbar ── -->
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-base font-semibold text-[#131719]">Repayment Schedule</h3>
+    <button type="button"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+        text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
+      Export
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Table ── -->
+  <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]">
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="bg-[#F8FCFE]">
+          @for (col of columns; track col) {
+            <th class="text-left py-3 px-4 border-b border-[#ECF1F5]
+              text-xs font-bold text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
+              {{ col }}
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+
+        @if (schedule.length === 0) {
+          <tr>
+            <td [attr.colspan]="columns.length"
+              class="py-16 text-center text-sm text-[#51575B]">
+              No schedule entries found.
+            </td>
+          </tr>
+        }
+
+        @for (row of schedule; track row.scheduledDate) {
+          <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+
+            <!-- Scheduled Date -->
+            <td class="py-3 px-4 text-sm font-medium text-[#131719] whitespace-nowrap">
+              {{ row.scheduledDate | date:'MMM d, yyyy' }}
+            </td>
+
+            <!-- Narration -->
+            <td class="py-3 px-4 text-sm font-normal text-[#51575B] whitespace-nowrap">
+              {{ row.narration }}
+            </td>
+
+            <!-- Principal -->
+            <td class="py-3 px-4 text-sm font-medium text-[#131719] whitespace-nowrap">
+              {{ formatMoney(row.principal) }}
+            </td>
+
+            <!-- Interest -->
+            <td class="py-3 px-4 text-sm font-medium text-[#131719] whitespace-nowrap">
+              {{ formatMoney(row.interest) }}
+            </td>
+
+            <!-- Fees -->
+            <td class="py-3 px-4 text-sm font-medium text-[#131719] whitespace-nowrap">
+              {{ formatMoney(row.fees) }}
+            </td>
+
+            <!-- Total Amount -->
+            <td class="py-3 px-4 text-sm font-medium text-[#131719] whitespace-nowrap">
+              {{ formatMoney(row.totalAmount) }}
+            </td>
+
+            <!-- Status -->
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
+                [ngClass]="getStatusClass(row.status)">
+                {{ row.status }}
+              </span>
+            </td>
+
+          </tr>
+        }
+
+      </tbody>
+    </table>
+  </div>
+
+</div>

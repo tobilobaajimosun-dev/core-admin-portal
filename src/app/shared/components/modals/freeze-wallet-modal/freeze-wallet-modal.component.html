@@ -1,0 +1,67 @@
+<div class="flex flex-col bg-white border border-[#ECF0F3] rounded-2xl overflow-hidden w-[560px]">
+
+  <!-- ── Header ── -->
+  <div class="flex items-start justify-between px-6 pt-6 pb-5">
+    <h3 class="font-semibold text-[#131719] leading-none text-[18.46px] tracking-[-0.005em]">
+      {{ modalData.isFrozen ? 'Unfreeze Wallet' : 'Freeze Wallet' }}
+    </h3>
+
+    <button
+      type="button"
+      (click)="close()"
+      class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+             bg-gray-100 hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+             disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+      aria-label="Close">
+      <span class="sr-only">Close</span>
+      <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666"
+          stroke="#121212" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="flex flex-col gap-3 px-6 pb-2">
+    @if (modalData.isFrozen) {
+      <p class="font-normal text-[#131719] text-sm leading-[150%]">
+        Are you sure you want to unfreeze this wallet?
+      </p>
+      <p class="font-normal text-[#131719] text-sm leading-[150%]">
+        The customer will be able to perform wallet transactions again once the wallet is unfrozen.
+      </p>
+    } @else {
+      <p class="font-normal text-[#131719] text-sm leading-[150%]">
+        Are you sure you want to freeze this wallet?
+      </p>
+      <p class="font-normal text-[#131719] text-sm leading-[150%]">
+        The customer will not be able to perform wallet transactions until the wallet is unfrozen.
+      </p>
+    }
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="flex items-center justify-end gap-3 px-6 py-5 mt-2">
+
+    <!-- Cancel -->
+    <button
+      type="button"
+      (click)="close()"
+      class="px-5 py-2.5 rounded-lg border border-[#E2E8F0] bg-white font-medium
+             text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer text-[13px]">
+      Cancel
+    </button>
+
+    <!-- Confirm -->
+    <button
+      type="button"
+      (click)="submit()"
+      class="flex items-center justify-center gap-2 font-semibold transition-all
+             duration-200 cursor-pointer h-10 px-5 rounded-lg border-none text-[13px]
+             bg-[#00ABF5] text-white hover:opacity-90">
+      {{ modalData.isFrozen ? 'Unfreeze wallet' : 'Freeze wallet' }}
+    </button>
+
+  </div>
+
+</div>

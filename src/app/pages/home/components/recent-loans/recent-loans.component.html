@@ -1,0 +1,170 @@
+<div>
+  <!-- Title row -->
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-base font-semibold text-[#131719] tracking-tight">
+      Recent Loan Applications
+    </h2>
+    <button type="button" class="text-sm font-medium text-[#00B3FF] hover:opacity-80 transition-opacity">
+      View all
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="w-full rounded-xl border border-[#ECF1F5] overflow-hidden">
+
+      <!-- Skeleton thead -->
+      <div class="bg-[#F8FCFE] flex border-b border-[#ECF1F5] px-3 py-3 gap-3">
+        @for (col of columns; track $index) {
+          <div class="h-3 rounded-full bg-gray-200 animate-pulse"
+            [class.w-24]="$index === 0"
+            [class.w-32]="$index === 1"
+            [class.w-16]="$index !== 0 && $index !== 1">
+          </div>
+        }
+      </div>
+
+      <!-- Skeleton rows -->
+      @for (row of skeletonRows; track $index) {
+        <div class="flex items-center gap-3 px-3 py-4 border-b border-[#ECF1F5] last:border-0"
+          [class.bg-white]="$even"
+          [class.bg-[#F8FCFE]]="$odd">
+          <div class="flex flex-col gap-1.5 w-24 flex-shrink-0">
+            <div class="h-2.5 w-full rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="h-2 w-3/4 rounded-full bg-gray-200 animate-pulse"></div>
+          </div>
+          <div class="flex items-center gap-2 w-48 flex-shrink-0">
+            <div class="w-8 h-8 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+            <div class="flex flex-col gap-1.5 flex-1">
+              <div class="h-2.5 w-full rounded-full bg-gray-200 animate-pulse"></div>
+              <div class="h-2 w-4/5 rounded-full bg-gray-200 animate-pulse"></div>
+            </div>
+          </div>
+          <div class="h-2.5 w-16 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+          <div class="flex flex-col gap-1.5 w-24 flex-shrink-0">
+            <div class="h-2.5 w-full rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="h-2 w-3/4 rounded-full bg-gray-200 animate-pulse"></div>
+          </div>
+          <div class="h-7 w-24 rounded-2xl bg-gray-200 animate-pulse flex-shrink-0"></div>
+          <div class="h-7 w-20 rounded-2xl bg-gray-200 animate-pulse flex-shrink-0"></div>
+          <div class="w-5 h-5 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+        </div>
+      }
+    </div>
+  }
+
+  @else if (loans().length === 0) {
+    <div class="rounded-xl border border-[#ECF1F5]">
+      <ps-empty description="No data to display"></ps-empty>
+    </div>
+  }
+
+  @else {
+    <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]
+      [scrollbar-width:thin] [scrollbar-color:#E5E7EB_transparent]
+      [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent
+      [&::-webkit-scrollbar-thumb]:bg-[#E5E7EB] [&::-webkit-scrollbar-thumb]:rounded-full
+      hover:[&::-webkit-scrollbar-thumb]:bg-[#D1D5DB]">
+
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-[#F8FCFE]">
+            @for (col of columns; track col) {
+              <th class="text-left py-3 px-3 border-b border-r border-[#ECF1F5] last:border-r-0
+                text-xs font-bold text-[#51575B] tracking-tight whitespace-nowrap">
+                {{ col }}
+              </th>
+            }
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (loan of loans(); track loan.id) {
+            <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+
+              <!-- Date & Time -->
+              <td class="py-3 px-3 border-r border-[#ECF1F5]">
+                <p class="text-sm font-medium text-[#131719] tracking-tight whitespace-nowrap">
+                  {{ loan.createdAt | date:'MMM dd, yyyy,' }}
+                </p>
+                <p class="text-xs font-normal text-[#51575B] tracking-tight whitespace-nowrap">
+                  {{ loan.createdAt | date:'h:mm a' }}
+                </p>
+              </td>
+
+              <!-- Customer Details -->
+              <td class="py-3 px-3 border-r border-[#ECF1F5]">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center
+                    bg-[#EEF5F9] text-[#131719] text-xs font-semibold flex-shrink-0">
+                    {{ loan.customer.firstName.charAt(0) }}{{ loan.customer.lastName.charAt(0) }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-[#131719] tracking-tight whitespace-nowrap">
+                      {{ loan.customer.firstName }} {{ loan.customer.lastName }}
+                    </p>
+                    <p class="text-xs font-normal text-[#51575B] tracking-tight">
+                      {{ loan.customer.email }}
+                    </p>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Loan ID -->
+              <td class="py-3 px-3 border-r border-[#ECF1F5]
+                text-sm font-medium text-[#131719] tracking-tight whitespace-nowrap">
+                {{ loan.unique_loan_id ?? loan.reference_no }}
+              </td>
+
+              <!-- Amount & Duration -->
+              <td class="py-3 px-3 border-r border-[#ECF1F5]">
+                <p class="text-sm font-medium text-[#131719] tracking-tight whitespace-nowrap">
+                  ₦{{ loan.loan_amount | number:'1.2-2' }}
+                </p>
+                <p class="text-xs font-normal text-[#51575B] tracking-tight">
+                  For {{ loan.loan_duration }} {{ loan.loan_duration === 1 ? 'month' : 'months' }}
+                </p>
+              </td>
+
+              <!-- Product -->
+              <td class="py-3 px-3 border-r border-[#ECF1F5]">
+                <span class="inline-flex items-center px-2 py-1.5 rounded-2xl
+                  bg-[#EEF5F9] text-sm font-medium text-[#131719] tracking-tight whitespace-nowrap">
+                  {{ loan.product.title }}
+                </span>
+              </td>
+
+              <!-- Status -->
+              <td class="py-3 px-3 border-r border-[#ECF1F5]">
+                <span class="inline-flex items-center py-[5.5px] px-2 rounded-2xl
+                  text-xs font-semibold tracking-tight whitespace-nowrap"
+                  [style.backgroundColor]="getStatusBg(loan.status)"
+                  [style.color]="getStatusColor(loan.status)">
+                  {{ loan.status | titlecase }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="py-3 px-3">
+                <button type="button" class="text-[#9CA3AF] hover:text-[#44444B] transition-colors">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"/>
+                  </svg>
+                </button>
+              </td>
+
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+  <ps-pagination
+  [totalItems]="totalItems()"
+  [itemPerPage]="pageSize()"
+  [(currentPage)]="currentPage"
+  (pageChanged)="onPageChange($event)"
+  (pageSizeChanged)="onPageSizeChange($event)">
+</ps-pagination>
+  }
+</div>

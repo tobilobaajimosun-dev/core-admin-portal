@@ -1,0 +1,65 @@
+<!-- Header -->
+<div class="flex items-center justify-between mb-4">
+  <h2 class="text-base font-semibold tracking-[-0.005em] leading-none text-[#EF4444]">
+    Needs Attention ({{ count() }})
+  </h2>
+  <button type="button" (click)="viewAll()"
+    class="text-sm font-medium text-[#131719] hover:text-[#00B3FF] transition-colors
+      cursor-pointer decoration-dotted underline underline-offset-4">
+    View all
+  </button>
+</div>
+
+@if (isLoading()) {
+  <!-- skeleton unchanged -->
+} @else {
+  <div class="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    @for (customer of customers(); track customer.id) {
+      <div class="flex-shrink-0 w-[236px] h-[191px] flex flex-col bg-white rounded-[12px]
+        border-[0.8px] border-[#ECF1F5] p-3 hover:shadow-sm transition-shadow">
+
+        <!-- Icon + KYC tag -->
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-primary">
+            <ps-svg-icon name="user-verify-icon" class="w-6 h-6"></ps-svg-icon>
+          </span>
+          <span class="inline-flex items-center bg-[#F8FCFE] text-[#51575B]
+            text-[11px] font-medium tracking-[-0.005em] rounded-[24px]
+            border-[0.5px] border-[#ECF1F5] py-1 px-1.5">
+            {{ getKycLabel(customer) }}
+          </span>
+        </div>
+
+        <!-- Name -->
+        <p class="text-base font-semibold text-[#51575B] tracking-[-0.005em] leading-none mb-3">
+          {{ customer.firstName }} {{ customer.lastName }}
+        </p>
+
+        <div class="mt-auto">
+          <p class="text-[13px] font-normal leading-[140%] tracking-[-0.005em] text-[#515758]">
+            Submitted:
+          </p>
+          <p class="text-[13px] font-normal leading-[140%] tracking-[-0.005em] text-[#7E868B] mb-3">
+            {{ customer.createdAt | date:'MMM dd, yyyy HH:mm:ss' }}
+          </p>
+          <div class="flex justify-end">
+            <button type="button" (click)="openVerificationModal(customer)"
+              class="h-7 px-4 text-sm font-medium text-[#131719] rounded-lg
+                border-[0.8px] border-[#E1E8ED] hover:bg-[#F8FCFE]
+                transition-colors cursor-pointer">
+              View
+            </button>
+          </div>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <!-- Dot indicators -->
+  <div class="flex items-center justify-center gap-1.5 mt-3">
+    <span class="w-2 h-2 rounded-full border border-[#E1E8ED]"></span>
+    <span class="w-2 h-2 rounded-full border border-[#E1E8ED]"></span>
+    <span class="w-2 h-2 rounded-full border border-[#E1E8ED]"></span>
+  </div>
+}

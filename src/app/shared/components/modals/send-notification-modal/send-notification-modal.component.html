@@ -1,0 +1,154 @@
+<div class="flex flex-col bg-white border border-[#ECF0F3] rounded-2xl overflow-hidden w-[560px]">
+
+  <!-- ── Header ── -->
+  <div class="flex items-start justify-between px-6 pt-6 pb-5">
+    <h3 class="font-semibold text-[#060708] leading-none text-[18.46px] tracking-[-0.005em]">
+      Send notification
+    </h3>
+
+    <button
+      type="button"
+      (click)="close()"
+      class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+             bg-gray-100 hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+             disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+      aria-label="Close">
+      <span class="sr-only">Close</span>
+      <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666"
+          stroke="#121212" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="flex flex-col gap-5 px-6 pb-2">
+
+    <!-- Subtitle -->
+    <p class="font-normal text-[#51575B] text-sm leading-[140%] tracking-[-0.005em]">
+      You can send a personal push notification to this customer.
+    </p>
+
+    <!-- Send push notification to -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
+        Send push notification to
+      </label>
+      <!-- Read-only recipient field -->
+      <div class="w-full flex items-center rounded-lg bg-black/[0.08] min-h-[41px] px-3 py-[10.26px]">
+        <span class="font-semibold text-[#2B3033] text-[13.33px] leading-[140%] tracking-[-0.005em]">
+          {{ modalData.customerName }}
+        </span>
+        <span class="font-normal text-[#2B3033] text-[13.33px] leading-[140%] tracking-[-0.005em]">
+          &nbsp;({{ modalData.customerEmail }})
+        </span>
+      </div>
+    </div>
+
+    <!-- Notification channel -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
+        Notification channel
+      </label>
+      <div class="flex gap-3">
+
+        <!-- Send app notification -->
+        <button
+          type="button"
+          (click)="selectChannel('app')"
+          class="flex-1 flex items-center justify-center gap-2 bg-white cursor-pointer
+                 transition-colors font-semibold h-10 rounded-lg text-[13px] leading-[124%] px-3
+                 border"
+          [class.border-[#00ABF5]]="selectedChannel() === 'app'"
+          [class.text-[#00ABF5]]="selectedChannel() === 'app'"
+          [class.border-[#D2DBE1]]="selectedChannel() !== 'app'"
+          [class.text-[#2B3033]]="selectedChannel() !== 'app'">
+          <span>Send app notification</span>
+          <ps-svg-icon name="smart-phone-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+        </button>
+
+        <!-- Send email notification -->
+        <button
+          type="button"
+          (click)="selectChannel('email')"
+          class="flex-1 flex items-center justify-center gap-2 bg-white cursor-pointer
+                 transition-colors font-semibold h-10 rounded-lg text-[13px] leading-[124%] px-3
+                 border"
+          [class.border-[#00ABF5]]="selectedChannel() === 'email'"
+          [class.text-[#00ABF5]]="selectedChannel() === 'email'"
+          [class.border-[#D2DBE1]]="selectedChannel() !== 'email'"
+          [class.text-[#2B3033]]="selectedChannel() !== 'email'">
+          <span>Send email notification</span>
+          <ps-svg-icon name="mail-open-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Subject / Title -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
+        Subject/Title
+      </label>
+      <input
+        type="text"
+        [ngModel]="subject()"
+        (ngModelChange)="onSubjectChange($event)"
+        placeholder="e.g. Your loan is due in 3 days"
+        class="w-full bg-white outline-none transition-colors font-normal text-[#2B3033]
+               placeholder-[#D2DBE1] focus:border-[#00ABF5] focus:ring-1 focus:ring-[#00ABF5]
+               h-10 rounded-lg border border-[#D2DBE1] px-3 py-[10.26px]
+               text-[13.33px] leading-[140%] tracking-[-0.005em]" />
+    </div>
+
+    <!-- Message -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
+        Message
+      </label>
+      <textarea
+        [ngModel]="message()"
+        (ngModelChange)="onMessageChange($event)"
+        placeholder="Write your message here..."
+        class="w-full bg-white outline-none resize-none transition-colors font-normal
+               text-[#2B3033] placeholder-[#D2DBE1]
+               focus:border-[#00ABF5] focus:ring-1 focus:ring-[#00ABF5]
+               h-[121px] rounded-lg border border-[#D2DBE1] px-3 py-[10.26px]
+               text-[13.33px] leading-[140%] tracking-[-0.005em]">
+      </textarea>
+    </div>
+
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="flex items-center justify-end gap-3 px-6 py-5 mt-2">
+
+    <!-- Cancel -->
+    <button
+      type="button"
+      (click)="close()"
+      class="px-5 py-2.5 rounded-lg border border-[#E2E8F0] bg-white font-medium
+             text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer text-[13px]">
+      Cancel
+    </button>
+
+    <!-- Send notification -->
+    <button
+      type="button"
+      (click)="send()"
+      [disabled]="!canSend()"
+      class="flex items-center justify-center gap-2 font-semibold transition-all
+             duration-200 cursor-pointer disabled:cursor-not-allowed
+             w-[190px] h-10 rounded-lg border-none text-[13px]"
+      [class.bg-[#00ABF5]]="canSend()"
+      [class.text-white]="canSend()"
+      [class.bg-black/5]="!canSend()"
+      [class.text-[#2B3033]/40]="!canSend()">
+      
+      <span>Send notification</span>
+      <ps-svg-icon name="smart-phone-vibrate" class="w-4 h-4 shrink-0"></ps-svg-icon>
+    </button>
+
+  </div>
+
+</div>

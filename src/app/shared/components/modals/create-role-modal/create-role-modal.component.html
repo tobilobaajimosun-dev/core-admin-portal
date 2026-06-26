@@ -1,0 +1,125 @@
+<div class="duration-300 opacity-100 ease-out transition-all w-full">
+  <div
+    class="flex flex-col bg-white border border-[#ECF0F3] rounded-2xl pointer-events-auto modal-background overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 pt-6 pb-4">
+      <h3 class="text-[#131719] font-semibold text-lg tracking-[-0.005em] leading-none">
+        {{ isViewMode ? (roleStore.selectedRole()?.name ?? '') + ' role'  : isEditMode ? 'Edit role' : 'Create role' }} 
+      </h3>
+      <button (click)="close()" type="button" class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+          bg-gray-100 text-coal hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+          disabled:opacity-50 disabled:pointer-events-none  cursor-pointer" aria-label="Close">
+        <span class="sr-only">Close</span>
+        <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666" stroke="#121212" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 pb-2 overflow-y-auto">
+
+      <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] leading-[140%] mb-5">
+        {{ isViewMode
+        ? 'See the permissions this role has access to'
+        : isEditMode
+        ? 'Edit this role\'s name or permissions'
+        : 'Give access to manage the system.' }}
+      </p>
+
+      <!-- Role-fetch skeleton (edit / view while loading) -->
+      @if (isLoadingRole) {
+      <div class="space-y-4">
+        <div class="h-9 w-full rounded-lg bg-gray-200 animate-pulse"></div>
+        <div class="h-20 w-full rounded-lg bg-gray-200 animate-pulse"></div>
+        @for (i of [1,2,3,4,5]; track i) {
+        <div class="h-5 w-48 rounded-full bg-gray-200 animate-pulse"></div>
+        }
+      </div>
+      }
+
+      @else {
+      <form [formGroup]="createRoleForm" id="roleForm" (ngSubmit)="handleSubmit()" class="space-y-5">
+
+        <!-- Role name -->
+        @if (!isViewMode) {
+        <div>
+          <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
+            Role name
+          </label>
+          <input formControlName="name" type="text" placeholder="e.g. Operations" class="w-full px-3 py-2.5 border rounded-lg text-sm text-[#2B3033]
+              placeholder-[#AAB3BA] outline-none transition-colors
+              focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF]"
+            [class.border-[#AAB3BA]]="!formControls['name'].invalid || !formControls['name'].touched"
+            [class.border-red-400]="formControls['name'].invalid && formControls['name'].touched" />
+          @if (formControls['name'].invalid && formControls['name'].touched) {
+          <p class="mt-1 text-xs text-red-500">Role name is required.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
+            Description
+          </label>
+          <textarea formControlName="description" rows="3" placeholder="e.g. Manages day-to-day operations" class="w-full px-3 py-2.5 border rounded-lg text-sm text-[#2B3033]
+              placeholder-[#AAB3BA] outline-none transition-colors resize-none
+              focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF]"
+            [class.border-[#AAB3BA]]="!formControls['description'].invalid || !formControls['description'].touched"
+            [class.border-red-400]="formControls['description'].invalid && formControls['description'].touched">
+          </textarea>
+          @if (formControls['description'].invalid && formControls['description'].touched) {
+          <p class="mt-1 text-xs text-red-500">Description is required.</p>
+          }
+        </div>
+        }
+
+        <!-- Permissions loading skeleton -->
+        @if (isLoadingPermissions()) {
+        <div class="space-y-3">
+          @for (i of [1,2,3,4,5]; track i) {
+          <div class="h-5 w-48 rounded-full bg-gray-200 animate-pulse"></div>
+          }
+        </div>
+        }
+
+        <!-- Permissions list -->
+        @else {
+        @for (entry of groupedEntries; track entry[0]) {
+        <div>
+          <p class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-3 capitalize">
+            {{ entry[0] }}
+          </p>
+          <div class="space-y-3">
+            @for (perm of entry[1]; track perm.id) {
+            <label class="flex items-center gap-2.5 cursor-pointer">
+              <ps-checkbox [checked]="isPermissionChecked(perm.id)" [disabled]="isViewMode" [label]="perm.description"
+                (change)="onPermissionChange($any($event.target).checked, perm.id)">
+              </ps-checkbox>
+            </label>
+            }
+          </div>
+        </div>
+        }
+        }
+
+      </form>
+      }
+
+    </div>
+    <!-- Footer -->
+    @if (!isViewMode) {
+    <div class="flex items-center justify-end gap-3 px-6 py-5 mt-2">
+      <button type="button" (click)="close()" class="px-5 py-2.5 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium
+          text-[#131719] hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button type="submit" form="roleForm" [disabled]="createRoleForm.invalid" class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+    bg-[#EBEBEB] text-[#ABABAB] cursor-not-allowed
+    enabled:bg-[#00B3FF] enabled:text-white enabled:cursor-pointer enabled:hover:opacity-90">
+        {{ isEditMode ? 'Save changes' : 'Create role' }}
+      </button>
+    </div>
+    }
+  </div>

@@ -1,0 +1,197 @@
+<!-- <div class="grid grid-cols-2 gap-6"> -->
+<div class="grid gap-6">
+
+  <!-- Transaction History -->
+  <div>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-semibold text-[#131719] tracking-tight">Transaction History</h2>
+      <button type="button" class="text-sm font-medium text-[#00B3FF] hover:opacity-80 transition-opacity">
+        View all
+      </button>
+    </div>
+
+    @if (isLoadingTransactions()) {
+      <div class="w-full rounded-xl border border-[#ECF1F5] overflow-hidden">
+
+        <!-- Skeleton thead -->
+        <div class="bg-[#F8FCFE] flex border-b border-[#ECF1F5] px-3 py-3 gap-3">
+          @for (col of columns; track $index) {
+            <div class="h-3 rounded-full bg-gray-200 animate-pulse"
+              [class.w-32]="$index === 0"
+              [class.w-24]="$index === 1"
+              [class.w-16]="$index !== 0 && $index !== 1">
+            </div>
+          }
+        </div>
+
+        <!-- Skeleton rows -->
+        @for (row of skeletonRows; track $index) {
+          <div class="flex items-center gap-3 px-3 py-4 border-b border-[#ECF1F5] last:border-0"
+            [class.bg-white]="$even"
+            [class.bg-[#F8FCFE]]="$odd">
+            <div class="flex items-center gap-2 w-48 flex-shrink-0">
+              <div class="w-8 h-8 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+              <div class="flex flex-col gap-1.5 flex-1">
+                <div class="h-2.5 w-full rounded-full bg-gray-200 animate-pulse"></div>
+                <div class="h-2 w-4/5 rounded-full bg-gray-200 animate-pulse"></div>
+              </div>
+            </div>
+            <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+            <div class="h-2.5 w-16 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+            <div class="h-7 w-20 rounded-2xl bg-gray-200 animate-pulse flex-shrink-0"></div>
+          </div>
+        }
+      </div>
+
+    } @else if (transactions().length === 0) {
+      <div class="rounded-xl border border-[#ECF1F5]">
+        <ps-empty description="No data to display"></ps-empty>
+      </div>
+
+    } @else {
+      <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]
+        [scrollbar-width:thin] [scrollbar-color:#E5E7EB_transparent]
+        [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent
+        [&::-webkit-scrollbar-thumb]:bg-[#E5E7EB] [&::-webkit-scrollbar-thumb]:rounded-full
+        hover:[&::-webkit-scrollbar-thumb]:bg-[#D1D5DB]">
+
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-[#F8FCFE]">
+              @for (col of columns; track col) {
+                <th class="text-left py-3 px-3 border-b border-r border-[#ECF1F5] last:border-r-0
+                  text-xs font-bold text-[#51575B] tracking-tight whitespace-nowrap">
+                  {{ col }}
+                </th>
+              }
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (transaction of transactions(); track transaction.id) {
+              <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+
+                <!-- Customer Details -->
+                <td class="py-3 px-3 border-r border-[#ECF1F5]">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center
+                      bg-[#EEF5F9] text-[#131719] text-xs font-semibold flex-shrink-0">
+                      {{ transaction.customer.firstName.charAt(0) }}{{ transaction.customer.lastName.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-semibold text-[#131719] tracking-tight whitespace-nowrap">
+                        {{ transaction.customer.firstName }} {{ transaction.customer.lastName }}
+                      </p>
+                      <p class="text-xs font-normal text-[#51575B] tracking-tight">
+                        {{ transaction.customer.email }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Transaction Type -->
+                <td class="py-3 px-3 border-r border-[#ECF1F5]">
+                  <p class="text-sm font-medium text-[#131719] tracking-tight whitespace-nowrap">
+                    {{ transaction.transactionable_type | titlecase }}
+                  </p>
+                  <p class="text-xs font-normal text-[#51575B] tracking-tight whitespace-nowrap">
+                    {{ transaction.type | titlecase }}
+                  </p>
+                </td>
+
+                <!-- Reference -->
+                <td class="py-3 px-3 border-r border-[#ECF1F5]
+                  text-sm font-medium text-[#131719] tracking-tight whitespace-nowrap">
+                  {{ transaction.reference_no }}
+                </td>
+
+                <!-- Amount -->
+                <td class="py-3 px-3 border-r border-[#ECF1F5]
+                  text-sm font-semibold text-[#131719] tracking-tight whitespace-nowrap">
+                  ₦{{ transaction.amount | number:'1.2-2' }}
+                </td>
+
+                <!-- Status -->
+                <td class="py-3 px-3">
+                  <span class="inline-flex items-center py-[5.5px] px-2 rounded-2xl
+                    text-xs font-semibold tracking-tight whitespace-nowrap"
+                    [style.backgroundColor]="getStatusBg(transaction.status)"
+                    [style.color]="getStatusColor(transaction.status)">
+                    {{ transaction.status | titlecase }}
+                  </span>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Loan Disbursement History -->
+  <!-- <div>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-semibold text-[#131719] tracking-tight">Loan Disbursement History</h2>
+      <button type="button" class="text-sm font-medium text-[#00B3FF] hover:opacity-80 transition-opacity">
+        View all
+      </button>
+    </div>
+
+    @if (isLoadingDisbursements()) {
+      <div class="rounded-lg border border-[#EFF3F6] bg-[#F8FCFE] p-3 space-y-2">
+        @for (row of skeletonRows; track $index) {
+          <div class="flex items-center justify-between bg-white rounded-lg px-4 py-3.5
+            shadow-[0px_4px_8px_1px_rgba(0,0,0,0.08)]">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+              <div class="flex flex-col gap-1.5">
+                <div class="h-2.5 w-32 rounded-full bg-gray-200 animate-pulse"></div>
+                <div class="h-2 w-28 rounded-full bg-gray-200 animate-pulse"></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="h-2.5 w-16 rounded-full bg-gray-200 animate-pulse"></div>
+              <div class="h-7 w-20 rounded-full bg-gray-200 animate-pulse"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (disbursements().length === 0) {
+      <div class="rounded-lg border border-[#EFF3F6] bg-[#F8FCFE]">
+        <ps-empty description="No data to display"></ps-empty>
+      </div>
+    } @else {
+      <div class="rounded-lg border border-[#EFF3F6] bg-[#F8FCFE] p-3 space-y-2">
+        @for (item of disbursements(); track item.reference) {
+          <div class="flex items-center justify-between bg-white rounded-lg px-4 py-3.5
+            shadow-[0px_4px_8px_1px_rgba(0,0,0,0.08)]">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-black
+                text-sm font-semibold flex-shrink-0 bg-[#F8FCFE]">
+                {{ item.initials }}
+              </div>
+              <div>
+                <p class="text-sm font-medium text-[#303133] tracking-tight">{{ item.name }}</p>
+                <p class="text-xs text-[#9CA3AF] tracking-tight">
+                  {{ item.date | date:'MMM dd, yyyy HH:mm' }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-semibold text-[#131719] tracking-tight">
+                ₦{{ item.amount | number:'1.2-2' }}
+              </span>
+              <span class="px-3 py-1.5 rounded-full text-xs font-semibold tracking-tight"
+                [style.backgroundColor]="getStatusBg(item.status)"
+                [style.color]="getStatusColor(item.status)">
+                {{ item.status | titlecase }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div> -->
+
+</div>

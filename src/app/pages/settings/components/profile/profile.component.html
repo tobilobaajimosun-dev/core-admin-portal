@@ -1,0 +1,106 @@
+<div class="max-w-[600px]">
+
+  <!-- Profile image -->
+  <div class="mb-8">
+    <h2 class="text-base font-semibold text-[#2B3033] tracking-[-0.005em] mb-4">
+      Profile image
+    </h2>
+    <div class="flex items-center gap-4">
+      <!-- Avatar -->
+      <div class="w-16 h-16 rounded-full bg-[#00B3FF] flex items-center justify-center
+        text-white text-xl font-semibold flex-shrink-0">
+        {{ getInitials() }}
+      </div>
+      <!-- Actions -->
+      <button type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+          text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
+        Upload image
+        <span class="w-4 h-4">
+          <ps-svg-icon name="upload-image-icon"></ps-svg-icon>
+        </span>
+      </button>
+      <button type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+          text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer" (click)="openRemoveImageModal()">
+        Remove
+        <span class="w-4 h-4">
+          <ps-svg-icon name="delete-icon"></ps-svg-icon>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Profile details -->
+  <div>
+    <h2 class="text-base font-semibold text-[#2B3033] tracking-[-0.005em] mb-5">
+      Profile details
+    </h2>
+
+    <form [formGroup]="profileForm" class="space-y-4">
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-[#2B3033] tracking-[-0.005em] mb-1.5">
+            First name
+          </label>
+          <input formControlName="firstname" type="text" readonly
+            class="w-full px-4 py-2.5 rounded-lg bg-[#F5F6F7] border border-transparent
+              text-sm text-[#131719] outline-none cursor-default select-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[#2B3033] tracking-[-0.005em] mb-1.5">
+            Last name
+          </label>
+          <input formControlName="lastname" type="text" readonly
+            class="w-full px-4 py-2.5 rounded-lg bg-[#F5F6F7] border border-transparent
+              text-sm text-[#131719] outline-none cursor-default select-none" />
+        </div>
+      </div>
+
+      <!-- Email — disabled -->
+      <div>
+        <label class="block text-sm font-medium text-[#2B3033] tracking-[-0.005em] mb-1.5">
+          Email
+        </label>
+        <input formControlName="email" type="email" 
+          class="w-full px-4 py-2.5 rounded-lg bg-[#F5F6F7] border border-transparent
+            text-sm text-[#131719] outline-none cursor-not-allowed opacity-70" />
+        <p class="mt-1.5 text-[13px] font-normal text-[#51575B]">
+          Email can't be changed
+        </p>
+      </div>
+
+      <!-- Role — disabled with checkmark -->
+      <div>
+        <label class="block text-sm font-medium text-[#2B3033] tracking-[-0.005em] mb-1.5">
+          Role
+        </label>
+        <div class="relative">
+          <input formControlName="role" type="text" 
+            class="w-full px-4 py-2.5 rounded-lg bg-[#F5F6F7] border border-transparent
+              text-sm text-[#131719] outline-none cursor-not-allowed pr-10" />
+          <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none">
+              <rect width="16" height="16" rx="8" fill="#00B3FF"/>
+              <path d="M4 8L6.5 10.5L12 5" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <button type="button" (click)="openUpdateModal()"
+        class="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-[#E2E8F0]
+          bg-white text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors
+          cursor-pointer mt-2">
+        Update my information
+        <span class="w-4 h-4">
+          <ps-svg-icon name="edit-icon"></ps-svg-icon>
+        </span>
+      </button>
+
+    </form>
+  </div>
+
+</div>

@@ -1,0 +1,58 @@
+@if (totalItems() > 0) {
+<div class="flex items-center justify-between mt-4">
+
+  <!-- Rows per page -->
+  <div class="flex items-center gap-2">
+    <div class="w-20">
+      <ps-select
+        inputClass="py-1.5 ps-2 pe-8 text-xs border-[#AAB3BA] focus:border-primary"
+        [ngModel]="selectedPageSize()"
+        (selectionChanged)="onPageSizeChange($event)"
+        placeholder="Select">
+        @for (size of pageSizeOptions(); track size) {
+          <ps-select-option [value]="size" [label]="size.toString()"></ps-select-option>
+        }
+      </ps-select>
+    </div>
+    <span class="text-xs font-normal leading-none self-center text-[#AAB3BA]">rows per page</span>
+  </div>
+
+  <!-- Page info + controls -->
+  <div class="flex items-center gap-3">
+
+    <!-- Showing X-Y of Z -->
+    <span class="text-xs font-normal text-[#51575B]">
+      {{ itemsFrom() }}–{{ itemsEnd() }} of {{ totalItems() }}
+    </span>
+
+    <div class="flex items-center gap-2">
+
+      <!-- Previous -->
+      <button
+        type="button"
+        (click)="moveBackward()"
+        [disabled]="isPreviousButtonDisabled()"
+        class="px-4 py-1.5 rounded-full border border-[#ECF1F5] bg-white
+          text-xs font-medium text-[#51575B] transition-colors
+          hover:bg-[#F8FCFE] disabled:opacity-40 disabled:cursor-not-allowed
+          disabled:hover:bg-white cursor-pointer">
+        Previous
+      </button>
+
+      <!-- Next -->
+      <button
+        type="button"
+        (click)="moveForward()"
+        [disabled]="isNextButtonDisabled()"
+        class="px-4 py-1.5 rounded-full border border-[#ECF1F5] bg-white
+          text-xs font-medium text-[#51575B] transition-colors
+          hover:bg-[#F8FCFE] disabled:opacity-40 disabled:cursor-not-allowed
+          disabled:hover:bg-white cursor-pointer">
+        Next
+      </button>
+
+    </div>
+  </div>
+
+</div>
+}

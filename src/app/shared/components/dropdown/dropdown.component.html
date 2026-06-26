@@ -1,0 +1,8 @@
+<div (click)="toggle()" dropdownHeader class="w-full">
+  <ng-content select="[dropdownHeader]"></ng-content>
+</div>
+<ng-template dropdownMenu>
+  <div class="dropdown-menu" [class]="fullWidth ? 'w-full': ''">
+    <ng-content select="[dropdownMenu]"></ng-content>
+  </div>
+</ng-template>

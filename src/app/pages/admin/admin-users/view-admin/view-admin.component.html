@@ -1,0 +1,169 @@
+<div class="w-full">
+
+  @if (isLoadingAdmin()) {
+    <div class="flex items-center justify-center py-24 text-sm text-[#7E868B]">
+      Loading admin…
+    </div>
+  } @else if (!admin()) {
+    <div class="flex items-center justify-center py-24 text-sm text-[#EF4444]">
+      {{ error() ?? 'Admin not found.' }}
+    </div>
+  } @else {
+
+  <!-- Banner -->
+  <div class="w-full relative">
+    <img src="/images/performance-banner-bg.png" alt=""
+      class="absolute inset-0 w-full" />
+
+    <div class="relative z-10 px-6 py-6">
+      <div class="bg-white rounded-xl border border-[#ECF1F5] overflow-hidden px-6 py-6
+        flex flex-col items-center text-center">
+
+        <!-- Nav row -->
+        <div class="flex items-center justify-between w-full mb-6">
+          <button type="button" (click)="goBack()"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+              text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+            Back to admin users
+          </button>
+
+          <button type="button" (click)="openEditModal()"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+              text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
+            <svg class="w-4 h-4 text-[#51575B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                   m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Edit admin details
+          </button>
+        </div>
+
+        <div class="w-16 h-16 rounded-full bg-[#00B3FF] flex items-center justify-center
+          text-white text-xl font-semibold mb-3">
+          {{ getInitials() }}
+        </div>
+
+        <h2 class="text-lg font-semibold text-[#131719] tracking-[-0.005em]">
+          {{ admin()!.first_name }} {{ admin()!.last_name }}
+        </h2>
+        <p class="text-sm font-normal text-[#51575B] mt-0.5">
+          {{ admin()!.email }}
+        </p>
+
+        <div class="flex items-center gap-1 mt-2">
+          <span class="text-xs font-normal text-[#7E868B]">
+            Added on: {{ admin()!.created_at | date:'d MMM, yyyy' }}
+          </span>
+          <span class="text-xs text-[#7E868B] mx-1.5">•</span>
+          <span class="text-xs font-semibold text-[#131719]">
+            Last logged in: {{ admin()!.updated_at | date:'d MMM, yyyy' }}
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="px-6 py-6">
+    <div class="grid grid-cols-2 gap-6">
+
+      <!-- Left: About Admin Member -->
+      <div>
+        <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-4">
+          About Admin Member
+        </h3>
+
+        <div class="rounded-xl border border-[#ECF1F5] overflow-hidden">
+
+          <div class="flex items-center justify-between px-4 py-3.5 border-b border-[#ECF1F5]">
+            <span class="text-sm font-normal text-[#7E868B]">Full name</span>
+            <span class="text-sm font-medium text-[#131719]">
+              {{ admin()!.first_name }} {{ admin()!.last_name }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between px-4 py-3.5 border-b border-[#ECF1F5]">
+            <span class="text-sm font-normal text-[#7E868B]">Email address</span>
+            <span class="text-sm font-medium text-[#131719]">{{ admin()!.email }}</span>
+          </div>
+
+          <div class="flex items-center justify-between px-4 py-3.5 border-b border-[#ECF1F5]">
+            <span class="text-sm font-normal text-[#7E868B]">Status</span>
+            <span class="inline-flex items-center px-3 py-1.5 rounded-full
+              text-xs font-semibold tracking-[-0.005em]"
+              [class.bg-[#D1FAE5]]="admin()!.is_active"
+              [class.text-[#10B981]]="admin()!.is_active"
+              [class.bg-[#FEE2E2]]="!admin()!.is_active"
+              [class.text-[#EF4444]]="!admin()!.is_active">
+              {{ admin()!.is_active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between px-4 py-3.5">
+            <span class="text-sm font-normal text-[#7E868B]">Role</span>
+            <span class="inline-flex items-center px-3 py-1.5 rounded-full
+              text-xs font-medium text-[#51575B] bg-[#EEF5F9]">
+               {{ admin()!.role.name }}
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="mt-6">
+          <h3 class="text-sm font-semibold text-[#8E1F0B] tracking-[-0.005em] mb-4">
+            Danger Zone
+          </h3>
+          <div class="rounded-xl border border-[#ECF1F5] px-4 py-4">
+            <p class="text-sm font-semibold text-[#131719] mb-1">Delete admin</p>
+            <p class="text-sm font-normal text-[#51575B] mb-4">
+              This will remove access immediately and cannot be undone
+            </p>
+            <button type="button" (click)="confirmDelete()"
+              class="px-4 py-2 rounded-lg border border-[#8E1F0B] text-[#8E1F0B]
+                text-sm font-medium bg-[#8E1F0B]/[0.05] transition-colors cursor-pointer">
+              Delete admin
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Activity Log -->
+      <div>
+        <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-4">
+          Activity Log
+        </h3>
+        <div class="rounded-xl border border-[#ECF1F5] overflow-hidden divide-y divide-[#ECF1F5]">
+          @for (log of activityLogs(); track log.id) {
+            <div class="px-4 py-3.5">
+              <p class="text-sm font-medium text-[#131719] tracking-[-0.005em]">
+                {{ log.action }}
+                @if (log.by) {
+                  <span class="text-xs font-normal text-[#7E868B] ml-1">By {{ log.by }}</span>
+                  <span class="text-xs text-[#7E868B]"> • </span>
+                  <span class="text-xs font-normal text-[#7E868B]">
+                    {{ log.timestamp | date:'MMM d, yyyy HH:mm:ss' }}
+                  </span>
+                }
+              </p>
+              @if (!log.by) {
+                <p class="text-xs font-normal text-[#7E868B] mt-0.5">
+                  {{ log.timestamp | date:'MMM d, yyyy HH:mm:ss' }}
+                </p>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  } <!-- end @else -->
+</div>

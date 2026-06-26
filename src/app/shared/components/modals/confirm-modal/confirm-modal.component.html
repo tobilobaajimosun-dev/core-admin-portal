@@ -1,0 +1,40 @@
+<div class="duration-300 opacity-100 ease-out transition-all w-full">
+  <div class="flex flex-col bg-white border border-[#ECF0F3] rounded-2xl pointer-events-auto modal-background overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 pt-6 pb-4">
+      <h3 class="text-[#131719] font-semibold text-lg tracking-[-0.005em] leading-none">
+        {{ modalData.title }}
+      </h3>
+      <button (click)="close()" type="button" class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+        bg-gray-100 text-coal hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+        disabled:opacity-50 disabled:pointer-events-none cursor-pointer" aria-label="Close">
+        <span class="sr-only">Close</span>
+        <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666"
+            stroke="#121212" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 pb-6">
+      <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] leading-[140%]">
+        {{ modalData.description }}
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-end gap-3 px-6 py-5 border-t border-[#ECF0F3]">
+      <button type="button" (click)="close()" class="px-5 py-2.5 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium
+        text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
+        {{ modalData.cancelButtonLabel }}
+      </button>
+      <button type="button" (click)="onConfirm()" class="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium
+        transition-all duration-200 bg-red-500 text-white cursor-pointer hover:opacity-90">
+        {{ modalData.confirmButtonLabel }}
+      </button>
+    </div>
+
+  </div>
+</div>

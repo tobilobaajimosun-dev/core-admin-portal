@@ -1,0 +1,92 @@
+<div class="p-6">
+<div class="flex flex-col gap-6">
+
+  <!-- Back button -->
+  <button type="button" (click)="goBack()"
+    class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+           text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer w-fit">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M19 12H5M12 5l-7 7 7 7"/>
+    </svg>
+    Back to customer's profile
+  </button>
+
+  <!-- Page heading -->
+  <div class="flex flex-col gap-1">
+    <h2 class="text-[20px] font-semibold text-[#131719] leading-[140%] tracking-[-0.005em]">
+      Activity Log Detail
+    </h2>
+    <p class="text-sm font-normal text-[#51575B]">
+      See more details concerning this action
+    </p>
+  </div>
+
+  <!-- Two columns -->
+  <div class="grid grid-cols-2 gap-6">
+
+    <!-- Event Detail -->
+    <div class="flex flex-col gap-3">
+      <h3 class="text-[16px] font-semibold text-[#2B3033] leading-none tracking-[-0.005em]">
+        Event Detail
+      </h3>
+      <div class="rounded-lg border border-[#EFF3F6] overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[#EFF3F6]">
+          <span class="text-[14px] font-normal text-[#2B3033]">Event ID</span>
+          <span class="text-[14px] font-bold text-[#2B3033] tracking-[-0.005em]">{{ log().id }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[#EFF3F6]">
+          <span class="text-[14px] font-normal text-[#2B3033]">Action</span>
+          <span class="text-[14px] font-bold text-[#2B3033] tracking-[-0.005em]">{{ log().action }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[#EFF3F6]">
+          <span class="text-[14px] font-normal text-[#2B3033]">IP Address</span>
+          <span class="text-[14px] font-bold text-[#2B3033] tracking-[-0.005em]">{{ log().ipAddress }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[#EFF3F6]">
+          <span class="text-[14px] font-normal text-[#2B3033]">Date &amp; Time</span>
+          <span class="text-[14px] font-bold text-[#2B3033] tracking-[-0.005em]">
+            {{ log().dateTime | date:'MMM d, yyyy · h:mm a' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3">
+          <span class="text-[14px] font-normal text-[#2B3033]">Device</span>
+          <span class="text-[14px] font-bold text-[#2B3033] tracking-[-0.005em]">{{ log().device }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Event Timeline -->
+    <div class="flex flex-col gap-3">
+      <h3 class="text-[16px] font-semibold text-[#2B3033] leading-none tracking-[-0.005em]">
+        Event Timeline
+      </h3>
+      <div class="rounded-lg border border-[#EFF3F6] p-4">
+        @for (event of log().timeline; track event.title; let last = $last) {
+          <div class="flex items-start gap-3">
+            <!-- Dot + connector -->
+            <div class="flex flex-col items-center flex-shrink-0 pt-0.5">
+              @if (event.isActive) {
+                <div class="w-4 h-4 rounded-full bg-[#00B3FF] flex-shrink-0"></div>
+              } @else {
+                <div class="w-4 h-4 rounded-full bg-white border border-[#ECF1F5] flex-shrink-0"></div>
+              }
+              @if (!last) {
+                <div class="w-px bg-[#ECF1F5] mt-0.5" style="height: 34px;"></div>
+              }
+            </div>
+            <!-- Text -->
+            <div class="flex flex-col gap-0.5" [class.pb-4]="!last">
+              <p class="text-[14px] font-semibold text-[#131719] leading-none">{{ event.title }}</p>
+              <p class="text-[13px] font-normal text-[#51575B]">{{ event.description }}</p>
+              <p class="text-[12px] font-medium text-[#7E868B]">{{ event.time }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</div>

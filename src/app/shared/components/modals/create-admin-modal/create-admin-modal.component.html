@@ -1,0 +1,195 @@
+<div class="duration-300 opacity-100 ease-out transition-all w-full">
+    <div
+        class="flex flex-col bg-white border border-[#ECF0F3] rounded-2xl pointer-events-auto modal-background overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 pt-6 pb-4">
+            <div>
+                <h3 class="text-[#131719] font-semibold text-lg tracking-[-0.005em] leading-none">
+                    {{ isEditMode ? 'Edit admin' : 'Invite admin' }}
+                </h3>
+            </div>
+            <button (click)="close()" type="button" class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+          bg-gray-100 text-coal hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+          disabled:opacity-50 disabled:pointer-events-none cursor-pointer" aria-label="Close">
+                <span class="sr-only">Close</span>
+                <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666" stroke="#121212"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 pb-2 overflow-y-auto
+      [scrollbar-width:thin] [scrollbar-color:#E5E7EB_transparent]
+      [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent
+      [&::-webkit-scrollbar-thumb]:bg-[#E5E7EB] [&::-webkit-scrollbar-thumb]:rounded-full">
+
+            <!-- Subtitle -->
+            <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] leading-[140%] mb-5">
+                {{ isEditMode ? "Edit this admin's details and permissions." : 'Give access to manage the system.' }}
+            </p>
+
+            @if (isLoadingAdmin()) {
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="h-9 w-full rounded-lg bg-gray-200 animate-pulse"></div>
+                    <div class="h-9 w-full rounded-lg bg-gray-200 animate-pulse"></div>
+                </div>
+                <div class="h-9 w-full rounded-lg bg-gray-200 animate-pulse"></div>
+                <div class="h-9 w-full rounded-lg bg-gray-200 animate-pulse"></div>
+                @for (i of [1,2,3,4,5]; track i) {
+                <div class="h-5 w-48 rounded-full bg-gray-200 animate-pulse"></div>
+                }
+            </div>
+            }
+            @else{
+            <form [formGroup]="inviteForm" id="inviteForm" (ngSubmit)="handleSendInvite()" class="space-y-4">
+
+                <!-- First Name + Last Name -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
+                            First Name
+                        </label>
+                        <input formControlName="firstname" type="text" placeholder="First name" class="w-full px-3 py-2.5 border rounded-lg text-sm text-[#2B3033]
+                placeholder-[#AAB3BA] outline-none transition-colors
+                focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF]"
+                            [class.border-[#AAB3BA]]="!formControls['firstname'].invalid || !formControls['firstname'].touched"
+                            [class.border-red-400]="formControls['firstname'].invalid && formControls['firstname'].touched" />
+                        @if (formControls['firstname'].invalid && formControls['firstname'].touched) {
+                        <p class="mt-1 text-xs text-red-500">First name is required.</p>
+                        }
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
+                            Last Name
+                        </label>
+                        <input formControlName="lastname" type="text" placeholder="Last name" class="w-full px-3 py-2.5 border rounded-lg text-sm text-[#2B3033]
+                placeholder-[#AAB3BA] outline-none transition-colors
+                focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF]"
+                            [class.border-[#AAB3BA]]="!formControls['lastname'].invalid || !formControls['lastname'].touched"
+                            [class.border-red-400]="formControls['lastname'].invalid && formControls['lastname'].touched" />
+                        @if (formControls['lastname'].invalid && formControls['lastname'].touched) {
+                        <p class="mt-1 text-xs text-red-500">Last name is required.</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Email Address -->
+                <div>
+                    <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
+                        Email Address
+                    </label>
+                    <div class="relative">
+                        <input formControlName="email" type="email" placeholder="name@princepsfinance.com" class="w-full px-3 py-2.5 border rounded-lg text-sm text-[#2B3033]
+                placeholder-[#AAB3BA] outline-none transition-colors pr-10
+                focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF]"
+                            [class.border-[#AAB3BA]]="!formControls['email'].invalid || !formControls['email'].touched"
+                            [class.border-red-400]="formControls['email'].invalid && formControls['email'].touched"
+                            [class.border-[#00B3FF]]="formControls['email'].valid && formControls['email'].dirty" />
+                        <!-- Valid checkmark -->
+                        @if (formControls['email'].valid && formControls['email'].dirty) {
+                        <span class="absolute inset-y-3 right-3 flex items-center pointer-events-none w-4 h-4">
+                            <ps-svg-icon class=" text-white" name="custom-radio-icon"></ps-svg-icon>
+                        </span>
+                        }
+                    </div>
+                    @if (formControls['email'].invalid && formControls['email'].touched) {
+                    <p class="mt-1 text-xs text-red-500">Please enter a valid email address.</p>
+                    }
+                </div>
+
+                <!-- Role -->
+                <div>
+                    <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
+                        Role
+                    </label>
+                    <div class="relative">
+                        <select formControlName="roleId" class="w-full px-3 py-2.5 border border-[#AAB3BA] rounded-lg text-sm
+        outline-none appearance-none transition-colors cursor-pointer
+        focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF]"
+                            [class.text-[#AAB3BA]]="!formControls['roleId'].value"
+                            [class.text-[#2B3033]]="formControls['roleId'].value">
+                            <option value="" disabled selected hidden>
+                                {{ isLoadingRoles() ? 'Loading roles...' : 'Select a role' }}
+                            </option>
+                            @for (role of roles(); track role.id) {
+                            <option [value]="role.id">{{ role.name }}</option>
+                            }
+                        </select>
+                        <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-[#51575B]" viewBox="0 0 20 20" fill="none">
+                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </span>
+                    </div>
+                    @if (formControls['roleId'].invalid && formControls['roleId'].touched) {
+                    <p class="mt-1 text-xs text-red-500">Please select a role.</p>
+                    }
+                </div>
+
+                <!-- Add custom permissions toggle -->
+                <div class="py-1">
+                    <ps-checkbox [checked]="formControls['addCustomPermissions'].value" label="Add custom permissions?"
+                        (change)="onPermissionChange($any($event.target).checked, 'addCustomPermissions')">
+                    </ps-checkbox>
+                </div>
+
+                <!-- Dynamic permission groups -->
+                @if (inviteForm.get('addCustomPermissions')?.value) {
+                <div class="space-y-4 pt-1" @expandDown>
+
+                    @if (isLoadingPermissions()) {
+                    <div class="space-y-3">
+                        @for (i of [1,2,3,4,5]; track i) {
+                        <div class="h-5 w-48 rounded-full bg-gray-200 animate-pulse"></div>
+                        }
+                    </div>
+                    } @else {
+                    @for (entry of groupedEntries; track entry[0]) {
+                    <div>
+                        <p class="text-sm font-medium text-[#131719] mb-2.5 tracking-[-0.005em] capitalize">
+                            {{ entry[0] }}
+                        </p>
+                        <div class="space-y-2.5">
+                            @for (perm of entry[1]; track perm.id) {
+                            <ps-checkbox [checked]="isPermissionChecked(perm.id)" [label]="perm.description"
+                                (change)="onPermissionChange($any($event.target).checked, perm.id)">
+                            </ps-checkbox>
+                            }
+                        </div>
+                    </div>
+                    }
+                    }
+
+                </div>
+                }
+
+            </form>
+            }
+
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-end gap-3 px-6 py-5 mt-2">
+            <button type="button" (click)="close()" class="px-5 py-2.5 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium
+          text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
+                Cancel
+            </button>
+            <button type="submit" form="inviteForm" [disabled]="inviteForm.invalid || isSubmitting" class="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium
+    transition-all duration-200 bg-[#EBEBEB] text-[#ABABAB] cursor-not-allowed
+    enabled:bg-[#00B3FF] enabled:text-white enabled:cursor-pointer enabled:hover:opacity-90">
+                {{ isEditMode ? 'Save changes' : 'Send admin member invite' }}
+                @if (!isEditMode) {
+                <span class="flex items-center justify-center w-4 h-4">
+                    <ps-svg-icon name="admin-icon"></ps-svg-icon>
+                </span>
+                }
+            </button>
+        </div>
+
+    </div>
+</div>

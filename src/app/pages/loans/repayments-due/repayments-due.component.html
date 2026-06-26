@@ -1,0 +1,278 @@
+<div class="p-6">
+
+  <!-- Back -->
+  <button type="button" (click)="goBack()"
+    class="inline-flex items-center gap-1.5 text-sm font-medium text-[#131719]
+           hover:text-[#00B3FF] transition-colors cursor-pointer mb-6">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+    Back to all loans
+  </button>
+
+  <!-- Page header -->
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <h1 class="text-xl font-semibold text-[#131719] tracking-[-0.005em] leading-none mb-1">
+        Repayments Due Today
+      </h1>
+      <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em]">
+        <span class="text-[#00B3FF] font-medium">{{ totalRecords }}</span>
+        repayments are due today
+      </p>
+    </div>
+
+    <!-- Displaying metrics for -->
+    <div class="flex flex-col items-end gap-1">
+      <span class="text-xs font-normal text-[#51575B] tracking-[-0.005em]">
+        Displaying metrics for
+      </span>
+      <div class="relative">
+        <select class="appearance-none flex items-center gap-2 pl-8 pr-8 py-2 rounded-lg border border-[#E2E8F0]
+                       bg-white text-sm font-medium text-[#131719] outline-none cursor-pointer
+                       hover:bg-[#F8FCFE] transition-colors">
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="past_7_days">Past 7 days</option>
+          <option value="this_month">This month</option>
+        </select>
+        <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <!-- Due Today -->
+    <div class="bg-white rounded-xl border border-[#ECF1F5] px-6 py-5">
+      <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-3">Due Today</p>
+      <p class="text-[32px] font-bold text-[#00B3FF] leading-none">{{ totalRecords }}</p>
+    </div>
+    <!-- Total Amount Due -->
+    <div class="bg-white rounded-xl border border-[#ECF1F5] px-6 py-5">
+      <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-3">Total Amount Due</p>
+      <p class="text-[32px] font-bold text-[#131719] leading-none">{{ totalAmountDue }}</p>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between mb-3">
+
+    <!-- Filter pills -->
+    <div class="flex items-center gap-2 flex-wrap">
+      @for (filter of filters; track filter.type; let i = $index) {
+        <div class="relative">
+          <button type="button" (click)="toggleFilter(i)"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+                   text-xs font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
+            [class.border-[#00B3FF]]="filter.selected !== null"
+            [class.text-[#00B3FF]]="filter.selected !== null"
+            [class.border-[#E2E8F0]]="filter.selected === null">
+            {{ filter.label }}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0">
+              <line x1="4" y1="6" x2="20" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/>
+            </svg>
+          </button>
+
+          @if (filter.open) {
+            <div class="absolute top-full left-0 mt-1 z-20 bg-white rounded-xl border border-[#E1E6ED]
+                        shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[180px] py-1">
+              @for (option of filter.options; track option.value) {
+                <button type="button" (click)="selectOption(i, option.value)"
+                  class="w-full text-left px-4 py-2.5 text-sm text-[#131719]
+                         hover:bg-[#00B3FF]/[0.06] transition-colors cursor-pointer"
+                  [class.text-[#00B3FF]]="filter.selected === option.value"
+                  [class.font-semibold]="filter.selected === option.value">
+                  {{ option.label }}
+                </button>
+              }
+              <div class="px-3 py-2 border-t border-[#ECF1F5]">
+                <button type="button" (click)="applyFilter(i)"
+                  class="w-full text-sm py-1.5 rounded-md flex items-center justify-center gap-2 transition-colors"
+                  [class.bg-[#00B3FF]]="filter.selected !== null"
+                  [class.text-white]="filter.selected !== null"
+                  [class.bg-gray-100]="filter.selected === null"
+                  [class.text-gray-400]="filter.selected === null">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="4" y1="6" x2="20" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/>
+                  </svg>
+                  Filter
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Search customer name, phone number or loan ID"
+          class="pl-9 pr-8 py-2 rounded-lg border text-sm text-[#131719]
+                 placeholder-[#9CA3AF] outline-none w-72 transition-colors"
+          [class.border-[#00B3FF]]="searchQuery()"
+          [class.ring-1]="searchQuery()"
+          [class.ring-[#00B3FF]]="searchQuery()"
+          [class.border-[#E2E8F0]]="!searchQuery()"
+          [value]="searchQuery()"
+          (input)="onSearch($any($event.target).value)" />
+        @if (searchQuery()) {
+          <button type="button" (click)="onSearch('')"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]
+                   hover:text-[#44444B] transition-colors cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        }
+      </div>
+      <button type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+               text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
+        Export
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Search banner -->
+  @if (searchQuery()) {
+    <div class="flex items-center gap-1.5 mb-3 text-sm">
+      <span class="font-normal text-[#51575B]">Displaying search result:</span>
+      <span class="font-semibold text-[#131719]">{{ searchQuery() }}</span>
+      <button type="button" (click)="onSearch('')"
+        class="font-normal text-[#51575B] border-b border-dashed hover:text-[#131719] transition-colors cursor-pointer ml-1 text-[13px]">
+        Clear search
+      </button>
+    </div>
+  }
+
+  <!-- Table -->
+  <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]
+        [scrollbar-width:thin] [scrollbar-color:#E5E7EB_transparent]
+        [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent
+        [&::-webkit-scrollbar-thumb]:bg-[#E5E7EB] [&::-webkit-scrollbar-thumb]:rounded-full">
+
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="bg-[#F8FCFE]">
+          @for (column of columns; track column) {
+            <th class="text-left py-3 px-4 border-b border-[#ECF1F5]
+                       text-xs font-bold text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
+              {{ column }}
+            </th>
+          }
+          <th class="py-3 px-4 border-b border-[#ECF1F5] w-10"></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (loan of pagedLoans; track loan.loanId + $index) {
+          <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+
+            <!-- Customer Details -->
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-[#F0F9FF] flex items-center justify-center
+                            text-xs font-semibold text-[#00B3FF] shrink-0">
+                  {{ loan.initials }}
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+                    {{ loan.customerName }}
+                  </p>
+                  <p class="text-xs font-normal text-[#51575B] tracking-[-0.005em]">
+                    {{ loan.customerEmail }}
+                  </p>
+                </div>
+              </div>
+            </td>
+
+            <!-- Amount Due -->
+            <td class="py-3 px-4 text-sm font-semibold text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+              {{ loan.amountDue }}
+            </td>
+
+            <!-- Loan ID -->
+            <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+              {{ loan.loanId }}
+            </td>
+
+            <!-- Product -->
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                           bg-[#F3F4F6] text-[#51575B] whitespace-nowrap">
+                {{ loan.product }}
+              </span>
+            </td>
+
+            <!-- Due Date -->
+            <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+              {{ loan.dueDate }}
+            </td>
+
+            <!-- Actions -->
+            <td class="py-3 px-4">
+              <button type="button"
+                class="size-7 inline-flex items-center justify-center rounded-md
+                       text-[#9CA3AF] hover:text-[#44444B] transition-colors cursor-pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                </svg>
+              </button>
+            </td>
+
+          </tr>
+        }
+        @empty {
+          <tr>
+            <td colspan="6" class="px-4 py-10 text-center text-[#51575B] text-sm">
+              No repayments due today.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex items-center justify-between px-1 py-3">
+    <div class="flex items-center gap-2 text-sm text-[#51575B]">
+      <select [value]="rowsPerPage()" (change)="onRowsPerPageChange($any($event.target).value)"
+        class="border border-[#E2E8F0] rounded-lg px-2 py-1.5 text-sm text-[#131719]
+               focus:outline-none focus:ring-1 focus:ring-[#00B3FF] cursor-pointer">
+        @for (option of rowsPerPageOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+      <span>rows per page</span>
+    </div>
+    <div class="flex items-center gap-3 text-sm text-[#51575B]">
+      <span>{{ startRecord }}–{{ endRecord }} of {{ totalRecords }}</span>
+      <button type="button" (click)="prevPage()" [disabled]="currentPage() === 1"
+        class="px-3 py-1.5 border border-[#E2E8F0] rounded-lg text-sm
+               disabled:opacity-40 hover:bg-[#F8FCFE] transition-colors cursor-pointer">
+        Previous
+      </button>
+      <button type="button" (click)="nextPage()" [disabled]="currentPage() === totalPages"
+        class="px-3 py-1.5 border border-[#E2E8F0] rounded-lg text-sm
+               disabled:opacity-40 hover:bg-[#F8FCFE] transition-colors cursor-pointer">
+        Next
+      </button>
+    </div>
+  </div>
+
+</div>

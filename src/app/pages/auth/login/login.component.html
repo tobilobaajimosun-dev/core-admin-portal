@@ -1,0 +1,115 @@
+<div class="min-h-screen w-full flex flex-col bg-white">
+
+  <!-- Main content -->
+  <div class="flex-1 flex items-center justify-center px-16 py-12">
+    <div class="w-full max-w-[1100px] flex items-center justify-between gap-12">
+
+      <!-- Left -->
+      <div class="w-full max-w-[507px]">
+
+        <!-- Logo -->
+        <div class="mb-10 w-[107px] h-10">
+          <img src="images/logo.png" [width]="107" [height]="40" class="w-full h-full object-contain"
+            alt="Core by Princeps" loading="eager" />
+        </div>
+
+        <!-- Heading -->
+        <div class="mb-6">
+          <h1 class="text-[36px] font-semibold text-[#00B3FF] leading-none mb-2">
+            Hi there. Let's get you in!
+          </h1>
+          <p class="text-sm font-normal text-[#2B3033]">
+            Enter your details to access the dashboard.
+          </p>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="loginForm" (ngSubmit)="logUserIn()" class="flex flex-col gap-4">
+
+          <!-- Email -->
+          <div class="flex flex-col gap-1.5">
+            <label for="email" class="text-sm font-medium text-[#283033]">
+              Email
+            </label>
+            <input formControlName="email" id="email" type="email" placeholder="Work email" class="h-12 rounded-lg border border-[#E2E8F0] px-3 text-sm font-normal
+                text-[#2B3033] bg-white placeholder-[#BBBBCB] outline-none
+                focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF] transition-colors w-full" />
+            @if ((formControls['email'].dirty || formControls['email'].touched) && formControls['email'].errors) {
+            <small class="text-xs text-red-500">Enter a valid email address</small>
+            }
+          </div>
+
+          <!-- Password -->
+          <div class="flex flex-col gap-1.5">
+            <label for="password" class="text-sm font-medium text-[#283033]">
+              Password
+            </label>
+            <div class="relative">
+              <input id="password" formControlName="password" [type]="showPassword ? 'text' : 'password'"
+                placeholder="Enter your password" class="h-12 rounded-lg border border-[#E2E8F0] pl-3 pr-10 text-sm font-normal
+                  text-[#2B3033] bg-white placeholder-[#BBBBCB] outline-none
+                  focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF] transition-colors w-full" />
+              <button type="button" (click)="showPassword = !showPassword" class="absolute inset-y-0 right-3 flex items-center leading-none
+         text-[#141B34] hover:text-[#5E5F6E] transition-colors">
+
+                <span class="flex items-center justify-center w-4 h-4">
+                  <ps-svg-icon [name]="showPassword ? 'eye-slash-icon' : 'eye-icon'"></ps-svg-icon>
+                </span>
+              </button>
+            </div>
+            @if ((formControls['password'].dirty || formControls['password'].touched) &&
+            formControls['password'].errors) {
+            <small class="text-xs text-red-500">Enter your password (min. 6 characters)</small>
+            }
+          </div>
+
+          <!-- Sign in button -->
+          <button type="submit" [disabled]="loginForm.invalid || logInSuccess()" class="w-full h-[48px] flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-all duration-200
+         bg-[#EBEBEB] text-[#ABABAB] cursor-not-allowed
+         enabled:bg-primary enabled:text-white enabled:cursor-pointer enabled:hover:opacity-90">
+            Sign in
+            <span class="flex items-center justify-center w-4 h-4">
+              <ps-svg-icon [name]="logInSuccess() ? 'checkmark-icon' : 'caret-forward-icon'">
+              </ps-svg-icon>
+            </span>
+          </button>
+          <!-- OR -->
+          <div class="flex items-center justify-center py-1">
+            <span class="text-[13px] font-normal text-[#B5B5B5]">OR</span>
+          </div>
+
+          <!-- Forgot password -->
+          <button type="button" class="h-12 w-full rounded-lg border border-[#E2E8F0] bg-white
+              text-sm font-medium text-[#283033] hover:bg-gray-50 transition-colors cursor-pointer"
+            (click)="openResetPasswordModal()">
+            Forgot password?
+          </button>
+
+        </form>
+      </div>
+
+      <!-- Right -->
+      <div class="hidden lg:flex flex-shrink-0 items-center justify-center
+        rounded-[200px] bg-[#F5F7FA] overflow-hidden w-[508px] h-[508px]">
+        <img src="images/phone-mockup.png" alt="App preview" class="w-full h-full object-contain" />
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Divider -->
+  <div class="px-16">
+    <div class="w-full h-px bg-[#F2F2F2]"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex items-center justify-end px-16 py-6 gap-6">
+    <a href="#" class="text-[13px] font-semibold text-[#B5B5B5]
+      hover:text-[#00B3FF] transition-colors no-underline">Terms</a>
+    <a href="#" class="text-[13px] font-semibold text-[#B5B5B5]
+      hover:text-[#00B3FF] transition-colors no-underline">Privacy</a>
+    <a href="#" class="text-[13px] font-semibold text-[#B5B5B5]
+      hover:text-[#00B3FF] transition-colors no-underline">Cookies</a>
+  </div>
+
+</div>

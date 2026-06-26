@@ -1,0 +1,45 @@
+<div class="max-w-[600px]">
+
+  <!-- Section heading -->
+  <div class="mb-6">
+    <h2 class="text-base font-semibold text-[#2B3033] tracking-[-0.005em]">
+      Choose what you get notified about
+    </h2>
+    <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] leading-[140%] mt-0.5">
+      Get email updates for selected activity
+    </p>
+  </div>
+
+  <!-- Notification items -->
+  <div class="divide-y divide-[#F0F0F0]">
+    @for (item of notifications; track item.key) {
+      <div class="flex items-center justify-between py-4">
+
+        <div>
+          <p class="text-sm font-semibold text-[#2B3033] tracking-[-0.005em]">
+            {{ item.label }}
+          </p>
+          <p class="text-[13px] font-medium text-[#51575B] tracking-[-0.005em] mt-0.5">
+            {{ item.description }}
+          </p>
+        </div>
+
+        <!-- Toggle -->
+        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-6">
+          <input type="checkbox" class="sr-only peer"
+            [checked]="item.enabled"
+            (change)="toggleNotification(item.key)" />
+          <div class="w-11 h-6 rounded-full transition-colors duration-200
+            bg-[#D1D5DB] peer-checked:bg-[#00B3FF]
+            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+            after:bg-white after:rounded-full after:h-5 after:w-5
+            after:transition-all after:duration-200
+            peer-checked:after:translate-x-5">
+          </div>
+        </label>
+
+      </div>
+    }
+  </div>
+
+</div>

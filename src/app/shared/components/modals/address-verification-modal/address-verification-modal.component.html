@@ -1,0 +1,144 @@
+<div class="flex flex-col overflow-hidden bg-white rounded-xl max-h[90vh]">
+
+  <!-- ── Header ── -->
+  <div class="flex items-start justify-between px-6 pt-5 pb-4 flex-shrink-0">
+    <div>
+      <h2 class="text-[15px] font-semibold text-[#131719] leading-snug">Address Verification</h2>
+    </div>
+    <button
+      type="button"
+      (click)="close()"
+      class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+             bg-gray-100 text-coal hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+             disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+      aria-label="Close">
+      <span class="sr-only">Close</span>
+      <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666"
+          stroke="#121212" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Two-column body ── -->
+  <div class="grid grid-cols-2 flex-1 overflow-hidden min-h-0">
+
+    <!-- Left column -->
+    <div class="flex flex-col px-6 pb-4 overflow-y-auto">
+      <p class="text-sm text-[#5E5F6E] mb-5 leading-relaxed">
+        Find below the details provided by this customer
+      </p>
+
+      <!-- Customer Name -->
+      <div class="mb-4">
+        <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">Customer name</label>
+        <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
+                    text-[13px] text-[#131719]">
+          {{ modalData.customerName }}
+        </div>
+      </div>
+
+      <!-- State of Residence -->
+      <div class="mb-4">
+        <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">State of Residence</label>
+        <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
+                    text-[13px] text-[#131719]">
+          {{ modalData.stateOfResidence }}
+        </div>
+      </div>
+
+      <!-- Street Address -->
+      <div class="mb-4">
+        <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">Street Address</label>
+        <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
+                    text-[13px] text-[#131719]">
+          {{ modalData.streetAddress }}
+        </div>
+      </div>
+
+      <!-- Local Government -->
+      <div class="mb-4">
+        <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">Local Government</label>
+        <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
+                    text-[13px] text-[#131719]">
+          {{ modalData.localGovernment }}
+        </div>
+      </div>
+
+      <!-- Nearest Landmark -->
+      <div class="mb-4">
+        <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">Nearest Landmark</label>
+        <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
+                    text-[13px] text-[#131719]">
+          {{ modalData.nearestLandmark || '-' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="border-l border-[#F3F7F9] bg-[#F8FCFE] flex items-center justify-center
+                overflow-hidden p-4">
+      @if (modalData.documentImageUrl) {
+        <img
+          [src]="modalData.documentImageUrl"
+          alt="Verification document"
+          class="w-full h-full object-contain rounded-lg" />
+      } @else {
+        <div class="flex flex-col items-center justify-center text-[#C4CDD5] gap-2 text-center">
+          <ps-svg-icon name="image" class="w-8 h-8"></ps-svg-icon>
+          <p class="text-xs">No document image</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="flex-shrink-0 border-t border-[#F3F7F9] pb-4">
+    <div class="grid grid-cols-2">
+
+      <!-- Left cell -->
+      <div class="flex items-center gap-3 px-6 h-14 relative">
+
+        <!-- Reject with upward dropdown -->
+        <div class="relative flex-1">
+          <button
+            type="button"
+            (click)="toggleRejectDropdown()"
+            class="w-full h-10 px-4 flex items-center justify-center gap-1.5 rounded-lg border border-[#E1E8ED]
+                   bg-[#7E0002]/[0.03] text-[13px] font-medium text-[#8E1F0B] transition-colors cursor-pointer">
+            <span>{{ selectedReason() || 'Reject' }}</span>
+            <ps-svg-icon name="chevron-down" class="w-3.5 h-3.5 text-[#7E868B]"></ps-svg-icon>
+          </button>
+
+       @if (rejectDropdownOpen()) {
+            <div class="absolute bottom-full left-0 mb-1.5 w-52 rounded-xl
+                        bg-white border border-[#E1E8ED] shadow-lg overflow-hidden z-50">
+              <div class="px-4 py-2.5 border-b border-[#F3F7F9]">
+                <p class="text-xs text-[#7E868B]">Kindly select a reason</p>
+              </div>
+              @for (reason of rejectReasons; track reason) {
+                <button
+                  type="button"
+                  (click)="selectRejectReason(reason)"
+                  class="w-full text-left px-4 py-2.5 text-[13px] text-[#131719]
+                         hover:bg-[#F8FCFE] transition-colors cursor-pointer">
+                  {{ reason }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Approve -->
+        <button
+          type="button"
+          (click)="approve()"
+          class="flex-1 h-10 rounded-lg bg-[#00B3FF] text-white text-[13px] font-medium
+                 hover:bg-[#00A3E8] transition-colors cursor-pointer">
+          Approve
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
