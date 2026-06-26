@@ -24,7 +24,7 @@ jobs:
 
       - name: Configure Git credentials for submodules
         run: |
-           git config --global url."https://caltos:${{ secrets.CROSS_REPO }}@github.com/".insteadOf "https://github.com/"
+           git config --global url."https://princeps-finance:${{ secrets.CROSS_REPO }}@github.com/".insteadOf "https://github.com/"
 
       - name: Update submodules to latest
         run: |
@@ -62,7 +62,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
-          tags: ghcr.io/princeps-finance/${{ github.repository }}:dev
+          tags: ghcr.io/princeps-finance/core-admin-portal:dev
   
   docker-deploy:
     needs: docker-build
