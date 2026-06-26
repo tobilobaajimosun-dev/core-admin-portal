@@ -46,6 +46,7 @@ jobs:
       - name:  Retrive Envs from Secrets
         run: |
           echo "NG_APP_API_URL=${{ secrets.NG_APP_API_URL }}" > .env
+          echo "NG_APP_ENCRYPTION_KEY=${{ secrets.NG_APP_ENCRYPTION_KEY }}" >> .env
       
 
       - name: Login to Docker Hub
