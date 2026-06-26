@@ -3,7 +3,7 @@ name: Deploy to Dev Environment
 on:
   push:
     branches: [dev]
-  paths_ignore:
+  paths-ignore:
     - README.md
 
 concurrency:
