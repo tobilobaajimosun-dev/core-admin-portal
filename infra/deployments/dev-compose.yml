@@ -1,6 +1,6 @@
 services:
   core-admin-portal:
-    image: ghcr.io/caltos/core-admin-portal:${IMAGE_TAG:-dev}
+    image: ghcr.io/caltos/core-admin-portal:dev
     container_name: core-admin-portal
     restart: unless-stopped
     ports:
