@@ -16,11 +16,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 
 /**
- * Path to your global stylesheet (the one that contains `@import "tailwindcss"`
- * or `@tailwind base/components/utilities`).
- * Adjust if your entry CSS lives somewhere else.
+ * Use the bare "tailwindcss" specifier — this is always resolvable by the
+ * SCSS/PostCSS pipeline regardless of the file's location in the tree,
+ * and avoids path-resolution failures in Docker where `src/styles.css`
+ * is not on the module resolution path.
  */
-const GLOBAL_CSS_PATH = 'src/styles.css';
+const REFERENCE_DIRECTIVE = `@reference "tailwindcss";\n`;
 
 /**
  * Component SCSS files that use @apply but live in their own scope.
@@ -30,8 +31,6 @@ const FILES_TO_PATCH = [
   'pcsl-ui/ui/ps-radio/ps-radio.component.scss',
   'pcsl-ui/ui/ps-select/ps-select.component.scss',
 ];
-
-const REFERENCE_DIRECTIVE = `@reference "${GLOBAL_CSS_PATH}";\n`;
 
 for (const relPath of FILES_TO_PATCH) {
   const absPath = resolve(ROOT, relPath);
