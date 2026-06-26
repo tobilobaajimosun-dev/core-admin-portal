@@ -1,0 +1,20 @@
+services:
+  core-admin-portal:
+    image: ghcr.io/princeps-finance/core-admin-portal:dev
+    container_name: core-admin-portal
+    restart: unless-stopped
+    ports:
+      - '4200:8080' # host 4200 -> container 8080 (nginx-unprivileged)
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:8080/healthz']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    external: true # Shared network for all services
