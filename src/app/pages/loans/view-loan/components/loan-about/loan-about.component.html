@@ -1,0 +1,254 @@
+<div class="w-full grid grid-cols-2 gap-6">
+
+  <!-- ══════════════════════════════════════
+       LEFT COLUMN
+  ══════════════════════════════════════ -->
+  <div class="flex flex-col gap-6">
+
+    <!-- ── Loan Details ── -->
+    <div>
+      <h3 class="text-sm font-semibold text-[#131719] mb-3">Loan Details</h3>
+      <div class="rounded-lg border border-[#ECF0F3] overflow-hidden">
+        @for (row of [
+          { label: 'Loan Amount',     value: '₦' + (data.loanAmount     | number:'.2-2') },
+          { label: 'Total Repayment', value: '₦' + (data.totalRepayment  | number:'.2-2') },
+          { label: 'Loan ID',         value: data.loanId },
+          { label: 'Borrower ID',     value: data.borrowerId },
+          { label: 'Disbursed via',   value: data.disbursedVia }
+        ]; track row.label; let last = $last) {
+          <div class="flex items-center justify-between px-4 py-3"
+            [class.border-b]="!last"
+            style="border-color: #F3F7F9;">
+            <span class="text-sm font-normal text-[#51575B]">{{ row.label }}</span>
+            <span class="text-sm font-medium text-[#131719] text-right">{{ row.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Interest & Fees Details ── -->
+    <div>
+      <h3 class="text-sm font-semibold text-[#131719] mb-3">Interest &amp; Fees Details</h3>
+      <div class="rounded-lg border border-[#ECF0F3] overflow-hidden">
+        @for (row of [
+          { label: 'Interest rate',                value: data.interestRate + '%' },
+          { label: 'Interest is charged',          value: data.interestCharged },
+          { label: 'Interest amount',              value: '₦' + (data.interestAmount | number:'.2-2') + '/m' },
+          { label: 'Start charging interest from', value: (data.startChargingFrom | date:'dd/MM/yyyy') },
+          { label: 'Structuring/Consulting Fee',   value: data.structuringFee === 0 ? '—' : ('₦' + (data.structuringFee | number)) },
+          { label: 'Principal Fees',               value: '₦' + (data.principalFees | number) },
+          { label: 'Admin Fees',                   value: '₦' + (data.adminFees     | number) },
+          { label: 'Tax',                          value: '₦' + (data.tax           | number) }
+        ]; track row.label; let last = $last) {
+          <div class="flex items-center justify-between px-4 py-3"
+            [class.border-b]="!last"
+            style="border-color: #F3F7F9;">
+            <span class="text-sm font-normal text-[#51575B]">{{ row.label }}</span>
+            <span class="text-sm font-medium text-[#131719] text-right">{{ row.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Loan Undertaking Documents ── -->
+    <div>
+      <h3 class="text-sm font-semibold text-[#131719] mb-3">Loan Undertaking Documents</h3>
+      <div class="rounded-lg border border-[#ECF0F3] overflow-hidden">
+
+        <!-- Video uploaded -->
+        <div class="px-4 pt-4 pb-3" style="border-bottom: 1px solid #F3F7F9;">
+          <p class="text-xs text-[#51575B] mb-3">Video uploaded</p>
+          <div class="flex items-center justify-between rounded-lg border border-[#ECF0F3] px-3 py-2.5">
+            <div class="flex items-center gap-3">
+              <span class="flex items-center justify-center w-8 h-8 shrink-0">
+                <ps-svg-icon name="pdf-icon"></ps-svg-icon>
+              </span>
+              <div>
+                <p class="text-sm font-medium text-[#00B3FF] hover:underline cursor-pointer leading-none mb-0.5">
+                  {{ data.undertakingVideo.name }}
+                </p>
+                <p class="text-xs text-[#9CA3AF]">
+                  {{ data.undertakingVideo.uploadedAt | date:'MMM d, yyyy, h:mm a' }} GMT
+                </p>
+              </div>
+            </div>
+            <button type="button"
+              class="flex items-center gap-1.5 text-xs font-medium text-[#51575B]
+                hover:text-[#131719] transition-colors cursor-pointer shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              View
+            </button>
+          </div>
+        </div>
+
+        <!-- Offer letter -->
+        <div class="px-4 pt-4 pb-3" style="border-bottom: 1px solid #F3F7F9;">
+          <p class="text-xs text-[#51575B] mb-3">Offer letter</p>
+          <div class="flex items-center justify-between rounded-lg border border-[#ECF0F3] px-3 py-2.5">
+            <div class="flex items-center gap-3">
+              <span class="flex items-center justify-center w-8 h-8 shrink-0">
+                <ps-svg-icon name="pdf-icon"></ps-svg-icon>
+              </span>
+              <div>
+                <p class="text-sm font-medium text-[#00B3FF] hover:underline cursor-pointer leading-none mb-0.5">
+                  {{ data.offerLetter.name }}
+                </p>
+                <p class="text-xs text-[#9CA3AF]">
+                  {{ data.offerLetter.uploadedAt | date:'MMM d, yyyy, h:mm a' }} GMT
+                </p>
+              </div>
+            </div>
+            <button type="button"
+              class="flex items-center gap-1.5 text-xs font-medium text-[#51575B]
+                hover:text-[#131719] transition-colors cursor-pointer shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              View
+            </button>
+          </div>
+        </div>
+
+        <!-- Documents approved footer -->
+        <div class="flex items-center justify-center gap-1.5 px-4 py-3 bg-[#F6FEF9]">
+          <svg class="w-4 h-4 text-[#10B981] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-xs font-medium text-[#10B981]">Documents approved!</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       RIGHT COLUMN
+  ══════════════════════════════════════ -->
+  <div class="flex flex-col gap-6">
+
+    <!-- ── Repayment Details ── -->
+    <div>
+      <h3 class="text-sm font-semibold text-[#131719] mb-3">Repayment Details</h3>
+      <div class="rounded-lg border border-[#ECF0F3] overflow-hidden">
+
+        @for (row of [
+          { label: 'Repayment Account Bank Name', value: data.repaymentBankName },
+          { label: 'Repayment Account Number',    value: data.repaymentAccNumber },
+          { label: 'Total number of repayments',  value: data.totalRepayments + '' },
+          { label: 'Repayment is',                value: data.repaymentFrequency }
+        ]; track row.label) {
+          <div class="flex items-center justify-between px-4 py-3"
+            style="border-bottom: 1px solid #F3F7F9;">
+            <span class="text-sm font-normal text-[#51575B]">{{ row.label }}</span>
+            <span class="text-sm font-medium text-[#131719] text-right">{{ row.value }}</span>
+          </div>
+        }
+
+        <!-- Monthly Repayment — blue highlight -->
+        <div class="flex items-center justify-between px-4 py-3"
+          style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#00B3FF]">Monthly Repayment</span>
+          <span class="text-sm font-bold text-[#00B3FF] text-right">₦{{ data.monthlyRepayment | number }}</span>
+        </div>
+
+        <div class="flex items-center justify-between px-4 py-3"
+          style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">First repayment date</span>
+          <span class="text-sm font-medium text-[#131719] text-right">{{ data.firstRepaymentDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3"
+          style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">First repayment amount</span>
+          <span class="text-sm font-medium text-[#131719] text-right">{{ data.firstRepaymentAmt | number:'.2-2' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3">
+          <span class="text-sm font-normal text-[#51575B]">Last Repayment Amount</span>
+          <span class="text-sm font-medium text-[#131719] text-right">{{ data.lastRepaymentAmt | number:'.2-2' }}</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Liquidation details ── -->
+    <div>
+      <h3 class="text-sm font-semibold text-[#131719] mb-3">Liquidation details</h3>
+      <div class="rounded-lg border border-[#ECF0F3] overflow-hidden">
+
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">Release Date</span>
+          <span class="text-sm font-medium text-[#131719] text-right">{{ data.liquidation.releaseDate | date:'MMMM d, yyyy' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">Maturity Date</span>
+          <span class="text-sm font-medium text-[#131719] text-right">{{ data.liquidation.maturityDate | date:'MMMM d, yyyy' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">Principal</span>
+          <span class="text-sm font-medium text-[#131719] text-right">₦{{ data.liquidation.principal | number:'.2-2' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">Interest Rate</span>
+          <span class="text-sm font-medium text-[#131719] text-right">{{ data.liquidation.interestRate }}</span>
+        </div>
+        <!-- Monthly Repayment — blue -->
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#00B3FF]">Monthly Repayment</span>
+          <span class="text-sm font-bold text-[#00B3FF] text-right">₦{{ data.liquidation.fees | number:'.2-2' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">Fees</span>
+          <span class="text-sm font-medium text-[#131719] text-right">₦{{ data.liquidation.fees | number:'.2-2' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">Penalty</span>
+          <span class="text-sm font-medium text-[#131719] text-right">₦{{ data.liquidation.penalty | number:'.2-2' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">Amount Due</span>
+          <span class="text-sm font-medium text-[#131719] text-right">₦{{ data.liquidation.amountDue | number:'.2-2' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid #F3F7F9;">
+          <span class="text-sm font-normal text-[#51575B]">Paid to date</span>
+          <span class="text-sm font-medium text-[#131719] text-right">₦{{ data.liquidation.paidToDate | number:'.2-2' }}</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3">
+          <span class="text-sm font-normal text-[#51575B]">Interest</span>
+          <span class="text-sm font-medium text-[#131719] text-right">₦{{ data.liquidation.interest2 | number:'.2-2' }}</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Loan Application Log ── -->
+    <div>
+      <h3 class="text-sm font-semibold text-[#131719] mb-1">Loan Application Log</h3>
+      <p class="text-xs text-[#51575B] mb-3">Total time 06:45mins</p>
+      <div class="rounded-lg border border-[#ECF0F3] overflow-hidden">
+
+        @for (entry of data.applicationLog; track entry.event; let last = $last) {
+          <div class="flex items-center justify-between px-4 py-4"
+            [style.border-bottom]="!last ? '1px solid #F3F7F9' : 'none'">
+            <span class="text-sm font-medium text-[#131719]">{{ entry.event }}</span>
+            <div class="text-right shrink-0 ml-4">
+              <p class="text-sm font-medium text-[#131719]">{{ entry.date | date:'MMM d, yyyy' }}</p>
+              <p class="text-xs font-normal text-[#9CA3AF]">{{ entry.date | date:'h:mm:ss a' }} GMT</p>
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

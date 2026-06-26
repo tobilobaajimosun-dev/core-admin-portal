@@ -1,0 +1,198 @@
+<div class="w-full">
+
+  <!-- ── Page header ── -->
+  <div class="flex items-center justify-between px-6 py-5">
+    <button type="button" (click)="goBack()"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+        text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5M12 5l-7 7 7 7" />
+      </svg>
+      Back to all Transactions
+    </button>
+
+    <button type="button" (click)="downloadReceipt()"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+        text-sm font-medium hover:bg-[#009FE6] transition-colors cursor-pointer">
+      Download Receipt
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Page title ── -->
+  <div class="px-6 mb-4">
+    <h1 class="text-xl font-semibold text-[#131719] tracking-[-0.005em]">Transaction Details</h1>
+  </div>
+
+  <!-- ── Body -->
+  <div class="px-6 pb-6 flex gap-4 items-start">
+
+    <!-- ══════════════════ LEFT COLUMN ══════════════════ -->
+    <div class="flex-1 flex flex-col gap-4 min-w-0">
+
+      @if (isLoading()) {
+        <!-- Amount card skeleton -->
+        <div class="rounded-xl border border-[#ECF1F5] bg-white p-4">
+          <div class="h-3 w-32 rounded-full bg-gray-200 animate-pulse mb-3"></div>
+          <div class="h-10 w-48 rounded-lg bg-gray-200 animate-pulse mb-3"></div>
+          <div class="flex gap-2">
+            <div class="h-5 w-20 rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="h-5 w-16 rounded-full bg-gray-200 animate-pulse"></div>
+          </div>
+        </div>
+
+        <!-- Info card skeleton -->
+        <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 pt-5 pb-6 flex flex-col gap-5">
+          <div class="h-4 w-40 rounded-full bg-gray-200 animate-pulse"></div>
+          @for (i of [1,2,3,4,5,6,7]; track i) {
+            <div class="flex justify-between py-3 border-b border-[#F3F7F9]">
+              <div class="h-3.5 w-28 rounded-full bg-gray-200 animate-pulse"></div>
+              <div class="h-3.5 w-24 rounded-full bg-gray-200 animate-pulse"></div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (!isLoading() && transaction()) {
+
+        <!-- ── Amount card ── -->
+        <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 pt-4 pb-5
+          flex items-start justify-between">
+
+          <!-- Left -->
+          <div class="flex flex-col gap-2">
+            <span class="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#51575B]">
+              Transaction Amount
+            </span>
+            <span class="text-[40px] font-bold leading-none tracking-[-0.02em] text-primary">
+              ₦{{ transactionAmount() | number:'1.2-2' }}
+            </span>
+            <div class="flex items-center gap-2 mt-1">
+             <span [ngClass]="statusBadgeClass(transactionStatus())"
+  class="text-xs font-medium px-2.5 py-0.5 rounded-full">
+  {{ transactionStatus().charAt(0) + transactionStatus().slice(1).toLowerCase() }}
+</span>
+<span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-[#EBF5FF] text-[#1041B7]">
+  {{ transactionType().charAt(0) + transactionType().slice(1).toLowerCase() }}
+</span>
+            </div>
+          </div>
+
+          <!-- Right -->
+          <div class="flex flex-col items-end gap-1 mt-1">
+            <div class="flex items-center gap-2">
+<span class="text-sm font-medium text-[#51575B]">{{ transactionId() }}</span>
+              <button type="button" (click)="copytransactionId()" title="Copy"
+                class="text-[#9CA3AF] hover:text-[#00B3FF] transition-colors cursor-pointer">
+                
+                <ps-svg-icon name="copy-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+              </button>
+            </div>
+           <span class="text-sm text-[#AAB3BA]">
+  {{ transactionDate() | date:'MMMM d, yyyy' }} &bull; {{ transactionDate() | date:'h:mm a' }}
+</span>
+          </div>
+
+        </div>
+
+        <!-- ── Transaction Information card ── -->
+        <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 pt-5 pb-2">
+
+          <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-2">
+            Transaction Information
+          </h3>
+
+          <dl class="flex flex-col">
+            @for (row of infoRows(); track row.label) {
+              <div class="flex items-center justify-between py-3
+                border-b border-[#F3F7F9] last:border-b-0">
+                <dt class="text-sm text-[#51575B]">{{ row.label }}</dt>
+                <dd>
+                  @if (row.badge) {
+                    <span [ngClass]="row.badgeClass"
+                      class="text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      {{ row.value }}
+                    </span>
+                  } @else {
+                    <span class="text-sm font-medium text-[#131719]">{{ row.value }}</span>
+                  }
+                </dd>
+              </div>
+            }
+          </dl>
+
+        </div>
+      }
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="w-[408px] shrink-0 flex flex-col gap-[15px]">
+
+      @if (isLoading()) {
+        <!-- Customer card skeleton -->
+        <div class="relative rounded-xl border border-[#ECF1F5] overflow-hidden">
+          <div class="absolute inset-0 h-[103px] bg-gray-100 animate-pulse"></div>
+          <div class="relative pt-10 px-4 pb-4">
+            <div class="bg-white rounded-xl border border-[#ECF1F5] px-4 pb-5 flex flex-col items-center text-center">
+              <div class="w-16 h-16 rounded-full bg-gray-200 animate-pulse pt-5 mb-3"></div>
+              <div class="h-5 w-44 rounded-full bg-gray-200 animate-pulse mb-2"></div>
+              <div class="h-4 w-80 rounded-full bg-gray-200 animate-pulse mb-2"></div>
+              <div class="h-4 w-32 rounded-full bg-gray-200 animate-pulse"></div>
+            </div>
+            <div class="h-9 w-full rounded-lg bg-gray-200 animate-pulse mt-4"></div>
+          </div>
+        </div>
+      }
+
+   <!-- Condition: show card only when customer is available -->
+@if (!isLoading() && customer()) {
+
+  <div class="relative rounded-xl border border-[#ECF1F5] overflow-hidden">
+
+    <div class="absolute inset-0 h-[103px]">
+      <img src="/images/performance-banner-bg.png" alt="" class="w-full h-full object-cover" />
+    </div>
+
+    <div class="relative pt-10 px-4 pb-4">
+      <div class="bg-white rounded-xl border border-[#ECF1F5] px-4 pb-4 flex flex-col items-center text-center">
+
+        <!-- Avatar -->
+        <div class="pt-5 mb-3">
+          <div class="w-16 h-16 rounded-full bg-[#00B3FF] flex items-center justify-center
+            text-white text-xl font-bold">
+            {{ getCustomerInitials() }}
+          </div>
+        </div>
+
+        <!-- Name -->
+        <h2 class="text-lg font-semibold text-[#131719] tracking-[-0.005em] leading-none mb-1">
+          {{ customer()!.firstName }} {{ customer()!.lastName }}
+        </h2>
+
+        <!-- Email -->
+        <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-1">
+          {{ customer()!.email }}
+        </p>
+
+      </div>
+
+      <!-- View Customer button -->
+      <button type="button" (click)="viewCustomer()"
+        class="mt-4 w-full flex items-center justify-center gap-2 px-6 py-2 rounded-lg border border-[#E2E8F0] bg-white
+          text-sm font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer">
+        <ps-svg-icon name="eye-icon" class="w-4 h-4 text-[#00B3FF] shrink-0"></ps-svg-icon>
+        View Customer
+      </button>
+    </div>
+
+  </div>
+}
+
+    </div>
+
+  </div>
+</div>

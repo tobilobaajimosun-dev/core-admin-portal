@@ -1,0 +1,120 @@
+<div class="p-6">
+
+  <!-- Top bar -->
+  <div class="flex items-center justify-between mb-6">
+    <button type="button" (click)="goBack()"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+        text-sm font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m7-7l-7 7 7 7"/>
+      </svg>
+      Back to users
+    </button>
+
+    <!-- Search -->
+    <div class="relative">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
+        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" placeholder="Search customers"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="pl-9 pr-4 py-2 rounded-lg border border-[#E2E8F0] text-sm text-[#131719]
+          placeholder-[#9CA3AF] outline-none w-64
+          focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF] transition-colors"/>
+    </div>
+  </div>
+
+  <!-- Page heading -->
+  <div class="mb-6">
+    <h1 class="text-xl font-semibold text-[#EF4444] tracking-[-0.005em] leading-[140%]">
+      Needs attention ({{ total() }})
+    </h1>
+    <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] leading-[140%]">
+      View and manage user accounts
+    </p>
+  </div>
+
+  <!-- ── Skeleton ── -->
+  @if (isLoading()) {
+    <div class="flex flex-col gap-3">
+      @for (row of skeletonRows; track $index) {
+        <div class="flex items-center justify-between rounded-xl border border-[#E1E8ED]
+          bg-white px-4 py-3 min-h-[63px]">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 animate-pulse shrink-0"></div>
+            <div class="flex flex-col gap-1.5">
+              <div class="h-3 w-32 rounded-full bg-gray-200 animate-pulse"></div>
+              <div class="h-2.5 w-48 rounded-full bg-gray-200 animate-pulse"></div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="h-5 w-32 rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="h-7 w-16 rounded-lg bg-gray-200 animate-pulse"></div>
+          </div>
+        </div>
+      }
+    </div>
+
+  } @else if (customers().length === 0) {
+    <ps-empty description="No customers need attention"></ps-empty>
+
+  } @else {
+    <div class="flex flex-col gap-3">
+      @for (customer of customers(); track customer.id) {
+        <div class="flex items-center justify-between bg-white rounded-xl
+          border border-[#E1E8ED] px-4 py-3 hover:shadow-sm transition-shadow
+          min-h-[63px] gap-2">
+
+          <!-- Left -->
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Icon -->
+             <span class="text-primary">
+            <ps-svg-icon name="user-verify-icon" class="w-8 h-8 shrink-0"></ps-svg-icon>
+             </span>
+
+            <!-- Name + Submitted -->
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-[#51575B] tracking-[-0.005em] leading-none mb-1">
+                {{ customer.firstName }} {{ customer.lastName }}
+              </p>
+              <p class="text-[13px] font-normal text-[#7E868B] tracking-[-0.005em] leading-none whitespace-nowrap">
+                Submitted: {{ customer.createdAt  | date:'MMM dd, yyyy HH:mm:ss' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Right -->
+          <div class="flex items-center gap-3 shrink-0">
+
+            <!-- KYC tag -->
+            <span class="inline-flex items-center bg-[#F8FCFE] text-[#7E868B]
+              text-xs font-medium tracking-[-0.005em] whitespace-nowrap
+              rounded-3xl border border-[#ECF1F5] py-1 px-1.5">
+              {{ getKycLabel(customer) }}
+            </span>
+
+            <!-- View button -->
+            <button type="button" (click)="openVerificationModal(customer)"
+              class="text-[13px] font-semibold text-[#51575B] tracking-[-0.005em]
+                rounded-xl border border-[#E1E8ED] bg-white px-4 py-2
+                hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap">
+              View
+            </button>
+
+          </div>
+        </div>
+      }
+    </div>
+
+   <ps-pagination
+      [totalItems]="total()"
+      [itemPerPage]="pageSize()"
+      (pageChanged)="onPageChange($event)"
+      (pageSizeChanged)="onPageSizeChange($event)">
+    </ps-pagination>
+  }
+
+</div>

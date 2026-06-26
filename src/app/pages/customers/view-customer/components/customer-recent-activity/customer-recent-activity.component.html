@@ -1,0 +1,117 @@
+<div>
+
+  <!-- Toolbar -->
+  <div class="flex items-center justify-between mb-4">
+
+    <!-- Left: filter pills -->
+    <div class="flex items-center gap-2">
+      @for (filter of filterOptions; track filter) {
+        <button type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E2E8F0]
+                 bg-white text-xs font-medium text-[#131719] hover:bg-[#F8FCFE]
+                 transition-colors cursor-pointer whitespace-nowrap">
+          {{ filter }}
+          <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+        </button>
+      }
+    </div>
+
+    <!-- Right -->
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" placeholder="Search activity"
+          class="pl-9 pr-4 py-2 rounded-lg border border-[#E2E8F0] text-sm
+                 text-[#131719] placeholder-[#9CA3AF] outline-none w-52
+                 focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF] transition-colors"/>
+      </div>
+      <button type="button"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+               text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
+        Export
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]">
+    <table class="w-full border-collapse">
+
+      <thead>
+        <tr class="bg-[#F8FCFE]">
+          @for (column of columns; track column) {
+            <th class="text-left py-3 px-4 border-b border-[#ECF1F5]
+                       text-xs font-bold text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
+              {{ column }}
+            </th>
+          }
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (log of activityLogs(); track log.id) {
+          <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+
+            <!-- Action -->
+            <td class="py-3 px-4">
+              <p class="text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+                {{ log.action }}
+              </p>
+            </td>
+
+            <!-- Module badge -->
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full
+                           text-xs font-bold bg-[#F3F4F6] text-[#51575B] whitespace-nowrap">
+                {{ log.module }}
+              </span>
+            </td>
+
+            <!-- IP Address -->
+            <td class="py-3 px-4">
+              <p class="text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+                {{ log.ipAddress }}
+              </p>
+            </td>
+
+            <!-- Date & Time -->
+            <td class="py-3 px-4">
+              <p class="text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+                {{ log.dateTime | date:'MMM d, yyyy · h:mm a' }}
+              </p>
+            </td>
+
+            <!-- View button -->
+            <td class="py-3 px-4 text-right">
+              <button type="button" (click)="openDetail(log)"
+                class="px-4 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-sm
+                       font-medium text-[#131719] hover:bg-[#F8FCFE]
+                       transition-colors cursor-pointer whitespace-nowrap">
+                View
+              </button>
+            </td>
+
+          </tr>
+        }
+      </tbody>
+
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <ps-pagination
+    [totalItems]="10"
+    [itemPerPage]="5"
+    (pageChanged)="onPageChange($event)"
+    (pageSizeChanged)="onPageSizeChange($event)">
+  </ps-pagination>
+
+</div>

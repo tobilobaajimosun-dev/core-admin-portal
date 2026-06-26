@@ -1,0 +1,137 @@
+<div class="grid grid-cols-2 gap-6">
+
+  <!-- KYC Details -->
+  <div>
+    <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-3">KYC Details</h3>
+    <div class="rounded-lg border border-[#EFF3F6] p-2 flex flex-col gap-1">
+
+   <!-- BVN -->
+<div class="flex items-center justify-between bg-white rounded-md px-3 py-2
+  border-b border-[#EFF3F6] min-h-[60px]">
+  <span class="text-[14px] font-medium text-[#51575B] tracking-[-0.005em]">
+    Bank Verification Number (BVN)
+  </span>
+  <div class="flex items-center gap-1.5">
+    <span class="text-[14px] font-normal text-[#51575B] tracking-[-0.005em]">
+      {{ revealed.bvn ? (profile.bvn || '—') : mask(profile.bvn) }}
+    </span>
+    <ps-svg-icon
+      [name]="revealed.bvn ? 'eye-icon' : 'eye-lash-icon'"
+      class="w-4 h-4 text-[#9CA3AF] cursor-pointer hover:text-[#00B3FF] transition-colors shrink-0"
+      (click)="toggleReveal('bvn')">
+    </ps-svg-icon>
+  </div>
+</div>
+
+<!-- NIN -->
+<div class="flex items-center justify-between bg-white rounded-md px-3 py-2
+  border-b border-[#EFF3F6] min-h-[60px]">
+  <span class="text-[14px] font-medium text-[#51575B] tracking-[-0.005em]">
+    National Identity Number (NiN)
+  </span>
+  <div class="flex items-center gap-1.5">
+    <span class="text-[14px] font-normal text-[#51575B] tracking-[-0.005em]">
+      {{ revealed.nin ? (profile.nin || '—') : mask(profile.nin) }}
+    </span>
+    <ps-svg-icon
+      [name]="revealed.nin ? 'eye-icon' : 'eye-lash-icon'"
+      class="w-4 h-4 text-[#9CA3AF] cursor-pointer hover:text-[#00B3FF] transition-colors shrink-0"
+      (click)="toggleReveal('nin')">
+    </ps-svg-icon>
+  </div>
+</div>
+
+      <!-- Verification Date -->
+      <div class="flex items-center justify-between bg-white rounded-md px-3 py-2 min-h-[60px]">
+        <span class="text-[14px] font-medium text-[#51575B] tracking-[-0.005em]">
+          Verification Date
+        </span>
+        <div class="text-right">
+          <p class="text-[14px] font-medium text-[#7E868B] tracking-[-0.005em] leading-[148%]">
+            {{ profile.verificationDate | date:'MMM dd, yyyy' }}
+          </p>
+          <p class="text-[14px] font-normal text-[#7E868B] tracking-[-0.005em] leading-[148%]">
+            {{ profile.verificationDate | date:'h:mm:ss a z' }}
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Work Details -->
+  <div>
+    <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-3">Work Details</h3>
+    <div class="rounded-lg border border-[#EFF3F6] p-2 flex flex-col gap-1">
+      @for (row of [
+        { label: 'Employment Type', value: profile.employmentType },
+        { label: 'Salary Provider', value: profile.salaryProvider },
+        { label: 'Work ID Number',  value: profile.workIdNumber   }
+      ]; track row.label) {
+        <div class="flex items-center justify-between bg-white rounded-md px-3 py-2
+          border-b border-[#EFF3F6] last:border-b-0 min-h-[60px]">
+          <span class="text-[14px] font-medium text-[#51575B] tracking-[-0.005em]">
+            {{ row.label }}
+          </span>
+          <span class="text-[14px] font-medium text-[#51575B] tracking-[-0.005em]">
+            {{ row.value }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Verification Status -->
+  <div>
+    <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-3">Verification Status</h3>
+    <div class="rounded-lg border border-[#EFF3F6] p-2 flex flex-col gap-1">
+      @for (row of [
+        { label: 'Email Verification',             verified: profile.emailVerified   },
+        { label: 'Bank Verification Number (BVN)', verified: profile.bvnVerified     },
+        { label: 'Address Verification',           verified: profile.addressVerified }
+      ]; track row.label) {
+        <div class="flex items-center justify-between bg-white rounded-md px-3 py-2
+          border-b border-[#EFF3F6] last:border-b-0 min-h-[60px]">
+          <span class="text-[14px] font-medium text-[#51575B] tracking-[-0.005em]">
+            {{ row.label }}
+          </span>
+          @if (row.verified) {
+            <!-- Verified -->
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full
+              bg-[#ECFDF5] text-[#12B76A] text-[13px] font-semibold tracking-[-0.005em]">
+              Verified
+            </span>
+          } @else {
+            <!-- Unverified -->
+            <span class="text-[13px] font-semibold text-[#51575B] tracking-[-0.005em]">
+              Unverified
+            </span>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Salary Details -->
+  <div>
+    <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-3">Salary Details</h3>
+    <div class="rounded-lg border border-[#EFF3F6] p-2 flex flex-col gap-1">
+      @for (row of [
+        { label: 'Bank Name',           value: profile.bankName          },
+        { label: 'Bank Account Number', value: profile.bankAccountNumber },
+        { label: 'Account Name',        value: profile.accountName       }
+      ]; track row.label) {
+        <div class="flex items-center justify-between bg-white rounded-md px-3 py-2
+          border-b border-[#EFF3F6] last:border-b-0 min-h-[60px]">
+          <span class="text-[14px] font-medium text-[#51575B] tracking-[-0.005em]">
+            {{ row.label }}
+          </span>
+          <span class="text-[14px] font-medium text-[#51575B] tracking-[-0.005em] text-right">
+            {{ row.value }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

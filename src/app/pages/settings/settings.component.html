@@ -1,0 +1,37 @@
+<div class="p-6">
+
+    <!-- Page Header -->
+    <div class="mb-6">
+        <h1 class="text-xl font-semibold text-[#131719] tracking-[-0.005em] leading-[140%]">
+            Settings
+        </h1>
+        <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] leading-[140%] mt-0.5">
+            Manage your account settings.
+        </p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex items-center gap-4 mb-8">
+        @for (tab of tabs; track tab.value) {
+        <button type="button" (click)="activeTab.set(tab.value)" class="flex items-center gap-2 rounded-full border text-sm font-medium
+    transition-all duration-150 cursor-pointer px-7 h-10" [ngClass]="activeTab() === tab.value
+    ? 'border-[#00B3FF] text-[#00B3FF] bg-[#00B3FF]/[0.04]'
+    : 'border-[#E1E8ED] text-[#51575B] bg-white'">
+            <span class="flex items-center justify-center w-4 h-4">
+                <ps-svg-icon [name]="tab.icon"></ps-svg-icon>
+            </span>
+            {{ tab.label }}
+        </button>
+        }
+    </div>
+
+    <!-- Tab content -->
+    @if (activeTab() === 'profile') {
+    <app-profile />
+    } @else if (activeTab() === 'email-notifications') {
+    <app-email-notifications />
+    } @else if (activeTab() === 'security') {
+    <app-security />
+    }
+
+</div>

@@ -1,0 +1,85 @@
+<div class="h-full flex flex-col bg-white overflow-hidden w-[220px] border-r border-[#F0F0F0]">
+
+  <!-- Logo -->
+  <div class="flex items-center justify-center pt-6 pb-4 flex-shrink-0">
+    <img src="images/logo.png" alt="Core by Princeps" class="object-contain w-[107px] h-10" loading="eager" />
+  </div>
+
+  <!-- User Profile -->
+  <div class="flex flex-col items-center px-4 pb-5 pt-2 flex-shrink-0">
+
+    <!-- Avatar -->
+    <div class="relative mb-3">
+      <div
+        class="flex items-center justify-center w-14 h-14 rounded-full bg-[#00B3FF] text-white font-semibold text-lg">
+        {{ getUserInitials() }}
+      </div>
+      <!-- Edit icon -->
+      <button type="button"
+        class="absolute bottom-0 right-0 flex items-center justify-center w-5 h-5 rounded-full bg-white">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M7.5 1.25L8.75 2.5L3.125 8.125H1.875V6.875L7.5 1.25Z" stroke="#5E5F6E" stroke-width="1"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Name -->
+    <p class="text-[13px] font-semibold text-[#121212] text-center leading-snug">
+      {{ getUserFullName() }}
+    </p>
+
+    <!-- Role -->
+    <!-- <p class="text-xs font-normal text-[#727C84] text-center mt-0.5">
+      {{ getUserRole() }}
+    </p> -->
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto no-scrollbar py-3 px-3">
+    <div class="space-y-0.5">
+      @for (menu of menus(); track menu.route) {
+      <a (click)="closeSidebar()" [routerLink]="[menu.route]" routerLinkActive #rla="routerLinkActive"
+        [routerLinkActiveOptions]="{ exact: menu.route === '/home' }"
+        class="flex items-center gap-3 rounded-lg transition-all duration-150 cursor-pointer px-3 py-2.5 no-underline"
+        [class.bg-[#D0EEFB]]="rla.isActive" [class.bg-transparent]="!rla.isActive">
+
+        <span class="flex items-center justify-center flex-shrink-0 w-[18px] h-[18px]"
+          [class.text-[#2B3033]]="rla.isActive" [class.text-[#727C84]]="!rla.isActive">
+          <ps-svg-icon [name]="menu.icon" class="w-[18px] h-[18px]"></ps-svg-icon>
+        </span>
+
+        <span class="text-sm leading-none" [class.font-semibold]="rla.isActive" [class.text-[#2B3033]]="rla.isActive"
+          [class.font-medium]="!rla.isActive" [class.text-[#51575B]]="!rla.isActive">
+          {{ menu.name }}
+        </span>
+
+
+      </a>
+      }
+    </div>
+  </nav>
+
+  <!-- Logout -->
+  <div class="flex-shrink-0 px-3 py-4">
+    <button type="button" (click)="logOut()"
+      class="flex items-center justify-between w-full rounded-lg transition-colors duration-150 hover:bg-red-50 group px-3 py-2.5">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center justify-center flex-shrink-0 w-[18px] h-[18px] text-[#51575B]">
+              <ps-svg-icon name="logout-icon">
+              </ps-svg-icon>
+          </span>
+        <span class="text-sm font-medium text-[#51575B] group-hover:text-red-500 transition-colors cursor-pointer">
+          Log out
+        </span>
+      </div>
+
+      <!-- Arrow -->
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="text-[#727C84]">
+        <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+
+</div>

@@ -1,0 +1,79 @@
+<div class="duration-300 opacity-100 ease-out transition-all w-full">
+  <div
+    class="flex flex-col bg-white border border-[#ECF0F3] rounded-2xl pointer-events-auto modal-background overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 pt-6 pb-4">
+      <h3 class="text-xl font-semibold text-[#131719] tracking-[-0.005em] leading-none">
+        {{ modalData.title }}
+      </h3>
+      <button (click)="close()" type="button" class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+          bg-gray-100 text-coal hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+          disabled:opacity-50 disabled:pointer-events-none cursor-pointer" aria-label="Close">
+        <span class="sr-only">Close</span>
+        <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666" stroke="#121212" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 pb-2">
+
+      <!-- Description -->
+      <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] leading-[140%] mb-5">
+        {{ modalData.description }}
+      </p>
+
+      <!-- Confirmation input -->
+      <div>
+        <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
+          {{ modalData.fieldLabel }}
+        </label>
+        <div class="relative">
+         <input
+  type="text"
+  [(ngModel)]="confirmationText"
+  [placeholder]="modalData.fieldPlaceholder"   autocomplete="new-password"
+  class="w-full px-3 py-2.5 border rounded-lg text-sm text-[#2B3033]
+    placeholder-[#AAB3BA] outline-none transition-colors pr-10"
+  [class.border-[#AAB3BA]]="confirmationText.trim().length === 0 || 
+    confirmationText.trim().toLowerCase() !== modalData.confirmationValue.trim().toLowerCase()"
+  [class.border-[#00B3FF]]="confirmationText.trim().length > 0 && 
+    confirmationText.trim().toLowerCase() === modalData.confirmationValue.trim().toLowerCase()" />
+
+          <!-- Valid checkmark when matched -->
+          @if (confirmationText.trim().length > 0 && 
+  confirmationText.trim().toLowerCase() === modalData.confirmationValue.trim().toLowerCase()) {
+  <span class="absolute inset-y-0 right-3 flex items-center">
+    <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none">
+      <rect width="16" height="16" rx="8" fill="#00B3FF"/>
+      <path d="M4 8L6.5 10.5L12 5" stroke="white" stroke-width="1.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-end gap-3 px-6 py-5 mt-4">
+      <button type="button" (click)="close()" class="px-5 py-2.5 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium
+          text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
+        Cancel
+      </button>
+    <button type="button" (click)="onDelete()"
+  [disabled]="confirmationText.trim().length === 0 || 
+    confirmationText.trim().toLowerCase() !== modalData.confirmationValue.trim().toLowerCase()"
+  class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+    bg-[#EBEBEB] text-[#ABABAB] cursor-not-allowed
+    enabled:bg-red-500 enabled:text-white enabled:cursor-pointer enabled:hover:bg-red-600">
+  {{ modalData.deleteButtonLabel }}
+</button>
+    </div>
+
+  </div>
+</div>

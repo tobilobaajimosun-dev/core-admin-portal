@@ -1,8 +1,19 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "baseUrl": "./",
+    "moduleResolution": "bundler",
+    "module": "ES2022",
+    "target": "ES2022",
+    "lib": ["ES2022", "dom"],
+    "paths": {
+      "@core/*":    ["src/app/core/*"],
+      "@pages/*":   ["src/app/pages/*"],
+      "@shared/*":  ["src/app/shared/*"],
+      "@ui/*":      ["src/app/ui/*"],
+      "@pcsl-ui/*": ["./pcsl-ui/*"],
+      "@env/*":     ["src/environments/*"]
+    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -11,9 +22,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "ES2022",
-    "module": "preserve"
+    "importHelpers": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -21,13 +30,13 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    }
+  "include": [
+    "src/**/*.ts",
+    "pcsl-ui/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "pcsl-ui/**/*.spec.ts",
+    "pcsl-ui/pipes/product-color.pipe.ts"
   ]
 }

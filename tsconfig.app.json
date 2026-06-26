@@ -1,15 +1,28 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
+    "baseUrl": "./",
+    "types": [],
+    "paths": {
+      "@core/*":    ["src/app/core/*"],
+      "@pages/*":   ["src/app/pages/*"],
+      "@shared/*":  ["src/app/shared/*"],
+      "@ui/*":      ["src/app/ui/*"],
+      "@pcsl-ui/*": ["./pcsl-ui/*"],
+      "@env/*":     ["src/environments/*"]
+    }
   },
+  "files": [
+    "src/main.ts"
+  ],
   "include": [
-    "src/**/*.ts"
+    "src/**/*.d.ts",
+    "pcsl-ui/**/*.ts"
   ],
   "exclude": [
-    "src/**/*.spec.ts"
+    "src/**/*.spec.ts",
+    "pcsl-ui/**/*.spec.ts",
+    "pcsl-ui/pipes/product-color.pipe.ts"
   ]
 }

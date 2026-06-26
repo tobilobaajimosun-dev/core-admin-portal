@@ -1,0 +1,47 @@
+<div class="h-16 flex items-center justify-between px-6 border-b border-[#EFEFEF] bg-white">
+
+  <!-- Welcome Message -->
+  <p class="text-base text-coal">
+    Welcome back, <span class="font-semibold">{{ user()?.first_name || 'User' }}</span>
+  </p>
+
+  <!-- Right side: Search + Notifications -->
+  <div class="flex items-center gap-4">
+
+    <!-- Search -->
+    <div class="relative">
+      <input
+        type="text"
+        [(ngModel)]="searchText"
+        (ngModelChange)="onSearchChange($event)"
+        placeholder="Search by customer name or loan id"
+        class="text-sm outline-none rounded-lg border border-[#D2DBE1] py-2 pl-9 pr-4 w-[380px]"
+      />
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
+        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+    </div>
+
+    <!-- Notifications -->
+    <button
+      type="button"
+      (click)="openNotificationPanel()"
+      class="flex items-center gap-2 text-[#2B3033] font-medium
+             hover:text-primary transition-colors text-sm cursor-pointer">
+      <ps-svg-icon name="notifications-icon"></ps-svg-icon>
+      Notifications
+
+      <!-- Unread badge on the button -->
+      @if (unreadCount() > 0) { 
+        <span class="flex items-center justify-center
+                     bg-[#B32F00] text-white font-semibold text-[10px] min-w-[13px]
+                     h-[19px] px-1 py-0.5 rounded-[3px] leading-none">
+          {{ unreadCount() }}
+        </span>
+      }
+    </button>
+
+  </div>
+</div>

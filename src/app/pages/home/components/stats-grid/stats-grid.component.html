@@ -1,0 +1,111 @@
+<div class="w-full relative">
+  <img src="/images/performance-banner-bg.png" alt="" class="absolute inset-0 w-full" />
+  <div class="relative z-10 px-6 py-9">
+    <div class="mx-auto bg-white rounded-xl border border-[#ECF1F5] overflow-hidden w-full py-6">
+
+      <!-- Header row -->
+      <div class="flex items-center justify-between mb-5 p-3">
+        <h2 class="text-base font-semibold text-[#131719] tracking-tight">
+          User Overview
+        </h2>
+        <div class="flex items-center gap-1">
+
+          @for (tab of timeframeTabs; track tab.value) {
+          <button
+            type="button"
+            (click)="onTimeframeChange(tab.value)"
+            class="px-4 py-1.5 text-xs font-semibold transition-all whitespace-nowrap rounded-full cursor-pointer"
+            [class.text-[#00B3FF]]="activeRange() === tab.value"
+            [class.text-[#727C84]]="activeRange() !== tab.value">
+            {{ tab.label }}
+          </button>
+          }
+
+          <ps-date-range-picker
+            placeholder="Custom"
+            (rangeChange)="onRangeChange($event)">
+          </ps-date-range-picker>
+
+        </div>
+      </div>
+
+      <!-- Skeleton loader -->
+      @if (isLoading()) {
+      <div class="grid grid-cols-3 gap-x-3 gap-y-6">
+        @for (item of skeletonItems; track $index) {
+        <div class="flex flex-col gap-2 rounded-[10px] p-3 bg-[#F8FCFE]">
+          <div class="flex items-center gap-1.5">
+            <div class="h-2.5 w-3/5 rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="w-3 h-3 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+          </div>
+          <div class="bg-white flex flex-col items-center justify-center gap-3 rounded-[6px]
+                      py-3 min-h-[95px] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.01),0px_2px_1px_0px_rgba(0,0,0,0.01)]">
+            <div class="h-9 w-24 rounded-xl bg-gray-200 animate-pulse"></div>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F8FCFE] animate-pulse">
+              <div class="w-3.5 h-3.5 rounded flex-shrink-0 bg-gray-200"></div>
+              <div class="h-2.5 w-24 rounded-full bg-gray-200"></div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- Empty state -->
+      @else if (stats().length === 0) {
+      <ps-empty description="No data to display"></ps-empty>
+      }
+
+      <!-- Real grid -->
+      @else {
+      <div class="grid grid-cols-3 gap-x-3 gap-y-6">
+        @for (stat of stats(); track stat.key) {
+        <div class="flex flex-col gap-2 rounded-[10px] p-3 bg-[#F8FCFE] border border-[#F6FBFE]">
+
+          <!-- Card header -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-[#51575B] leading-none tracking-[-0.005em]">
+              {{ stat.label }}
+            </span>
+            <svg class="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+
+          <!-- Card body -->
+          <div class="bg-white flex flex-col items-center justify-center gap-2 rounded-[6px]
+                      border border-[#E2E8F0]/[0.55] py-3 min-h-[95px]
+                      shadow-[0px_0px_1px_0px_rgba(0,0,0,0.01),0px_2px_1px_0px_rgba(0,0,0,0.01)]">
+
+            <span class="font-bold text-[#131719] text-[32px] leading-none">
+              @if (stat.isAmount) {
+                ₦{{ stat.value | number: '1.0-0' }}
+              } @else {
+                {{ stat.value | number }}
+              }
+            </span>
+
+            @if (stat.trend !== null) {
+            <div
+              class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              [class.bg-[#ECFDF5]]="stat.trendUp"
+              [class.text-[#12B76A]]="stat.trendUp"
+              [class.bg-[#FFF1F2]]="!stat.trendUp"
+              [class.text-[#F04438]]="!stat.trendUp">
+              <span class="flex items-center justify-center w-3.5 h-3.5 rounded">
+                <ps-svg-icon name="analytics-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+              </span>
+              {{ stat.trendUp ? '+' : '' }}{{ stat.trend | number: '1.0-1' }}% vs last period
+            </div>
+            }
+
+          </div>
+        </div>
+        }
+      </div>
+      }
+
+    </div>
+  </div>
+</div>

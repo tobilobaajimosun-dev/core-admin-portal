@@ -1,0 +1,169 @@
+<div class="relative inline-block" #anchor>
+
+  <!-- ── Trigger button ──────────────────────────────────────────────────── -->
+  <button type="button" (click)="toggleOpen()"
+    class="flex items-center gap-2 px-4 py-2 rounded-lg border bg-white
+      text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer"
+    [class.border-[#00B3FF]]="isOpen() || hasRange()"
+    [class.border-[#E2E8F0]]="!isOpen() && !hasRange()">
+
+    <svg class="w-4 h-4 text-[#51575B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+    </svg>
+
+    <span>{{ dateRangeLabel() }}</span>
+
+    @if (hasRange()) {
+      <span (click)="clearRange($event)"
+        class="ml-1 w-4 h-4 flex items-center justify-center rounded-full
+          bg-[#E2E8F0] hover:bg-[#CBD5E1] transition-colors cursor-pointer shrink-0">
+        <svg width="8" height="8" viewBox="0 0 16 16" fill="none">
+          <path d="M12 4L4 12M4 4L12 12" stroke="#51575B" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+    } @else {
+      <svg class="w-4 h-4 text-[#51575B] shrink-0 transition-transform duration-200"
+        [class.rotate-180]="isOpen()"
+        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    }
+  </button>
+
+  <!-- ── Dropdown panel ──────────────────────────────────────────────────── -->
+  @if (isOpen()) {
+    <div class="absolute right-0 top-full mt-2 z-50" @fadeInDown>
+      <div class="inline-flex bg-white rounded-2xl shadow-lg overflow-hidden border border-[#F0F0F0]">
+
+        <!-- Left panel: shortcuts -->
+        <div class="flex flex-col justify-between border-r border-[#F0F0F0] w-[132px] py-4 pl-3 pr-6">
+          <div class="flex flex-col gap-1">
+            @for (shortcut of shortcuts; track shortcut.label) {
+              <button type="button" (click)="shortcut.fn()"
+                class="text-left text-sm text-[#2B3033] hover:text-[#00B3FF] py-1.5 px-2
+                  rounded-lg hover:bg-[#F5FBFF] transition-colors cursor-pointer whitespace-nowrap">
+                {{ shortcut.label }}
+              </button>
+            }
+          </div>
+          <button type="button" (click)="onReset()"
+            class="text-left text-sm font-semibold text-[#00B3FF] py-1.5 px-2
+              rounded-lg hover:bg-[#F5FBFF] transition-colors cursor-pointer">
+            Reset
+          </button>
+        </div>
+
+        <!-- Right panel: calendar OR year picker -->
+        <div class="flex flex-col pt-4 pr-4 pb-4 pl-2 w-[252px]">
+
+          <!-- ── Month/Year header (always visible) ── -->
+          <div class="flex items-center justify-between mb-3 pl-2 gap-4">
+
+            <!-- Clickable month + year label -->
+            <button type="button" (click)="toggleYearPicker()"
+              class="flex items-center gap-1.5 text-sm font-semibold text-[#131719]
+                hover:text-[#00B3FF] transition-colors cursor-pointer rounded px-1 -ml-1
+                hover:bg-[#F5FBFF]">
+              <span>{{ monthLabel() }}</span>
+              <span>{{ yearLabel() }}</span>
+              <svg class="w-3.5 h-3.5 transition-transform duration-200"
+                [class.rotate-180]="showYearPicker()"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+
+            <!-- Prev/Next arrows — hidden when year picker is open -->
+            @if (!showYearPicker()) {
+              <div class="flex items-center gap-1">
+                <button type="button" (click)="prevMonth()"
+                  class="w-7 h-7 flex items-center justify-center rounded-lg
+                    hover:bg-[#F5F7FA] transition-colors cursor-pointer">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M10 12L6 8L10 4" stroke="#131719" stroke-width="1.5"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button type="button" (click)="nextMonth()"
+                  class="w-7 h-7 flex items-center justify-center rounded-lg
+                    hover:bg-[#F5F7FA] transition-colors cursor-pointer">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 4L10 8L6 12" stroke="#131719" stroke-width="1.5"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- ── Year picker grid ── -->
+          @if (showYearPicker()) {
+            <div #yearListRef
+              class="overflow-y-auto rounded-lg h-[252px] [scrollbar-width:thin] [scrollbar-color:#E5E7EB_transparent]">
+              <div class="grid grid-cols-3 gap-1 p-1">
+                @for (year of years(); track year) {
+                  <button type="button" (click)="selectYear(year)"
+                    class="py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                    [class]="year === selectedYear()
+                      ? 'year-active bg-[#00ABF5] text-white'
+                      : year === currentYear
+                        ? 'text-[#00B3FF] font-semibold hover:bg-[#F5FBFF]'
+                        : 'text-[#2B3033] hover:bg-[#F5F7FA]'">
+                    {{ year }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- ── Calendar (hidden when year picker is open) ── -->
+          @if (!showYearPicker()) {
+
+            <!-- Weekday headers -->
+            <div class="grid grid-cols-7 mb-1">
+              @for (day of weekdays; track day) {
+                <div class="flex items-center justify-center h-9">
+                  <span class="text-xs font-medium text-[#9AA3AA]">{{ day }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Day grid -->
+            <div class="grid grid-cols-7" (mouseleave)="onLeave()">
+              @for (day of calendarDays(); track day.date.toISOString()) {
+                @let pos = getRangePosition(day);
+                <div class="relative flex items-center justify-center h-9 cursor-pointer"
+                  (click)="selectDay(day)"
+                  (mouseenter)="onHover(day.date)">
+
+                  @if (pos === 'middle') {
+                    <div class="absolute inset-y-1 inset-x-0"
+                      [class]="day.isWeekend ? 'bg-[#D9ECFF]' : 'bg-[#D0EEFB]'">
+                    </div>
+                  }
+                  @if (pos === 'start') {
+                    <div class="absolute inset-y-1 right-0 w-1/2 bg-[#D0EEFB]"></div>
+                  }
+                  @if (pos === 'end') {
+                    <div class="absolute inset-y-1 left-0 w-1/2 bg-[#D0EEFB]"></div>
+                  }
+
+                  <div class="relative z-10 flex items-center justify-center rounded-full transition-colors w-7 h-7"
+                    [ngClass]="getDayClasses(day, pos)">
+                    <span class="text-xs leading-none" [ngClass]="getDayTextClasses(day, pos)">
+                      {{ day.date.getDate() }}
+                    </span>
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

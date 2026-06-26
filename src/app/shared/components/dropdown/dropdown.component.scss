@@ -1,0 +1,15 @@
+:host {
+  display: inline-block;
+  // z-index: 10;
+  position: relative;
+}
+
+.dropdown-menu {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 999;
+}
+
+.animate-show {
+  opacity: 1;
+}

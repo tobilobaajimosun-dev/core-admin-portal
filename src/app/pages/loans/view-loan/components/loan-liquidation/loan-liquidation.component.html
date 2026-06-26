@@ -1,0 +1,110 @@
+<div class="w-full">
+
+  <h3 class="text-base font-semibold text-[#131719] mb-4">Liquidation</h3>
+
+  <!-- ── Summary banner ── -->
+<div class="w-full rounded-xl overflow-hidden mb-6 border border-[#F0F0F0] bg-[#FBFBFB]">
+    <div class="grid grid-cols-3 divide-x divide-[#ECF1F5]">
+
+      <div class="flex flex-col gap-1 px-6 py-4">
+        <span class="text-xs font-normal text-[#51575B]">Total Amount</span>
+        <span class="text-lg font-bold text-[#131719]">
+          ₦{{ data.totalAmount | number:'.2-2' }}
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-1 px-6 py-4">
+        <span class="text-xs font-normal text-[#51575B]">Paid</span>
+        <span class="text-lg font-bold text-[#131719]">
+          ₦{{ data.paid | number:'.2-2' }}
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-1 px-6 py-4">
+        <span class="text-xs font-normal text-[#51575B]">Balance</span>
+        <span class="text-lg font-bold text-[#131719]">
+          ₦{{ data.balance | number:'.2-2' }}
+        </span>
+      </div>
+
+    </div>
+    <div class="border-t border-[#ECF1F5] px-6 py-2 text-center">
+      <span class="text-xs text-[#9CA3AF]">Last Updated: {{ data.lastUpdated }}</span>
+    </div>
+  </div>
+
+  <!-- ── Detail rows ── -->
+  <div class="flex flex-col divide-y divide-[#F3F7F9]">
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Release Date</span>
+      <span class="text-sm font-medium text-[#131719]">
+        {{ data.releaseDate | date:'MMMM d, yyyy' }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Maturity Date</span>
+      <span class="text-sm font-medium text-[#131719]">
+        {{ data.maturityDate | date:'MMMM d, yyyy' }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Principal</span>
+      <span class="text-sm font-medium text-[#131719]">
+        ₦{{ data.principal | number:'.2-2' }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Interest Rate</span>
+      <span class="text-sm font-medium text-[#131719]">{{ data.interestRate }}</span>
+    </div>
+
+    <!-- Monthly Repayment — highlighted -->
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#00B3FF]">Monthly Repayment</span>
+      <span class="text-sm font-bold text-[#00B3FF]">
+        ₦{{ data.monthlyRepayment | number }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Fees</span>
+      <span class="text-sm font-medium text-[#131719]">
+        ₦{{ data.fees | number:'.2-2' }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Penalty</span>
+      <span class="text-sm font-medium text-[#131719]">
+        ₦{{ data.penalty | number:'.2-2' }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Amount Due</span>
+      <span class="text-sm font-medium text-[#131719]">
+        ₦{{ data.amountDue | number:'.2-2' }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Paid to date</span>
+      <span class="text-sm font-medium text-[#131719]">
+        ₦{{ data.paidToDate | number:'.2-2' }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-3">
+      <span class="text-sm font-normal text-[#51575B]">Interest</span>
+      <span class="text-sm font-medium text-[#131719]">
+        {{ data.interest === 0 ? 'N0' : ('₦' + (data.interest | number:'.2-2')) }}
+      </span>
+    </div>
+
+  </div>
+
+</div>
