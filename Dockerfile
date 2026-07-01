@@ -8,7 +8,7 @@ RUN npm ci
 COPY . .
 RUN npm run build -- --configuration production
 
-#Runtime stage
+#Runtime level stage
 FROM nginx:1.27-alpine AS runtime
 
 COPY --from=build /app/dist/admin-portal/browser  /usr/share/nginx/html
