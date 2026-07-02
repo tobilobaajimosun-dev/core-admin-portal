@@ -1,0 +1,37 @@
+services:
+  core-admin-portal:
+    image: ghcr.io/princeps-finance/core-admin-portal:prod
+    container_name: core-admin-portal
+    restart: unless-stopped
+    ports:
+      - '4200:8080' 
+    deploy:
+       replicas: 1
+       update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+       restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+       rollback_config:
+        parallelism: 1
+        delay: 5s               
+        failure_action: pause
+        order: stop-first     
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:8080/healthz']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    external: true # Shared network for all services

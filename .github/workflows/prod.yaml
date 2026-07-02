@@ -2,12 +2,13 @@ name: Deploy to Dev Environment
 
 on:
   push:
-    branches: [dev]
+    branches: [production]
     paths-ignore:
       - README.md
+      - .gitignore
 
 concurrency:
-  group: dev/${{ github.workflow }}
+  group: prod/${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
@@ -34,22 +35,22 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
 
-      # - name: Setup Doppler CLI
-      #   uses:  dopplerhq/cli-action@v3
+      - name: Setup Doppler CLI
+        uses:  dopplerhq/cli-action@v3
 
-      # - name:  Retrive Envs from Doppler
-      #   run: |
-      #     doppler secrets download --no-file --format=env > .env
-      #   env:
-      #     DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PROD }}
-      
-      - name:  Retrive Envs from Secrets
+      - name:  Retrive Envs from Doppler
         run: |
-          echo "NG_APP_API_URL=${{ secrets.NG_APP_API_URL }}" > .env
-          echo "NG_APP_ENCRYPTION_KEY=${{ secrets.NG_APP_ENCRYPTION_KEY }}" >> .env
-          echo "NG_APP_AUTH_SESSION_USER=${{ secrets.NG_APP_AUTH_SESSION_USER }}" >> .env
-          echo "NG_APP_AUTH_SESSION_TOKEN=${{ secrets.NG_APP_AUTH_SESSION_TOKEN }}" >> .env
-          echo "NG_APP_AWS_URL=${{ secrets.NG_APP_AWS_URL }}" >> .env
+          doppler secrets download --no-file --format=env > .env
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PROD }}
+      
+      # - name:  Retrive Envs from Secrets
+      #   run: |
+      #     echo "NG_APP_API_URL=${{ secrets.NG_APP_API_URL }}" > .env
+      #     echo "NG_APP_ENCRYPTION_KEY=${{ secrets.NG_APP_ENCRYPTION_KEY }}" >> .env
+      #     echo "NG_APP_AUTH_SESSION_USER=${{ secrets.NG_APP_AUTH_SESSION_USER }}" >> .env
+      #     echo "NG_APP_AUTH_SESSION_TOKEN=${{ secrets.NG_APP_AUTH_SESSION_TOKEN }}" >> .env
+      #     echo "NG_APP_AWS_URL=${{ secrets.NG_APP_AWS_URL }}" >> .env
       
 
       - name: Login to Docker Hub
@@ -66,7 +67,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
-          tags: ghcr.io/princeps-finance/core-admin-portal:dev
+          tags: ghcr.io/princeps-finance/core-admin-portal:prod
   
   docker-deploy:
     needs: docker-build
@@ -81,10 +82,10 @@ jobs:
       - name: Copy Compose File To Server
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.SSH_HOST_DEV }}
-          username: ${{ secrets.SSH_USERNAME_DEV }}
-          key: ${{ secrets.SSH_KEY_DEV }}
-          source: './infra/deployments/dev-compose.yml'
+          host: ${{ secrets.SSH_HOST_PROD }}
+          username: ${{ secrets.SSH_USERNAME_PROD }}
+          key: ${{ secrets.SSH_KEY_PROD }}
+          source: './infra/deployments/prod-compose.yml'
           target: apps/mobile-admin-portal
           overwrite: true
           strip_components: 3
@@ -92,12 +93,12 @@ jobs:
       - name: Deploy Core Admin UI
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SSH_HOST_DEV }}
-          username: ${{ secrets.SSH_USERNAME_DEV }}
-          key: ${{ secrets.SSH_KEY_DEV }}
+          host: ${{ secrets.SSH_HOST_PROD }}
+          username: ${{ secrets.SSH_USERNAME_PROD }}
+          key: ${{ secrets.SSH_KEY_PROD }}
           script_stop: true
           script: |
             echo ${{ secrets.CROSS_REPO }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             docker pull ghcr.io/princeps-finance/core-admin-portal:dev
-            docker compose -f apps/mobile-admin-portal/dev-compose.yml up -d --force-recreate
+            docker compose -f apps/mobile-admin-portal/prod-compose.yml up -d --force-recreate
             docker image prune -f
