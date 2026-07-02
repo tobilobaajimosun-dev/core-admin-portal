@@ -1,11 +1,15 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  inject,
-  OnInit,
-  OnDestroy,
   effect,
+  inject,
+  Injector,
+  OnDestroy,
+  OnInit,
+  signal,
+  ViewChild,
 } from '@angular/core';
 import {
   FormControl,
@@ -26,11 +30,13 @@ import { CreateAdminPayload } from '@core/interfaces/admin.model';
 import { GroupedPermissionItem } from '@core/interfaces/permission.model';
 import { SuccessNotificationModalComponent } from '../success-notification-modal/success-notification-modal.component';
 import { PsModalService } from '@pcsl-ui/ui/ps-modal/ps-modal.service';
+import { PsSelectModule } from '@pcsl-ui/ui/ps-select/ps-select.module';
+import { PsSelectComponent } from '@pcsl-ui/ui/ps-select/ps-select.component';
 
 @Component({
   selector: 'app-create-admin-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PsCheckboxComponent, PsSvgIconComponent],
+  imports: [CommonModule, ReactiveFormsModule, PsCheckboxComponent, PsSvgIconComponent, PsSelectModule],
   templateUrl: './create-admin-modal.component.html',
   styleUrl: './create-admin-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,16 +53,19 @@ import { PsModalService } from '@pcsl-ui/ui/ps-modal/ps-modal.service';
     ]),
   ],
 })
-export class CreateAdminModalComponent extends PsModalComponent implements OnInit, OnDestroy {
+export class CreateAdminModalComponent extends PsModalComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  @ViewChild(PsSelectComponent) roleSelect?: PsSelectComponent;
 
   isEditMode = false;
   private isSubmittingAction = false;
   private destroy$ = new Subject<void>();
   private modalService = inject(PsModalService);
-
   private initialPrefillDone = false;
+  private pendingRoleId: string | null = null;
 
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly injector = inject(Injector);
   readonly adminStore = inject(AdminStore);
   readonly roleStore = inject(RoleStore);
   readonly permissionStore = inject(PermissionStore);
@@ -66,6 +75,7 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
   groupedPermissions = this.permissionStore.groupedPermissions;
   isLoadingPermissions = this.permissionStore.isLoadingGrouped;
   isLoadingAdmin = this.adminStore.isLoadingAdmin;
+  rolesAndDataReady = signal(false);
 
   inviteForm: FormGroup = this.fb.group({
     firstname: ['', Validators.required],
@@ -85,9 +95,24 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
   constructor() {
     super();
 
+    // Effect 1: wait for roles to load, THEN fetch admin in edit mode
+    effect(() => {
+      const rolesLoaded = this.roles();
+      if (rolesLoaded.length === 0) return;
+
+      const adminId = this.data?.['adminId'];
+      if (adminId) {
+        this.adminStore.fetchAdminById(adminId);
+      }
+    });
+
+    // Effect 2: prefill form once roles + admin data + permissions are all ready
     effect(() => {
       const grouped = this.groupedPermissions();
       if (Object.keys(grouped).length === 0) return;
+
+      const rolesLoaded = this.roles();
+      if (rolesLoaded.length === 0) return;
 
       const adminId = this.data?.['adminId'];
 
@@ -101,6 +126,8 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
           email: selectedAdmin.email,
           roleId: selectedAdmin.role?.id ?? '',
         });
+
+        this.pendingRoleId = selectedAdmin.role?.id ?? null;
 
         const adminPermissionNames: string[] =
           (selectedAdmin.adminPermissions ?? []).map((ap) => ap.permission.name);
@@ -118,12 +145,23 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
 
         this.syncPermissionControls(adminPermissionNames);
         this.initialPrefillDone = true;
+        this.rolesAndDataReady.set(true);
+
+        // Give Angular one tick to mount ps-select with options, then write value
+        setTimeout(() => {
+          if (this.pendingRoleId) {
+            this.roleSelect?.writeValue(this.pendingRoleId);
+          }
+        });
+
       } else {
         this.syncPermissionControls([]);
         this.initialPrefillDone = true;
+        this.rolesAndDataReady.set(true);
       }
     });
 
+    // Effect 3: handle submit success/failure
     effect(() => {
       const submitting = this.adminStore.isSubmitting();
       const error = this.adminStore.error();
@@ -155,13 +193,12 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
 
     if (this.data?.['adminId']) {
       this.isEditMode = true;
-      this.adminStore.fetchAdminById(this.data['adminId']);
+      // fetchAdminById is called in Effect 1 after roles load
     }
 
     this.inviteForm.get('roleId')!.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((selectedRoleId: string) => {
-        // Skip during initial prefill — the effect handles that
         if (!this.initialPrefillDone) return;
         if (!selectedRoleId) return;
 
@@ -171,6 +208,13 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
 
         this.syncPermissionControls(rolePermissions);
       });
+  }
+
+  ngAfterViewInit(): void {
+    // If roleSelect is already available and we have a pending value, apply it
+    if (this.pendingRoleId && this.roleSelect) {
+      this.roleSelect.writeValue(this.pendingRoleId);
+    }
   }
 
   ngOnDestroy(): void {
@@ -220,6 +264,7 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
 
     const { firstname, lastname, email, roleId, addCustomPermissions } =
       this.inviteForm.getRawValue();
+
     let permissionIds: string[];
     if (addCustomPermissions) {
       permissionIds = this.getSelectedPermissionIds();

@@ -1,35 +1,16 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe }    from '@angular/common';
-import { Router }                    from '@angular/router';
+import { ActivatedRoute, Router }    from '@angular/router';
 import { PsSvgIconComponent }        from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
+import { LoanStore }                 from '@core/store/loan.store';
 import { LoanAboutComponent }        from './components/loan-about/loan-about.component';
 import { LoanScheduleComponent }     from './components/loan-schedule/loan-schedule.component';
 import { LoanLiquidationComponent }  from './components/loan-liquidation/loan-liquidation.component';
 import { LoanDocumentsComponent }    from './components/loan-documents/loan-documents.component';
+import { SendNotificationModalComponent }    from '@shared/components/modals/send-notification-modal/send-notification-modal.component';
+import { PsModalService }  from '@pcsl-ui/ui/ps-modal/ps-modal.service';
 
 export type LoanTabValue = 'about' | 'schedule' | 'liquidation' | 'documents';
-
-// ── Hardcoded mock loan ──────────────────────────────────────────────────────
-export const MOCK_LOAN = {
-  id:                   'CW409489',
-  borrowerId:           'CW47839',
-  customerName:         'Ademilua Josephine Tayo',
-  customerEmail:        'a.jesjos@gmail.com',
-  customerPhone:        '+234 654 743 2112',
-  customerAvatar:       '',
-  walletType:           'Credit Wallet',
-  isNew:                true,
-
-  // Header summary stats
-  amountRequested:      80_000,
-  amountDisbursed:      50_000,
-  outstandingBalance:   20_000,
-  totalRepaid:          30_000,
-  interestRate:         '12% pa',
-  applicationDate:      new Date('2025-06-06'),
-  dueDate:              new Date('2026-06-06'),
-  tenor:                '12 months',
-};
 
 @Component({
   selector: 'app-view-loan',
@@ -47,30 +28,93 @@ export const MOCK_LOAN = {
 })
 export class ViewLoanComponent {
   private readonly router = inject(Router);
+  private readonly route  = inject(ActivatedRoute);
+  private readonly modalService = inject(PsModalService);
 
-  readonly loan = MOCK_LOAN;
+  readonly store           = inject(LoanStore); 
+  readonly loan      = this.store.loanDetailHeaderView;
+  readonly isLoading = this.store.loanDetailLoading;
+  readonly error     = this.store.loanDetailError;
+
+  showPhone = signal(false);
+  phoneCopied = signal(false);
+
+  showEmail = signal(false);
+  emailCopied = signal(false);
 
   activeTab = signal<LoanTabValue>('about');
 
   tabs: { value: LoanTabValue; label: string; icon: string }[] = [
     { value: 'about',       label: 'About loan',    icon: 'profile-icon'      },
-    { value: 'schedule',    label: 'Schedule',       icon: 'loan-icon' },
-    { value: 'liquidation', label: 'Liquidation',    icon: 'transactions-icon'       },
-    { value: 'documents',   label: 'Loan Documents', icon: 'transactions-icon'         },
+    { value: 'schedule',    label: 'Schedule',       icon: 'loan-icon'        },
+    { value: 'liquidation', label: 'Liquidation',    icon: 'transactions-icon'},
+    { value: 'documents',   label: 'Loan Documents', icon: 'transactions-icon'},
   ];
 
+  constructor() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) this.store.fetchLoanDetail(id);
+  }
+
   getInitials(): string {
-    return this.loan.customerName
-      .split(' ')
-      .map(p => p.charAt(0))
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
+    const name = this.loan()?.customerName ?? '';
+    return name.split(' ').map(p => p.charAt(0)).slice(0, 2).join('').toUpperCase();
   }
 
   goBack(): void { this.router.navigate(['/loans']); }
 
-  emailCustomer(): void { console.log('Email customer'); }
-  callCustomer():  void { console.log('Call customer'); }
-  sendPushNote():  void { console.log('Send push notification'); }
+ openSendNotificationModal(): void {
+  const loan = this.loan();
+  if (!loan) return;
+
+  this.modalService.open(SendNotificationModalComponent, {
+    data: {
+      customerId:    loan.customerId,
+      customerName:  loan.customerName,
+      customerEmail: loan.customerEmail,
+    },
+    maxWidth:   '560px',
+    isCentered: true,
+  });
+}
+
+ emailCustomer(): void {
+    this.showEmail.set(true);
+  }
+
+  async copyEmail(): Promise<void> {
+    const loan = this.loan();
+    if (!loan?.customerEmail) return;
+
+    try {
+      await navigator.clipboard.writeText(loan.customerEmail);
+      this.emailCopied.set(true);
+      setTimeout(() => {
+        this.emailCopied.set(false);
+        this.showEmail.set(false);
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to copy email', err);
+    }
+  }
+
+  callCustomer(): void {
+    this.showPhone.set(true);
+  }
+  
+async copyPhone(): Promise<void> {
+  const loan = this.loan();
+  if (!loan?.customerPhone) return;
+
+  try {
+    await navigator.clipboard.writeText(loan.customerPhone);
+    this.phoneCopied.set(true);
+    setTimeout(() => {
+      this.phoneCopied.set(false);
+      this.showPhone.set(false);
+    }, 1500);
+  } catch (err) {
+    console.error('Failed to copy phone number', err);
+  }
+}
 }

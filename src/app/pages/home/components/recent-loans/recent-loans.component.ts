@@ -1,18 +1,23 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PsPaginationComponent } from '@ui/ps-pagination/ps-pagination.component';
 import { PsEmptyComponent } from '@ui/ps-empty/ps-empty.component';
 import { DashboardStore } from '@core/store/dashboard.store';
+import { Router } from '@angular/router';
+import { LoanDateRange, LoanView } from '@core/interfaces/loan.model';
+import { DropdownComponent } from '@shared/components/dropdown/dropdown.component';
+import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
 
 @Component({
   selector: 'app-recent-loans',
   standalone: true,
-  imports: [CommonModule, PsPaginationComponent, PsEmptyComponent],
+  imports: [CommonModule, PsPaginationComponent, PsEmptyComponent,DropdownComponent, PsSvgIconComponent],
   templateUrl: './recent-loans.component.html',
   styleUrl: './recent-loans.component.scss',
 })
 export class RecentLoansComponent implements OnInit {
   private readonly dashboardStore = inject(DashboardStore);
+  private readonly router = inject(Router);
 
   isLoading   = this.dashboardStore.isRecentLoansLoading;
   loans       = this.dashboardStore.recentLoans;
@@ -61,5 +66,13 @@ getStatusBg(status: string): string {
   onPageSizeChange(size: number): void {
     this.currentPage.set(1);
     this.dashboardStore.setRecentLoansPageSize(size);
+  }
+
+  viewLoan(loan: any): void { 
+      this.router.navigate(['/loans', loan.id]); 
+    }
+    
+ viewAll(): void {
+    this.router.navigate(['/transactions']);
   }
 }

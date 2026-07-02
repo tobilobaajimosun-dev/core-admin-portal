@@ -4,7 +4,8 @@ import {
   TransactionRaw,
   TransactionListParams,
   TransactionDateRange,
-  TransactionDetailRaw, 
+  TransactionDetailRaw,
+  TransactionMetricsData,
 } from '@core/interfaces/transaction.model';
 
 @Injectable({ providedIn: 'root' })
@@ -18,10 +19,15 @@ export class TransactionStore {
   private readonly _limit        = signal(10);
   private readonly _isLoading    = signal(false);
   private readonly _error        = signal<string | null>(null);
-  
-private readonly _selectedTransaction = signal<TransactionDetailRaw | null>(null);
-private readonly _isLoadingDetail     = signal(false);
-private readonly _detailError         = signal<string | null>(null);
+
+  private readonly _selectedTransaction = signal<TransactionDetailRaw | null>(null);
+  private readonly _isLoadingDetail     = signal(false);
+  private readonly _detailError         = signal<string | null>(null);
+
+  // ── Metrics state ─────────────────────────────────────────────────────────
+  private readonly _metrics        = signal<TransactionMetricsData | null>(null);
+  private readonly _metricsLoading = signal(false);
+  private readonly _metricsError   = signal<string | null>(null);
 
   // ── Filter state ──────────────────────────────────────────────────────────
   private readonly _search   = signal('');
@@ -39,8 +45,12 @@ private readonly _detailError         = signal<string | null>(null);
   readonly error        = computed(() => this._error());
 
   readonly selectedTransaction = computed(() => this._selectedTransaction());
-readonly isLoadingDetail     = computed(() => this._isLoadingDetail());
-readonly detailError         = computed(() => this._detailError());
+  readonly isLoadingDetail     = computed(() => this._isLoadingDetail());
+  readonly detailError         = computed(() => this._detailError());
+
+  readonly metrics        = computed(() => this._metrics());
+  readonly metricsLoading = computed(() => this._metricsLoading());
+  readonly metricsError   = computed(() => this._metricsError());
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
@@ -64,19 +74,36 @@ readonly detailError         = computed(() => this._detailError());
   }
 
   fetchTransactionById(id: string): void {
-  this._isLoadingDetail.set(true);
-  this._detailError.set(null);
-  this.transactionService.getTransactionById(id).subscribe({
-    next: (res) => {
-      this._selectedTransaction.set(res.data);
-      this._isLoadingDetail.set(false);
-    },
-    error: (err) => {
-      this._detailError.set(err?.error?.message ?? 'Failed to load transaction');
-      this._isLoadingDetail.set(false);
-    },
-  });
-}
+    this._isLoadingDetail.set(true);
+    this._detailError.set(null);
+
+    this.transactionService.getTransactionById(id).subscribe({
+      next: (res) => {
+        this._selectedTransaction.set(res.data);
+        this._isLoadingDetail.set(false);
+      },
+      error: (err) => {
+        this._detailError.set(err?.error?.message ?? 'Failed to load transaction');
+        this._isLoadingDetail.set(false);
+      },
+    });
+  }
+
+  fetchMetrics(): void {
+    this._metricsLoading.set(true);
+    this._metricsError.set(null);
+
+    this.transactionService.getTransactionMetrics().subscribe({
+      next: (res) => {
+        this._metrics.set(res.data);
+        this._metricsLoading.set(false);
+      },
+      error: (err) => {
+        this._metricsError.set(err?.error?.message ?? 'Failed to load transaction metrics');
+        this._metricsLoading.set(false);
+      },
+    });
+  }
 
   setSearch(query: string): void {
     this._search.set(query);
@@ -88,6 +115,6 @@ readonly detailError         = computed(() => this._detailError());
     this.fetchTransactions({ page: 1, limit: this._limit(), custom_range: range });
   }
 
-  setPage(page: number):     void { this.fetchTransactions({ page, limit: this._limit() }); }
+  setPage(page: number):      void { this.fetchTransactions({ page, limit: this._limit() }); }
   setPageSize(limit: number): void { this.fetchTransactions({ page: 1, limit }); }
 }

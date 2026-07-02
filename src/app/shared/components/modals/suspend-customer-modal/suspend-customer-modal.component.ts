@@ -12,10 +12,12 @@ import { PsModalComponent } from '@pcsl-ui/ui/ps-modal/ps-modal.component';
 import { PsSelectModule } from '@pcsl-ui/ui/ps-select/ps-select.module';
 import { SuccessNotificationModalComponent } from '../success-notification-modal/success-notification-modal.component';
 import { PsModalService } from '@pcsl-ui/ui/ps-modal/ps-modal.service';
+import { CustomerStore } from '@core/store/customer.store';
 
 export interface SuspendCustomerData {
+  customerId:   string;
   customerName: string;
-  onSuspend: (reason: string, customReason?: string) => void;
+  onSuccess?:   () => void; // optional hook, e.g. navigate away from detail page
 }
 
 @Component({
@@ -27,10 +29,11 @@ export interface SuspendCustomerData {
 })
 export class SuspendCustomerModalComponent extends PsModalComponent implements OnInit {
   private modalService = inject(PsModalService);
+  private store        = inject(CustomerStore);
 
   modalData: SuspendCustomerData = {
+    customerId:   '',
     customerName: '',
-    onSuspend: () => {},
   };
 
   readonly reasons = [
@@ -44,17 +47,20 @@ export class SuspendCustomerModalComponent extends PsModalComponent implements O
 
   selectedReason = signal('');
   customReason   = signal('');
+  isSubmitting   = signal(false);
+  submitError    = signal<string | null>(null);
 
   isOther = computed(() => this.selectedReason() === 'Other');
 
   canSuspend = computed(() => {
+    if (this.isSubmitting()) return false;
     const reason = this.selectedReason();
     if (!reason) return false;
     if (reason === 'Other') return this.customReason().trim().length > 0;
     return true;
   });
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     if (this.data) {
       this.modalData = { ...this.modalData, ...this.data };
     }
@@ -69,12 +75,15 @@ export class SuspendCustomerModalComponent extends PsModalComponent implements O
 
   suspend(): void {
     if (!this.canSuspend()) return;
-    this.modalData.onSuspend(
-      this.selectedReason(),
-      this.isOther() ? this.customReason() : undefined
-    );
 
-    this.close(); // close suspend modal
+    this.isSubmitting.set(true);
+    this.submitError.set(null);
+
+ this.store.suspendCustomer(
+  this.modalData.customerId,
+  () => {
+    this.isSubmitting.set(false);
+    this.close();
 
     this.modalService.open(SuccessNotificationModalComponent, {
       data: {
@@ -82,12 +91,21 @@ export class SuspendCustomerModalComponent extends PsModalComponent implements O
         title: 'Customer suspended!',
         description: 'The customer has been suspended successfully.',
         doneLabel: 'Done',
+        onDone: () => {
+          this.modalData.onSuccess?.();
+        },
       },
     });
+  },
+  (message) => {
+    this.isSubmitting.set(false);
+    this.submitError.set(message);
+  }
+);
   }
 
-  done(): void {
-    this.close();
-  }
-
+done(): void {
+  this.close();
+  this.data?.onDone?.();
+}
 }

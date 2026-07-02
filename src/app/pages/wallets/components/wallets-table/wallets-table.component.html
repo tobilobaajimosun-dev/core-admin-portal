@@ -1,142 +1,151 @@
 <div class="flex items-center justify-between mb-3">
 
   <!-- Filter pills -->
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-2 flex-wrap">
+    @for (def of filterDefs; track def.type; let i = $index) {
 
-    <!-- Wallet Status -->
-    <app-dropdown placement="bottom-start">
-      <button dropdownHeader type="button"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-               text-xs font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
-        [class.border-[#00B3FF]]="activeStatus()" [class.text-[#00B3FF]]="activeStatus()"
-        [class.border-[#E2E8F0]]="!activeStatus()">
-        Wallet Status
-        <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-      </button>
-      <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-               shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[200px] py-2">
-        <div class="flex items-center justify-between px-4 py-2 border-b border-[#F3F4F6] mb-1">
-          <span class="text-xs font-semibold text-[#131719]">By Wallet Status</span>
-          <button type="button" class="text-[#9CA3AF] hover:text-[#44444B] transition-colors cursor-pointer">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-        @for (option of statusOptions; track option.value) {
-          <label class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-primary/[0.06] cursor-pointer">
-            <input type="checkbox" class="w-3.5 h-3.5 rounded border-[#E2E8F0] accent-[#00B3FF] cursor-pointer"
-              [checked]="pendingStatus() === option.value"
-              (change)="toggleStatus(option.value)" />
-            <span class="text-sm text-[#131719]"
-              [class.text-[#00B3FF]]="pendingStatus() === option.value"
-              [class.font-semibold]="pendingStatus() === option.value">
-              {{ option.label }}
-            </span>
-          </label>
-        }
-        <div class="px-4 pt-2 border-t border-[#F3F4F6] mt-1">
-          <button type="button" (click)="applyStatusFilter()"
-            class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                   transition-colors cursor-pointer"
-            [class.bg-[#00B3FF]]="pendingStatus()" [class.text-white]="pendingStatus()"
-            [class.bg-[#F3F4F6]]="!pendingStatus()" [class.text-[#9CA3AF]]="!pendingStatus()">
-            Filter
-            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-          </button>
-        </div>
-      </div>
-    </app-dropdown>
+      <app-dropdown placement="bottom-start" #filterDropdown [isStatic]="true">
 
-    <!-- Date Created -->
-    <app-dropdown placement="bottom-start">
-      <button dropdownHeader type="button"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-               text-xs font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
-        [class.border-[#00B3FF]]="activeDateRange()" [class.text-[#00B3FF]]="activeDateRange()"
-        [class.border-[#E2E8F0]]="!activeDateRange()">
-        Date Created
-        <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-      </button>
-      <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-               shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[200px] py-2">
-        <div class="flex items-center justify-between px-4 py-2 border-b border-[#F3F4F6] mb-1">
-          <span class="text-xs font-semibold text-[#131719]">By Date Created</span>
-          <button type="button" class="text-[#9CA3AF] hover:text-[#44444B] transition-colors cursor-pointer">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-        @for (option of dateOptions; track option.value) {
-          <label class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-primary/[0.06] cursor-pointer">
-            <input type="checkbox" class="w-3.5 h-3.5 rounded border-[#E2E8F0] accent-[#00B3FF] cursor-pointer"
-              [checked]="pendingDate() === option.value"
-              (change)="toggleDate(option.value)" />
-            <span class="text-sm text-[#131719]"
-              [class.text-[#00B3FF]]="pendingDate() === option.value"
-              [class.font-semibold]="pendingDate() === option.value">
-              {{ option.label }}
-            </span>
-          </label>
-        }
-        <div class="px-4 pt-2 border-t border-[#F3F4F6] mt-1">
-          <button type="button" (click)="applyDateFilter()"
-            class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                   transition-colors cursor-pointer"
-            [class.bg-[#00B3FF]]="pendingDate()" [class.text-white]="pendingDate()"
-            [class.bg-[#F3F4F6]]="!pendingDate()" [class.text-[#9CA3AF]]="!pendingDate()">
-            Filter
-            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-          </button>
-        </div>
-      </div>
-    </app-dropdown>
+        <!-- Pill trigger -->
+        <button dropdownHeader type="button"
+          (click)="closeOtherDropdowns(i)"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+                 text-xs font-medium transition-colors cursor-pointer"
+          [class.border-[#00B3FF]]="isFilterActive(i)"
+          [class.text-[#00B3FF]]="isFilterActive(i)"
+          [class.border-[#E2E8F0]]="!isFilterActive(i)"
+          [class.text-[#131719]]="!isFilterActive(i)"
+          [class.hover:bg-[#F8FCFE]]="!isFilterActive(i)">
+          {{ filterDisplayLabel(i) }}
+          <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+        </button>
 
+        <!-- Dropdown panel -->
+        <div dropdownMenu
+          class="z-20 bg-white rounded-xl border border-[#E1E6ED]
+                 shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[220px]">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-[#ECF1F5]">
+            <span class="text-sm font-semibold text-[#131719]">By {{ def.label }}</span>
+            <button type="button" (click)="filterDropdown.close()"
+              class="text-[#9CA3AF] hover:text-[#131719] transition-colors cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Radio options -->
+          <ul class="py-1">
+            @for (opt of def.options; track opt.value; let last = $last) {
+              <li class="hover:bg-primary/[0.06] cursor-pointer has-[:checked]:bg-primary/[0.06]"
+                [class.border-b]="!last"
+                [class.border-[#ECF1F5]]="!last">
+                <ps-radio
+                  class="px-4 py-2.5"
+                  [name]="'walletFilter_' + def.type"
+                  [(ngModel)]="selectedValues[i]"
+                  (ngModelChange)="onRadioChange(i, $event)"
+                  [defaultValue]="opt.value"
+                  [label]="opt.label">
+                </ps-radio>
+              </li>
+
+              <!-- Custom range date inputs -->
+              @if (opt.value === 'custom_range' && showCustomRange[i]) {
+                <li class="bg-primary/[0.05] border-b border-[#ECF1F5]">
+                  <div class="py-3 px-4 space-y-3" [formGroup]="customRangeForms[i]">
+                    <div>
+                      <label class="block text-xs font-medium text-[#2B3033] mb-1">Start Date</label>
+                      <input formControlName="start_date" type="date"
+                        class="w-full px-3 py-1.5 border border-[#ECF0F3] rounded-md text-xs
+                               outline-none focus:border-primary focus:ring-primary"/>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-[#2B3033] mb-1">End Date</label>
+                      <input formControlName="end_date" type="date"
+                        class="w-full px-3 py-1.5 border border-[#ECF0F3] rounded-md text-xs
+                               outline-none focus:border-primary focus:ring-primary"/>
+                    </div>
+                  </div>
+                </li>
+              }
+            }
+          </ul>
+
+          <!-- Footer -->
+          <div class="px-3 py-2 shadow-[0px_-1px_6px_0px_rgba(0,0,0,0.09)]">
+            @if (isFilterActive(i)) {
+              <button type="button" (click)="clearFilter(i)"
+                class="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs
+                       font-medium text-[#51575B] border border-[#E2E8F0] hover:bg-gray-50
+                       transition-colors cursor-pointer mb-2">
+                Clear filter
+              </button>
+            }
+            <button type="button"
+              (click)="applyFilter(i, filterDropdown)"
+              [disabled]="!selectedValues[i]"
+              class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg
+                     text-sm font-medium transition-all duration-200
+                     bg-[#EBEBEB] text-[#ABABAB] cursor-not-allowed
+                     enabled:bg-[#00B3FF] enabled:text-white enabled:cursor-pointer
+                     enabled:hover:opacity-90">
+              <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+              Apply filter
+            </button>
+          </div>
+
+        </div>
+      </app-dropdown>
+
+    }
   </div>
 
+  <!-- Search + Export (unchanged) -->
   <div class="flex items-center gap-2">
-
-    <!-- Search -->
     <div class="relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
-        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
+           fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
-    <input type="text" placeholder="Search wallets" [ngModel]="searchQuery()"
+      <input type="text" placeholder="Search wallets"
+        [ngModel]="searchQuery()"
         (ngModelChange)="onSearchChange($event)"
         class="pl-9 pr-8 py-2 rounded-lg border text-sm text-[#131719]
                placeholder-[#9CA3AF] outline-none w-80 transition-colors"
         [class.border-[#00B3FF]]="searchQuery()"
         [class.ring-1]="searchQuery()"
         [class.ring-[#00B3FF]]="searchQuery()"
-        [class.border-[#E2E8F0]]="!searchQuery()" />
+        [class.border-[#E2E8F0]]="!searchQuery()"/>
       @if (searchQuery()) {
         <button type="button" (click)="clearSearch()"
- class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]
                  hover:text-[#44444B] transition-colors cursor-pointer">
-                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       }
     </div>
-
-    <!-- Export -->
     <button type="button"
       class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
              text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
       Export
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
       </svg>
     </button>
-
   </div>
+
 </div>
 
+<!-- Active filter banner (unchanged) -->
 @if (hasActiveFilters()) {
   <div class="flex items-center gap-1.5 mb-3 text-sm">
     <span class="font-normal text-[#51575B]">{{ bannerPrefix() }}</span>
@@ -259,7 +268,7 @@
               <app-dropdown placement="bottom-end">
                 <button dropdownHeader type="button"
                   class="size-7 inline-flex items-center justify-center rounded-md
-                         text-[#9CA3AF] hover:text-[#44444B] transition-colors cursor-pointer">
+                         text-[#44444B] transition-colors cursor-pointer">
                   <ps-svg-icon name="more"></ps-svg-icon>
                 </button>
                 <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]

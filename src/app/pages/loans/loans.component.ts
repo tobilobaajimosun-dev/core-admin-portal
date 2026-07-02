@@ -23,13 +23,6 @@ export class LoansComponent implements OnInit {
 
   activeRange = this.dashboardStore.activeRange;
 
-  readonly timeframeTabs: { label: string; value: DashboardCustomRange }[] = [
-    { label: 'Today',      value: 'today'       },
-    { label: 'Yesterday',  value: 'yesterday'   },
-    { label: 'This Week',  value: 'past_7_days' },
-    { label: 'This Month', value: 'this_month'  },
-  ];
-
   ngOnInit(): void {
     this.dashboardStore.fetchDashboardCards(this.dashboardStore.listConfig());
   }

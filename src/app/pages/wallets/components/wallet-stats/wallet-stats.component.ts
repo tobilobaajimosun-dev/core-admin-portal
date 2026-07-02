@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
-import { WalletStat } from '@core/interfaces/wallet.model';
+import { WalletStore } from '@core/store/wallet.store';
+import { WalletMetricsData, WalletStat } from '@core/interfaces/wallet.model';
 
 @Component({
   selector: 'app-wallet-stats',
@@ -9,14 +10,50 @@ import { WalletStat } from '@core/interfaces/wallet.model';
   imports: [CommonModule, PsSvgIconComponent],
   templateUrl: './wallet-stats.component.html',
 })
-export class WalletStatsComponent {
-  isLoading     = signal(false);
-  skeletonItems = new Array(4);
+export class WalletStatsComponent implements OnInit {
+  private readonly store = inject(WalletStore);
 
-  stats = signal<WalletStat[]>([
-    { label: 'Total Wallets Created', value: 1_000_090, trend: 12, trendUp: true },
-    { label: 'Total Funded Amount',   value: '₦1.9B',   trend: 12, trendUp: true, prefix: '' },
-    { label: 'Total Debit Amount',    value: '₦1.9B',   trend: 12, trendUp: true, prefix: '' },
-    { label: 'Total Transactions',    value: 100,        trend: 12, trendUp: true },
-  ]);
+  readonly isLoading     = this.store.metricsLoading;
+  readonly skeletonItems = new Array(4);
+
+  readonly stats = computed<WalletStat[]>(() => {
+    const data = this.store.metrics();
+    if (!data) return [];
+    return this.mapStats(data);
+  });
+
+  ngOnInit(): void {
+    this.store.fetchMetrics();
+  }
+
+  private mapStats(data: WalletMetricsData): WalletStat[] {
+    return [
+      {
+        label:   'Total Wallets Created',
+        value:   data.total_wallets_created,
+        trend:   null,
+        trendUp: true,
+      },
+      {
+        label:   'Total Funded Amount',
+        value:   data.total_funded_amount,
+        trend:   null,
+        trendUp: true,
+        prefix:  '₦',
+      },
+      {
+        label:   'Total Debit Amount',
+        value:   data.total_debit_amount,
+        trend:   null,
+        trendUp: true,
+        prefix:  '₦',
+      },
+      {
+        label:   'Total Transactions',
+        value:   data.total_transactions,
+        trend:   null,
+        trendUp: true,
+      },
+    ];
+  }
 }

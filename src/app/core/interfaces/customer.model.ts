@@ -412,3 +412,19 @@ export interface CustomerNeedsActionParams {
   limit?: number;
   search?: string;
 }
+
+// ─── Delete/Suspend Customer ───────────────────────────────────────────────────
+
+export interface CustomerDeleteData {
+  id:         string;
+  customerId : string
+  deleted_at: string;
+}
+
+export interface CustomerDeleteResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         CustomerDeleteData;
+  responseCode: string;
+}

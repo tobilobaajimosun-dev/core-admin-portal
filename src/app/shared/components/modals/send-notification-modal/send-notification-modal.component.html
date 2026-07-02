@@ -131,8 +131,9 @@
              text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer text-[13px]">
       Cancel
     </button>
+    
 
-    <!-- Send notification -->
+   <!-- Send notification -->
     <button
       type="button"
       (click)="send()"
@@ -144,8 +145,8 @@
       [class.text-white]="canSend()"
       [class.bg-black/5]="!canSend()"
       [class.text-[#2B3033]/40]="!canSend()">
-      
-      <span>Send notification</span>
+
+      <span>{{ isSending() ? 'Sending...' : 'Send notification' }}</span>
       <ps-svg-icon name="smart-phone-vibrate" class="w-4 h-4 shrink-0"></ps-svg-icon>
     </button>
 

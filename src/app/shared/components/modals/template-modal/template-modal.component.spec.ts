@@ -1,0 +1,22 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { TemplateModalComponent } from './template-modal.component';
+
+describe('TemplateModalComponent', () => {
+  let component: TemplateModalComponent;
+  let fixture: ComponentFixture<TemplateModalComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TemplateModalComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TemplateModalComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

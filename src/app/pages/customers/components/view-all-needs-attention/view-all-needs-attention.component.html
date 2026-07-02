@@ -113,6 +113,7 @@
       [totalItems]="total()"
       [itemPerPage]="pageSize()"
       (pageChanged)="onPageChange($event)"
+      [(currentPage)]="currentPage"
       (pageSizeChanged)="onPageSizeChange($event)">
     </ps-pagination>
   }

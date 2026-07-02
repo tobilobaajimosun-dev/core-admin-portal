@@ -10,7 +10,8 @@ import { PsSvgIconComponent }    from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.compo
 import { DropdownComponent }     from '@shared/components/dropdown/dropdown.component';
 import { CustomerStore }         from '@core/store/customer.store';
 import { CustomerCustomRange, CustomerRaw } from '@core/interfaces/customer.model';
-
+import { PsModalService } from '@pcsl-ui/ui/ps-modal/ps-modal.service';
+import { SuspendCustomerModalComponent } from '@shared/components/modals/suspend-customer-modal/suspend-customer-modal.component';
 interface FilterOption {
   label: string;
   value: string;
@@ -32,6 +33,7 @@ interface FilterOption {
 export class CustomersTableComponent implements OnInit {
   private readonly router      = inject(Router);
   readonly store                = inject(CustomerStore);
+  private readonly modalService = inject(PsModalService);
   private readonly destroyRef  = inject(DestroyRef);
   currentPage = signal(1);
 
@@ -183,14 +185,27 @@ export class CustomersTableComponent implements OnInit {
     this.router.navigate(['/users', customer.id]);
   }
 
-  viewLoanHistory(customer: CustomerRaw): void {
-   // console.log('View loan history', customer.id);
-  }
+viewLoanHistory(customer: CustomerRaw): void {
+  this.router.navigate(['/users', customer.id], { queryParams: { tab: 'loans' } });
+}
 
-  deactivateCustomer(customer: CustomerRaw): void {
-   // console.log('Deactivate', customer.id);
-  }
-
+deactivateCustomer(customer: CustomerRaw): void {
+  this.modalService.open(SuspendCustomerModalComponent, {
+    data: {
+     customerId: customer.id,
+      customerName: `${customer.firstName} ${customer.lastName}`,
+      onSuspend: (reason: string, customReason?: string) => {
+        this.store.suspendCustomer(
+          customer.id,
+          () => {
+            },
+          (message) => {
+         }
+        );
+      },
+    },
+  });
+}
   // ── Helpers ────────────────────────────────────────────────────────────────
   getInitials(f: string, l: string): string {
     return `${(f ?? ' ').charAt(0)}${(l ?? ' ').charAt(0)}`.toUpperCase();

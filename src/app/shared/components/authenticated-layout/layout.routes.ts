@@ -66,6 +66,11 @@ export const LAYOUT_ROUTES: Routes = [
           import('@pages/customers/customers.component').then((m) => m.CustomersComponent),
       },
       {
+        path: 'push-notifications',
+        loadComponent: () =>
+          import('@pages/push-notifications/push-notifications.component').then((m) => m.PushNotificationsComponent),
+      },
+      {
         path: '',
         redirectTo: 'home',
         pathMatch: 'full',

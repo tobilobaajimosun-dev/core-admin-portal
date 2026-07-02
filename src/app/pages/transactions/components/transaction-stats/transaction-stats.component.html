@@ -39,14 +39,14 @@
           border border-[#E2E8F0]/[0.55] py-3 min-h-[95px]
           shadow-[0px_0px_1px_0px_rgba(0,0,0,0.01),0px_2px_1px_0px_rgba(0,0,0,0.01)]">
 
-          <!-- Value -->
-          <span class="font-bold text-[#131719] text-[32px] leading-none">
-            @if (stat.prefix !== undefined) {
-              {{ stat.value }}
-            } @else {
-              {{ stat.value | number }}
-            }
-          </span>
+        <!-- Value -->
+<span class="font-bold text-[#131719] text-[32px] leading-none">
+  @if (stat.prefix !== undefined) {
+    {{ stat.prefix }}{{ stat.value | number: '1.0-0' }}
+  } @else {
+    {{ stat.value | number }}
+  }
+</span>
 
           <!-- Trend pill -->
           @if (stat.trend !== null) {

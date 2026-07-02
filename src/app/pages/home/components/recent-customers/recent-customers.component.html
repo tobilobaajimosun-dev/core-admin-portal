@@ -128,13 +128,13 @@
               </td>
 
               <!-- Actions -->
-               <td class="py-3 px-4">
-              <app-dropdown placement="bottom-end">
-                <button dropdownHeader type="button" class="size-7 inline-flex items-center justify-center rounded-md
-                             text-[#9CA3AF] hover:text-[#44444B] transition-colors cursor-pointer">
-                  <ps-svg-icon name="more"></ps-svg-icon>
-                </button>
-                <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
+              <td class="py-3.5 px-4">
+                        <app-dropdown placement="bottom-end">
+                            <button dropdownHeader aria-label="More Options" type="button" class="size-7 inline-flex items-center justify-center
+                      focus:outline-none rounded-md cursor-pointer">
+                                <ps-svg-icon name="more"></ps-svg-icon>
+                            </button>
+                        <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
                              shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[190px] py-1">
                   <button type="button" (click)="viewCustomer(customer)" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#44444B]
                                hover:bg-primary/[0.06] transition-colors cursor-pointer">
@@ -146,6 +146,7 @@
                     <ps-svg-icon name="money-icon" class="w-4 h-4"></ps-svg-icon>
                     View loan history
                   </button>
+                  
                   <button type="button" (click)="deactivateCustomer(customer)" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#44444B]
                                hover:bg-primary/[0.06] transition-colors cursor-pointer whitespace-nowrap">
                     <ps-svg-icon name="delete-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
@@ -153,7 +154,7 @@
                   </button>
                 </div>
               </app-dropdown>
-            </td>
+                 </td>
 
             </tr>
           }

@@ -45,3 +45,18 @@ export interface WalletStat {
   trendUp:  boolean;
   prefix?:  string;
 }
+
+export interface WalletMetricsData {
+  total_wallets_created: number;
+  total_funded_amount:   number;
+  total_debit_amount:    number;
+  total_transactions:    number;
+}
+
+export interface WalletMetricsResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         WalletMetricsData;
+  responseCode: string;
+}

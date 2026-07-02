@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PsEmptyComponent } from '@pcsl-ui/ui/ps-empty/ps-empty.component';
 import { DashboardStore } from '@core/store/dashboard.store';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-transaction-history',
@@ -12,6 +13,7 @@ import { DashboardStore } from '@core/store/dashboard.store';
 })
 export class TransactionHistoryComponent implements OnInit {
   private readonly dashboardStore = inject(DashboardStore);
+  private readonly router = inject(Router);
 
   isLoadingTransactions  = this.dashboardStore.isTransactionsLoading;
   isLoadingDisbursements = this.dashboardStore.isTransactionsLoading; 
@@ -45,5 +47,9 @@ export class TransactionHistoryComponent implements OnInit {
       PROCESSING: '#D0EEFB',
     };
     return map[status?.toUpperCase()] ?? '#F3F4F6';
+  }
+
+   viewAll(): void {
+    this.router.navigate(['/transactions']);
   }
 }

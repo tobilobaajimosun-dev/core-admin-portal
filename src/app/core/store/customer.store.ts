@@ -52,6 +52,9 @@ type CustomerState = {
   transactionListConfig: CustomerTransactionListParams;
   isLoadingTransactions: boolean;
   transactionsError: string | null;
+
+  isSuspending: boolean;
+  suspendError: string | null;
 };
 
 const initialCustomerState: CustomerState = {
@@ -82,6 +85,9 @@ const initialCustomerState: CustomerState = {
   transactionListConfig: { page: 1, limit: 10 },
   isLoadingTransactions: false,
   transactionsError: null,
+
+  isSuspending: false,
+  suspendError: null,
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -242,6 +248,33 @@ export const CustomerStore = signalStore(
         )
       )
     );
+
+ const suspendCustomer = (
+  customerId: string,
+  onSuccess?: () => void,
+  onError?: (message: string) => void
+) => {
+  patchState(store, { isSuspending: true, suspendError: null });
+
+  customerService.deleteCustomer(customerId).subscribe({
+    next: () => {
+      const current = store.selectedCustomer();
+      patchState(store, {
+        isSuspending: false,
+        customers: store.customers().filter((c) => c.id !== customerId),
+        total: Math.max(0, store.total() - 1),
+        selectedCustomer:
+          current?.customer.id === customerId ? null : current,
+      });
+      onSuccess?.();
+    },
+    error: (err: any) => {
+      const message = err?.error?.message ?? 'Failed to suspend customer.';
+      patchState(store, { isSuspending: false, suspendError: message });
+      onError?.(message);
+    },
+  });
+};
     const patchSelectedCustomer = (patch: Partial<CustomerRaw>) => {
       const current = store.selectedCustomer();
       if (!current) return;
@@ -364,6 +397,7 @@ export const CustomerStore = signalStore(
       setTransactionStatusFilter,
       setTransactionTypeFilter,
       setTransactionDateRange,
+      suspendCustomer 
     };
   })
 );

@@ -20,14 +20,16 @@ export interface TransactionCustomer {
 }
 
 export interface TransactionRaw {
-  id:           string;
-  reference_no: string;
-  type:         TransactionType;
-  category:     TransactionCategory;
-  status:       TransactionStatus;
-  amount:       number;
-  createdAt:    string;
-  customer:     TransactionCustomer;
+  id:                   string;
+  reference_no:         string;
+  type:                 TransactionType;
+  status:               TransactionStatus;
+  amount:               number;
+  createdAt:             string;
+  customer_id:          string;
+  external_customer_id: string | null;
+  customer:             TransactionCustomer;
+  transactionable:      TransactionTransactionable; 
 }
 
 export interface TransactionMeta {
@@ -136,5 +138,19 @@ export interface TransactionDetailResponse {
   status:       string;
   message:      string;
   data:         TransactionDetailRaw;
+  responseCode: string;
+}
+
+export interface TransactionMetricsData {
+  total_transactions:      number;
+  total_amount:            number;
+  successful_transactions: number;
+}
+
+export interface TransactionMetricsResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         TransactionMetricsData;
   responseCode: string;
 }

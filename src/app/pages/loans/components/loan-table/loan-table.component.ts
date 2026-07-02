@@ -1,12 +1,16 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, inject,
+  OnInit, signal, computed, ViewChildren, QueryList
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
 import { PsEmptyComponent } from '@pcsl-ui/ui/ps-empty/ps-empty.component';
 import { PsPaginationComponent } from '@ui/ps-pagination/ps-pagination.component';
+import { PsRadioComponent } from '@pcsl-ui/ui/ps-radio/ps-radio.component';
 import { DropdownComponent } from '@shared/components/dropdown/dropdown.component';
 import { LoanStore } from '@core/store/loan.store';
 import { LoanDateRange, LoanView } from '@core/interfaces/loan.model';
@@ -16,156 +20,173 @@ interface FilterOption {
   value: string;
 }
 
-interface ActiveFilter {
+interface FilterDef {
   type: 'applicationDate' | 'tenor' | 'status' | 'product' | 'amount';
-  title: string;
-  selected: string | null;
+  label: string;
   options: FilterOption[];
-  open: boolean;
+  supportsCustomRange?: boolean;
 }
 
 @Component({
   selector: 'app-loan-table',
   standalone: true,
-  imports: [CommonModule, FormsModule, PsSvgIconComponent, PsEmptyComponent, PsPaginationComponent, DropdownComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    PsSvgIconComponent,
+    PsEmptyComponent,
+    PsPaginationComponent,
+    PsRadioComponent,
+    DropdownComponent,
+  ],
   templateUrl: './loan-table.component.html',
   styleUrl: './loan-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoanTableComponent implements OnInit {
+@ViewChildren('filterDropdown') filterDropdowns!: QueryList<DropdownComponent>;
   readonly store = inject(LoanStore);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly fb = inject(NonNullableFormBuilder);
+
   currentPage = signal(1);
-
   searchQuery = signal('');
-
   loans = computed<LoanView[]>(() => this.store.loanViews());
 
-  readonly filters: ActiveFilter[] = [
+  // ── Filter definitions ────────────────────────────────────────────────────
+  readonly filterDefs: FilterDef[] = [
     {
-      type: 'applicationDate', title: 'By Application Date', selected: null, open: false,
+      type: 'applicationDate',
+      label: 'Application Date',
+      supportsCustomRange: true,
       options: [
-        { label: 'Today', value: 'today' },
-        { label: 'Yesterday', value: 'yesterday' },
-        { label: 'This Week', value: 'this_week' },
-        { label: 'This Month', value: 'this_month' },
-        { label: 'Past 3 months', value: 'past_3_months' },
-        { label: 'Past 6 months', value: 'past_6_months' },
-        { label: 'This year', value: 'this_year' },
-        { label: 'Custom', value: 'custom' },
+        { label: 'Today',          value: 'today' },
+        { label: 'Yesterday',      value: 'yesterday' },
+        { label: 'This Week',      value: 'this_week' },
+        { label: 'This Month',     value: 'this_month' },
+        { label: 'Past 3 months',  value: 'past_3_months' },
+        { label: 'Past 6 months',  value: 'past_6_months' },
+        { label: 'This year',      value: 'this_year' },
+        { label: 'Custom range',   value: 'custom_range' },
       ],
     },
     {
-      type: 'tenor', title: 'By Tenor', selected: null, open: false,
+      type: 'tenor',
+      label: 'Tenor',
+      supportsCustomRange: true,
       options: [
-        { label: '1 month', value: '1' }, { label: '3 months', value: '3' },
-        { label: '6 months', value: '6' }, { label: '9 months', value: '9' },
-        { label: '12 months', value: '12' }, { label: 'Custom range', value: 'custom' },
+        { label: '1 month',      value: '1' },
+        { label: '3 months',     value: '3' },
+        { label: '6 months',     value: '6' },
+        { label: '9 months',     value: '9' },
+        { label: '12 months',    value: '12' },
+        { label: 'Custom range', value: 'custom_range' },
       ],
     },
     {
-      type: 'status', title: 'By Status', selected: null, open: false,
+      type: 'status',
+      label: 'Status',
       options: [
-        { label: 'New', value: 'NEW' },
+        { label: 'New',       value: 'NEW' },
         { label: 'Completed', value: 'COMPLETED' },
-        { label: 'Failed', value: 'FAILED' },
+        { label: 'Failed',    value: 'FAILED' },
         { label: 'Cancelled', value: 'CANCELLED' },
       ],
     },
     {
-      type: 'product', title: 'By Product', selected: null, open: false,
+      type: 'product',
+      label: 'Product',
       options: [
-        { label: 'Credit Lite', value: 'Credit Lite' }, { label: 'Credit Rite', value: 'Credit Rite' },
-        { label: 'Corper Wallet', value: 'Corper Wallet' }, { label: 'Credit Wallet', value: 'Credit Wallet' },
+        { label: 'Credit Lite',    value: 'Credit Lite' },
+        { label: 'Credit Rite',    value: 'Credit Rite' },
+        { label: 'Corper Wallet',  value: 'Corper Wallet' },
+        { label: 'Credit Wallet',  value: 'Credit Wallet' },
       ],
     },
     {
-      type: 'amount', title: 'By Loan Amount', selected: null, open: false,
+      type: 'amount',
+      label: 'Amount',
       options: [
-        { label: '₦1,000 - ₦100,000', value: '1000_100000' },
-        { label: '₦200,000 - ₦500,000', value: '200000_500000' },
-        { label: '₦500,000 - ₦1m', value: '500000_1000000' },
-        { label: '₦1m - 10m+', value: '1000000_10000000' },
+        { label: '₦1,000 – ₦100,000',   value: '1000_100000' },
+        { label: '₦200,000 – ₦500,000', value: '200000_500000' },
+        { label: '₦500,000 – ₦1m',      value: '500000_1000000' },
+        { label: '₦1m – ₦10m+',         value: '1000000_10000000' },
       ],
     },
   ];
 
-  readonly filterLabels: Record<string, string> = {
-    applicationDate: 'Application Date',
-    tenor: 'Tenor',
-    status: 'Status',
-    product: 'Product',
-    amount: 'Amount',
-  };
+  // ── Per-filter state ──────────────────────────────────────────────────────
+  // selectedValues[i] is the radio-bound value for filterDefs[i]
+  selectedValues: string[] = this.filterDefs.map(() => '');
+  // appliedValues[i] is what was last confirmed via "Apply filter"
+  appliedValues: string[] = this.filterDefs.map(() => '');
+  showCustomRange: boolean[] = this.filterDefs.map(() => false);
 
-  private readonly debouncedSearch$ = toObservable(this.searchQuery).pipe(
-    skip(1),
-    debounceTime(400),
-    distinctUntilChanged(),
+  customRangeForms = this.filterDefs.map(() =>
+    this.fb.group({ start_date: [''], end_date: [''] })
   );
 
-  ngOnInit(): void {
-    this.store.fetchLoans({ page: 1, limit: 10 });
-
-    this.debouncedSearch$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((query) => {
-        this.store.setSearch(query);
-      });
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  get activeFilterIndex(): number {
+    return this.appliedValues.findIndex(v => !!v);
   }
 
-  onSearch(value: string): void { this.searchQuery.set(value); }
-
-  toggleFilter(index: number): void {
-    this.filters.forEach((f, i) => { if (i !== index) f.open = false; });
-    this.filters[index].open = !this.filters[index].open;
+  isFilterActive(i: number): boolean {
+    return !!this.appliedValues[i];
   }
 
-  selectFilterOption(filterIndex: number, value: string): void {
-    const f = this.filters[filterIndex];
-    f.selected = f.selected === value ? null : value;
+  filterDisplayLabel(i: number): string {
+    const applied = this.appliedValues[i];
+    if (!applied) return this.filterDefs[i].label;
+    const opt = this.filterDefs[i].options.find(o => o.value === applied);
+    return opt ? `${this.filterDefs[i].label}: ${opt.label}` : this.filterDefs[i].label;
   }
 
-  closeAllFilters(): void { this.filters.forEach(f => (f.open = false)); }
+  onRadioChange(i: number, value: string): void {
+    this.selectedValues[i] = value;
+    this.showCustomRange[i] = value === 'custom_range';
+    if (value !== 'custom_range') this.customRangeForms[i].reset();
+  }
 
-  applyFilter(filterIndex: number): void {
-    const filter = this.filters[filterIndex];
-    filter.open = false;
+  applyFilter(i: number, dropdown: DropdownComponent): void {
+    dropdown.close();
+    const value = this.selectedValues[i];
 
-    // Clear other filters so only one is active at a time, matching the
-    // mutual-exclusivity pattern used on the customers table.
-    this.filters.forEach((f, i) => { if (i !== filterIndex) f.selected = null; });
+    // Enforce single active filter — clear all others
+    this.appliedValues = this.appliedValues.map((_, idx) => idx === i ? value : '');
+    this.selectedValues = this.selectedValues.map((_, idx) => idx === i ? value : '');
+    this.showCustomRange = this.showCustomRange.map((_, idx) => idx === i ? this.showCustomRange[idx] : false);
+    this.customRangeForms.forEach((f, idx) => { if (idx !== i) f.reset(); });
     this.searchQuery.set('');
 
-    const value = filter.selected;
+    const def = this.filterDefs[i];
 
-    switch (filter.type) {
+    switch (def.type) {
       case 'applicationDate': {
-        if (!value || value === 'custom') {
+        if (!value || value === 'custom_range') {
+          if (value === 'custom_range') {
+            const { start_date, end_date } = this.customRangeForms[i].getRawValue();
+            // wire up your store custom-range call here if needed
+          }
           this.store.fetchLoans({ page: 1, limit: this.store.currentLimit() });
           return;
         }
         this.store.setTimeframe(value as LoanDateRange);
         return;
       }
-      case 'tenor': {
-        this.store.setTenor(value ?? '');
+      case 'tenor':
+        this.store.setTenor(value === 'custom_range' ? '' : value);
         return;
-      }
-      case 'status': {
+      case 'status':
         this.store.setStatus(value ?? '');
         return;
-      }
-      case 'product': {
+      case 'product':
         this.store.setProduct(value ?? '');
         return;
-      }
       case 'amount': {
-        if (!value) {
-          this.store.setAmountRange(null, null);
-          return;
-        }
+        if (!value) { this.store.setAmountRange(null, null); return; }
         const [min, max] = value.split('_').map(Number);
         this.store.setAmountRange(min, max);
         return;
@@ -173,21 +194,47 @@ export class LoanTableComponent implements OnInit {
     }
   }
 
-  clearFilters(): void {
-    this.filters.forEach(filter => { filter.selected = null; filter.open = false; });
+  clearFilter(i: number): void {
+    this.appliedValues[i] = '';
+    this.selectedValues[i] = '';
+    this.showCustomRange[i] = false;
+    this.customRangeForms[i].reset();
+    this.store.fetchLoans({ page: 1, limit: this.store.currentLimit() });
+  }
+
+  clearAllFilters(): void {
+    this.appliedValues = this.filterDefs.map(() => '');
+    this.selectedValues = this.filterDefs.map(() => '');
+    this.showCustomRange = this.filterDefs.map(() => false);
+    this.customRangeForms.forEach(f => f.reset());
     this.searchQuery.set('');
     this.store.fetchLoans({ page: 1, limit: 10 });
   }
 
-  onPageChange(page: number): void { 
-    this.store.setPage(page); 
-    this.currentPage.set(page); 
-  }
-  onPageSizeChange(size: number): void {
-     this.store.setPageSize(size);
-     this.currentPage.set(1); 
-    }
+ closeOtherDropdowns(currentIndex: number): void {
+  this.filterDropdowns.forEach((dropdown: DropdownComponent, i: number) => {
+    if (i !== currentIndex) dropdown.close();
+  });
+}
+  // ── Search ────────────────────────────────────────────────────────────────
+  private readonly debouncedSearch$ = toObservable(this.searchQuery).pipe(
+    skip(1), debounceTime(400), distinctUntilChanged(),
+  );
 
+  ngOnInit(): void {
+    this.store.fetchLoans({ page: 1, limit: 10 });
+    this.debouncedSearch$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(query => this.store.setSearch(query));
+  }
+
+  onSearch(value: string): void { this.searchQuery.set(value); }
+
+  // ── Pagination ────────────────────────────────────────────────────────────
+  onPageChange(page: number): void { this.store.setPage(page); this.currentPage.set(page); }
+  onPageSizeChange(size: number): void { this.store.setPageSize(size); this.currentPage.set(1); }
+
+  // ── Status badge ──────────────────────────────────────────────────────────
   statusClass(status: string): string {
     const map: Record<string, string> = {
       'Completed': 'bg-[#ECFDF5] text-[#12B76A]',
@@ -200,7 +247,5 @@ export class LoanTableComponent implements OnInit {
     return map[status] ?? 'bg-[#F3F4F6] text-[#51575B]';
   }
 
-  viewLoan(loan: LoanView): void {
-    this.router.navigate(['/loans', loan.id]);
-  }
+  viewLoan(loan: LoanView): void { this.router.navigate(['/loans', loan.id]); }
 }

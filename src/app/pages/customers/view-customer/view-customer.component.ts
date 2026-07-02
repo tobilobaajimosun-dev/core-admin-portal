@@ -42,8 +42,9 @@ export class ViewCustomerComponent implements OnInit {
   private readonly route        = inject(ActivatedRoute);
   private readonly modalService = inject(PsModalService);
   readonly store                = inject(CustomerStore);
-  
+
   revealPhone = false;
+  bannerImageLoaded = false;
 
   activeTab = signal<CustomerTab>('profile');
 
@@ -80,10 +81,15 @@ export class ViewCustomerComponent implements OnInit {
     };
   });
 
-  ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.store.fetchCustomerById(id);
+ngOnInit(): void {
+  const id = this.route.snapshot.paramMap.get('id');
+  if (id) this.store.fetchCustomerById(id);
+
+  const tab = this.route.snapshot.queryParamMap.get('tab') as CustomerTab | null;
+  if (tab && this.tabs.some(t => t.value === tab)) {
+    this.activeTab.set(tab);
   }
+}
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   getInitials(): string {
@@ -101,6 +107,7 @@ export class ViewCustomerComponent implements OnInit {
     if (!customer) return;
     this.modalService.open(SendNotificationModalComponent, {
       data: {
+        customerId: customer.id,
         customerName:  `${customer.firstName} ${customer.lastName}`,
         customerEmail: customer.email,
         onSend: (channel: string, subject: string, message: string) => {
@@ -138,18 +145,20 @@ export class ViewCustomerComponent implements OnInit {
     });
   }
 
-  suspendCustomer(): void {
-    const customer = this.customer();
-    if (!customer) return;
-    this.modalService.open(SuspendCustomerModalComponent, {
-      data: {
-        customerName: `${customer.firstName} ${customer.lastName}`,
-        onSuspend: (reason: string, customReason?: string) => {
-          //console.log('Suspend customer', { reason, customReason });
-        },
+deactivateCustomer(): void {
+  const customer = this.customer();
+  if (!customer) return;
+
+  this.modalService.open(SuspendCustomerModalComponent, {
+    data: {
+      customerId:   customer.id,
+      customerName: `${customer.firstName} ${customer.lastName}`,
+      onSuccess: () => {
+        this.router.navigate(['/users']);
       },
-    });
-  }
+    },
+  });
+}
 
   maskPhone(phone: string): string {
   if (!phone || phone === '—') return '—';

@@ -1,0 +1,264 @@
+<div class="flex flex-col gap-4">
+
+  <!-- Toolbar -->
+  <div class="flex items-center justify-between mb-3">
+
+    <!-- Filter pills -->
+    <div class="flex items-center gap-2 flex-wrap">
+      @for (def of filterDefs; track def.type; let i = $index) {
+
+        <app-dropdown placement="bottom-start" #filterDropdown [isStatic]="true">
+
+          <button dropdownHeader type="button"
+            (click)="closeOtherDropdowns(i)"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+                   text-xs font-medium transition-colors cursor-pointer"
+            [class.border-[#00B3FF]]="isFilterActive(i)"
+            [class.text-[#00B3FF]]="isFilterActive(i)"
+            [class.border-[#E2E8F0]]="!isFilterActive(i)"
+            [class.text-[#131719]]="!isFilterActive(i)"
+            [class.hover:bg-[#F8FCFE]]="!isFilterActive(i)">
+            {{ filterDisplayLabel(i) }}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" class="shrink-0">
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <line x1="6" y1="12" x2="18" y2="12"/>
+              <line x1="8" y1="18" x2="16" y2="18"/>
+            </svg>
+          </button>
+
+          <div dropdownMenu
+            class="z-20 bg-white rounded-xl border border-[#E1E6ED]
+                   shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[220px]">
+
+            <div class="flex items-center justify-between px-4 py-3 border-b border-[#ECF1F5]">
+              <span class="text-sm font-semibold text-[#131719]">By {{ def.label }}</span>
+              <button type="button" (click)="filterDropdown.close()"
+                class="text-[#9CA3AF] hover:text-[#131719] transition-colors cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <ul class="py-1">
+              @for (opt of def.options; track opt.value; let last = $last) {
+                <li class="hover:bg-primary/[0.06] cursor-pointer has-[:checked]:bg-primary/[0.06]"
+                  [class.border-b]="!last"
+                  [class.border-[#ECF1F5]]="!last">
+                  <ps-radio
+                    class="px-4 py-2.5"
+                    [name]="'historyFilter_' + def.type"
+                    [(ngModel)]="selectedValues[i]"
+                    (ngModelChange)="onRadioChange(i, $event)"
+                    [defaultValue]="opt.value"
+                    [label]="opt.label">
+                  </ps-radio>
+                </li>
+              }
+            </ul>
+
+            <div class="px-3 py-2 shadow-[0px_-1px_6px_0px_rgba(0,0,0,0.09)]">
+              @if (isFilterActive(i)) {
+                <button type="button" (click)="clearFilter(i)"
+                  class="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs
+                         font-medium text-[#51575B] border border-[#E2E8F0] hover:bg-gray-50
+                         transition-colors cursor-pointer mb-2">
+                  Clear filter
+                </button>
+              }
+              <button type="button"
+                (click)="applyFilter(i, filterDropdown)"
+                [disabled]="!selectedValues[i]"
+                class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg
+                       text-sm font-medium transition-all duration-200
+                       bg-[#EBEBEB] text-[#ABABAB] cursor-not-allowed
+                       enabled:bg-[#00B3FF] enabled:text-white enabled:cursor-pointer
+                       enabled:hover:opacity-90">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="6" x2="20" y2="6"/>
+                  <line x1="6" y1="12" x2="18" y2="12"/>
+                  <line x1="8" y1="18" x2="16" y2="18"/>
+                </svg>
+                Apply filter
+              </button>
+            </div>
+
+          </div>
+        </app-dropdown>
+
+      }
+
+    </div>
+
+    <!-- Search + Export -->
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Search title, message, recipient"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="pl-9 pr-4 py-2 border border-[#E1E8ED] rounded-lg text-sm text-[#131719]
+            bg-white outline-none focus:border-[#00B3FF] transition-colors placeholder:text-[#9CA3AF]
+            w-64"/>
+      </div>
+
+      <button type="button" (click)="onExport()" [disabled]="isExportingHistory()"
+  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+    text-sm font-semibold hover:bg-[#009FE5] transition-colors cursor-pointer
+    disabled:opacity-60 disabled:cursor-not-allowed">
+  {{ isExportingHistory() ? 'Exporting…' : 'Export' }}
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="r ound" stroke-linejoin="round" stroke-width="2"
+      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+  </svg>
+</button>
+    </div>
+
+  </div>
+
+  <!-- Loading skeleton -->
+  @if (isLoading()) {
+    <div class="w-full rounded-xl border border-[#ECF1F5] overflow-hidden">
+      <div class="bg-[#F8FCFE] flex border-b border-[#ECF1F5] px-5 py-3 gap-6">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="h-3 w-24 rounded-full bg-gray-200 animate-pulse"></div>
+        }
+      </div>
+      @for (row of [1,2,3,4,5]; track row) {
+        <div class="flex items-center gap-6 px-5 py-4 border-b border-[#ECF1F5] last:border-0">
+          <div class="h-2.5 w-28 rounded-full bg-gray-200 animate-pulse"></div>
+          <div class="h-2.5 w-32 rounded-full bg-gray-200 animate-pulse"></div>
+          <div class="h-2.5 w-20 rounded-full bg-gray-200 animate-pulse"></div>
+          <div class="h-6 w-16 rounded-full bg-gray-200 animate-pulse"></div>
+          <div class="h-6 w-20 rounded-full bg-gray-200 animate-pulse ml-auto"></div>
+        </div>
+      }
+    </div>
+
+  <!-- Empty state -->
+  } @else if (history().length === 0) {
+    <div class="rounded-xl border border-[#ECF1F5]">
+      <ps-empty description="No notifications to display"></ps-empty>
+    </div>
+
+  <!-- Table -->
+  } @else {
+    <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-[#F8FCFE]">
+            <th class="text-left py-3 px-5 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
+              Date &amp; Time
+            </th>
+            <th class="text-left py-3 px-5 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em]">
+              Recipient
+            </th>
+            <th class="text-left py-3 px-5 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
+              Type
+            </th>
+            <th class="text-left py-3 px-5 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em]">
+              Channel
+            </th>
+            <th class="text-left py-3 px-5 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em]">
+              Status
+            </th>
+            <!-- <th class="py-3 px-5 border-b border-[#ECF1F5]"></th> -->
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of history(); track item.id) {
+            <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+
+              <td class="py-4 px-5 whitespace-nowrap">
+                <p class="text-sm font-medium text-[#131719]">
+                  {{ item.createdAt | date:'MMM d, yyyy,' }}
+                </p>
+                <p class="text-xs text-[#9CA3AF]">
+                  {{ item.createdAt | date:'h:mm:ss a' }} GMT
+                </p>
+              </td>
+
+              <td class="py-4 px-5 text-sm font-normal text-[#51575B] whitespace-nowrap">
+                {{ item.recipient }}
+              </td>
+
+              <td class="py-4 px-5 text-sm font-normal text-[#51575B]">
+                {{ displayType(item) }}
+              </td>
+
+              <td class="py-4 px-5 text-sm font-normal text-[#51575B] uppercase">
+                {{ item.channel }}
+              </td>
+
+              <td class="py-4 px-5">
+               <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold capitalize whitespace-nowrap"
+                [ngClass]="getStatusClass(item.status)">
+                  {{ item.status }}
+                  </span>
+              </td>
+
+              <!-- <td class="py-4 px-5 relative">
+                <button
+                  type="button"
+                  (click)="toggleMenu(item.id)"
+                  class="flex items-center justify-center w-8 h-8 rounded-lg
+                    hover:bg-[#F3F7F9] transition-colors cursor-pointer">
+                  <svg class="w-4 h-4 text-[#51575B]" fill="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                  </svg>
+                </button>
+
+                @if (openMenuId() === item.id) {
+                  <div class="absolute right-5 top-12 z-20 w-36 bg-white rounded-lg border border-[#E1E8ED]
+                    shadow-lg overflow-hidden">
+                    <button type="button" (click)="onView(item)"
+                      class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[#131719]
+                        hover:bg-[#F8FCFE] transition-colors cursor-pointer text-left">
+                      <svg class="w-4 h-4 text-[#51575B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                      View
+                    </button>
+                    @if (item.status === 'failed') {
+                      <button type="button" (click)="onResend(item)"
+                        class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[#131719]
+                          hover:bg-[#F8FCFE] transition-colors cursor-pointer text-left">
+                        <svg class="w-4 h-4 text-[#51575B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        Resend
+                      </button>
+                    }
+                  </div>
+                }
+              </td> -->
+
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+   <!-- Pagination -->
+<ps-pagination
+  [totalItems]="totalCount()"
+  [itemPerPage]="pageSize()"
+  [currentPage]="currentPage()"
+  (pageChanged)="onPageChange($event)"
+  (pageSizeChanged)="onPageSizeChange($event)">
+</ps-pagination>
+
+</div>

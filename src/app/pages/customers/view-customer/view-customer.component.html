@@ -2,12 +2,17 @@
 
   <!-- ── Performance banner header ── -->
   <div class="w-full relative">
-    <img src="/images/performance-banner-bg.png" alt="" class="absolute inset-0 w-full" />
+    @if (!isLoading() && customer()) {
+    <img src="/images/performance-banner-bg.png" alt=""
+      class="absolute inset-0 w-full opacity-0 transition-opacity duration-300 ease-out"
+      (load)="bannerImageLoaded = true"
+      [class.opacity-100]="bannerImageLoaded" />
+  }
 
     <div class="relative z-10 px-6 py-6">
 
       @if (isLoading()) {
-        <!-- ── Banner card skeleton ── -->
+        <!-- ── Banner card skeleton (no background image until data is ready) ── -->
         <div class="bg-white rounded-xl border border-[#ECF1F5] overflow-hidden px-6 py-6
           flex flex-col items-center text-center">
 
@@ -47,76 +52,76 @@
             </button>
           </div>
 
-          <!-- Avatar -->
-          <div class="mb-3">
-            @if (customer()!.avatarUrl) {
-              <img [src]="customer()!.avatarUrl" [alt]="customer()!.firstName"
-                class="w-16 h-16 rounded-full object-cover" />
-            } @else {
-              <div class="w-16 h-16 rounded-full bg-[#00B3FF] flex items-center justify-center
-                text-white text-xl font-bold">
-                {{ getInitials() }}
-              </div>
-            }
+            <!-- Avatar -->
+            <div class="mb-3">
+              @if (customer()!.avatarUrl) {
+                <img [src]="customer()!.avatarUrl" [alt]="customer()!.firstName"
+                  class="w-16 h-16 rounded-full object-cover" />
+              } @else {
+                <div class="w-16 h-16 rounded-full bg-[#00B3FF] flex items-center justify-center
+                  text-white text-xl font-bold">
+                  {{ getInitials() }}
+                </div>
+              }
+            </div>
+
+            <!-- Name -->
+            <h2 class="text-lg font-semibold text-[#131719] tracking-[-0.005em] leading-none mb-1">
+              {{ customer()!.firstName }} {{ customer()!.lastName }}
+            </h2>
+
+            <!-- Email -->
+            <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-1">
+              {{ customer()!.email }}
+            </p>
+
+            <!-- Phone -->
+            <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-3
+              flex items-center justify-center gap-1.5">
+              {{ revealPhone ? customer()!.phone : maskPhone(customer()!.phone) }}
+              <ps-svg-icon [name]="revealPhone ? 'eye-icon' : 'eye-lash-icon'"
+                class="w-4 h-4 text-[#00B3FF] cursor-pointer hover:opacity-80"
+                (click)="revealPhone = !revealPhone">
+              </ps-svg-icon>
+            </p>
+
+            <div class="flex items-center gap-2 rounded-[4px] border border-[#F3F7F9] bg-[#F8FCFE]
+              mb-5 text-sm py-1 px-2">
+              <span class="text-[13px] font-medium text-[#AAB3BA]">
+                Joined: {{ customer()!.joinedAt | date:'dd MMMM, yyyy' }}
+              </span>
+              <span class="font-semibold text-[#51575B]">
+                Last active in: {{ customer()!.lastActiveAt | date:'dd MMMM, yyyy' }}
+              </span>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center justify-center gap-3">
+              <button type="button"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+                  text-sm font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
+                (click)="openSendNotificationModal()">
+                Send notification
+                <ps-svg-icon name="notifications-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+              </button>
+
+              <button type="button"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+                  text-sm font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
+                (click)="openEditCustomerModal()">
+                <ps-svg-icon name="edit-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+                Edit user details
+              </button>
+
+              <button (click)="deactivateCustomer()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#EF4444]
+                  text-sm font-medium text-[#8E1F0B] bg-[#E51C00]/[0.1] transition-colors cursor-pointer">
+                Suspend user
+                <ps-svg-icon name="pause-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+              </button>
+            </div>
+
           </div>
-
-          <!-- Name -->
-          <h2 class="text-lg font-semibold text-[#131719] tracking-[-0.005em] leading-none mb-1">
-            {{ customer()!.firstName }} {{ customer()!.lastName }}
-          </h2>
-
-          <!-- Email -->
-          <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-1">
-            {{ customer()!.email }}
-          </p>
-
-          <!-- Phone -->
-          <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-3
-            flex items-center justify-center gap-1.5">
-            {{ revealPhone ? customer()!.phone : maskPhone(customer()!.phone) }}
-            <ps-svg-icon [name]="revealPhone ? 'eye-icon' : 'eye-lash-icon'"
-              class="w-4 h-4 text-[#00B3FF] cursor-pointer hover:opacity-80"
-              (click)="revealPhone = !revealPhone">
-            </ps-svg-icon>
-          </p>
-
-          <div class="flex items-center gap-2 rounded-[4px] border border-[#F3F7F9] bg-[#F8FCFE]
-            mb-5 text-sm py-1 px-2">
-            <span class="text-[13px] font-medium text-[#AAB3BA]">
-              Joined: {{ customer()!.joinedAt | date:'dd MMMM, yyyy' }}
-            </span>
-            <span class="font-semibold text-[#51575B]">
-              Last active in: {{ customer()!.lastActiveAt | date:'dd MMMM, yyyy' }}
-            </span>
-          </div>
-
-          <!-- Action buttons -->
-          <div class="flex items-center justify-center gap-3">
-            <button type="button"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
-                text-sm font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
-              (click)="openSendNotificationModal()">
-              Send notification
-              <ps-svg-icon name="notifications-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
-            </button>
-
-            <button type="button"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
-                text-sm font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
-              (click)="openEditCustomerModal()">
-              <ps-svg-icon name="edit-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
-              Edit user details
-            </button>
-
-            <button (click)="suspendCustomer()"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#EF4444]
-                text-sm font-medium text-[#8E1F0B] bg-[#E51C00]/[0.1] transition-colors cursor-pointer">
-              Suspend user
-              <ps-svg-icon name="pause-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
-            </button>
-          </div>
-
-        </div>
       }
 
     </div>
@@ -193,7 +198,7 @@
     }
 
     @if (!isLoading() && customer()) {
-      <div class="flex items-center gap-4 mb-8">
+      <div class="flex items-center justify-center gap-4 mb-8">
         @for (tab of tabs; track tab.value) {
           <button type="button" (click)="activeTab.set(tab.value)"
             class="flex items-center gap-2 rounded-full border text-sm font-medium

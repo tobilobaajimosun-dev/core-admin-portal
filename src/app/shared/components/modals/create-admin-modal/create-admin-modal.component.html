@@ -101,35 +101,29 @@
                     }
                 </div>
 
-                <!-- Role -->
-                <div>
-                    <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
-                        Role
-                    </label>
-                    <div class="relative">
-                        <select formControlName="roleId" class="w-full px-3 py-2.5 border border-[#AAB3BA] rounded-lg text-sm
-        outline-none appearance-none transition-colors cursor-pointer
-        focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF]"
-                            [class.text-[#AAB3BA]]="!formControls['roleId'].value"
-                            [class.text-[#2B3033]]="formControls['roleId'].value">
-                            <option value="" disabled selected hidden>
-                                {{ isLoadingRoles() ? 'Loading roles...' : 'Select a role' }}
-                            </option>
-                            @for (role of roles(); track role.id) {
-                            <option [value]="role.id">{{ role.name }}</option>
-                            }
-                        </select>
-                        <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                            <svg class="w-4 h-4 text-[#51575B]" viewBox="0 0 20 20" fill="none">
-                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </span>
-                    </div>
-                    @if (formControls['roleId'].invalid && formControls['roleId'].touched) {
-                    <p class="mt-1 text-xs text-red-500">Please select a role.</p>
-                    }
-                </div>
+<!-- Role -->
+<div>
+    <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5 tracking-[0px]">
+        Role
+    </label>
+    @if (rolesAndDataReady()) {
+        <ps-select
+            formControlName="roleId"
+            inputClass="py-2.5 ps-3 pe-10 text-sm border-[#AAB3BA] focus:border-[#00B3FF] focus:ring-1 focus:ring-[#00B3FF]"
+            [placeholder]="'Select a role'">
+            @for (role of roles(); track role.id) {
+                <ps-select-option [value]="role.id" [label]="role.name"></ps-select-option>
+            }
+        </ps-select>
+    } @else {
+        <div class="w-full px-3 py-2.5 border border-[#AAB3BA] rounded-lg text-sm text-[#AAB3BA] bg-gray-50 animate-pulse">
+            Loading roles...
+        </div>
+    }
+    @if (formControls['roleId'].invalid && formControls['roleId'].touched) {
+        <p class="mt-1 text-xs text-red-500">Please select a role.</p>
+    }
+</div>
 
                 <!-- Add custom permissions toggle -->
                 <div class="py-1">

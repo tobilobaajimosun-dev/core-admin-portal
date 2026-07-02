@@ -5,6 +5,7 @@ import {
   TransactionListParams,
   TransactionListResponse,
   TransactionDetailResponse,
+  TransactionMetricsResponse
 } from '@core/interfaces/transaction.model';
 import { buildURLSearchParams } from '@pcsl-ui/utils/strings';
 
@@ -27,6 +28,12 @@ export class TransactionService {
   getTransactionById(id: string): Observable<TransactionDetailResponse> {
   return this.httpClient.get<TransactionDetailResponse>(
     `${this.apiBaseUrl}/api/v1/transactions/${id}`
+  );
+}
+
+getTransactionMetrics(): Observable<TransactionMetricsResponse> {
+  return this.httpClient.get<TransactionMetricsResponse>(
+    `${this.apiBaseUrl}/api/v1/transactions/metrics`
   );
 }
 }

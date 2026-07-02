@@ -4,7 +4,7 @@
     <h2 class="text-base font-semibold text-[#131719] tracking-tight">
       Recent Loan Applications
     </h2>
-    <button type="button" class="text-sm font-medium text-[#00B3FF] hover:opacity-80 transition-opacity">
+    <button type="button" class="text-sm font-medium text-[#00B3FF] hover:opacity-80 transition-opacity cursor-pointer">
       View all
     </button>
   </div>
@@ -143,14 +143,23 @@
                 </span>
               </td>
 
-              <!-- Actions -->
-              <td class="py-3 px-3">
-                <button type="button" class="text-[#9CA3AF] hover:text-[#44444B] transition-colors">
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"/>
-                  </svg>
+               <!-- Actions -->
+                <td class="py-3 px-4">
+                <app-dropdown placement="bottom-end">
+                <button dropdownHeader type="button" class="size-7 inline-flex items-center justify-center rounded-md
+                             text-[#44444B] transition-colors cursor-pointer">
+                  <ps-svg-icon name="more"></ps-svg-icon>
                 </button>
-              </td>
+                <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
+                             shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[190px] py-1">
+                  <button type="button" (click)="viewLoan(loan)" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#44444B]
+                               hover:bg-primary/[0.06] transition-colors cursor-pointer">
+                    <ps-svg-icon name="eye-icon" class="w-4 h-4"></ps-svg-icon>
+                    View loan
+                  </button>
+                </div>
+              </app-dropdown>
+                </td>
 
             </tr>
           }

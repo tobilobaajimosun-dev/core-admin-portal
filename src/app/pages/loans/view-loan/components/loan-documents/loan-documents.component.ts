@@ -1,11 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { PsSvgIconComponent } from "@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component";
-
-export interface GeneratedLetter {
-  dateGenerated: Date;
-  letterType:    string;
-}
+import { LoanDetailDocument, LoanDetailGeneratedLetter } from '@core/interfaces/loan.model';
 
 @Component({
   selector: 'app-loan-documents',
@@ -14,33 +10,12 @@ export interface GeneratedLetter {
   templateUrl: './loan-documents.component.html',
 })
 export class LoanDocumentsComponent {
-  readonly videoFile = {
-    name:       'Video here',
-    uploadedAt: new Date('2024-08-29T15:52:12'),
-    format:     'MP4',
-  };
+  @Input({ required: true }) documents: LoanDetailDocument[] = [];
+  @Input({ required: true }) generatedLetters: LoanDetailGeneratedLetter[] = [];
 
-  readonly offerLetter = {
-    name:       'IMG749Q-3.pdf',
-    uploadedAt: new Date('2024-08-29T15:52:12'),
-    format:     'PDF',
-  };
+  get documentsApproved(): boolean { return this.documents.length > 0; }
 
-  readonly generatedLetters: GeneratedLetter[] = [
-    { dateGenerated: new Date('2026-06-05'), letterType: 'Letter of non-indebtedness' },
-  ];
-
-  documentsApproved = true;
-
-  generateLetter(type: string): void {
-    console.log('Generate letter:', type);
-  }
-
-  viewFile(name: string): void {
-    console.log('View file:', name);
-  }
-
-  downloadLetter(letter: GeneratedLetter): void {
-    console.log('Download letter:', letter);
-  }
+  generateLetter(type: string): void { console.log('Generate letter:', type); }
+  viewFile(link: string): void { window.open(link, '_blank'); }
+  downloadLetter(letter: LoanDetailGeneratedLetter): void { console.log('Download letter:', letter); }
 }

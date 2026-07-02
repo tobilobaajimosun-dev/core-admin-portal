@@ -1,0 +1,67 @@
+<div class="p-6">
+
+  <!-- Page header -->
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <h1 class="text-xl font-semibold text-[#131719] tracking-[-0.005em] leading-none mb-1">
+        Push Notifications
+      </h1>
+      <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em]">
+        Manage customer communications, notification delivery and templates
+      </p>
+    </div>
+
+    <!-- Timeframe filter -->
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-1">
+        @for (tab of timeframeTabs; track tab.value) {
+          <button
+            type="button"
+            (click)="onTimeframeChange(tab.value)"
+            class="px-4 py-1.5 text-xs font-semibold transition-all whitespace-nowrap rounded-full cursor-pointer"
+            [class.text-[#00B3FF]]="activeRange() === tab.value"
+            [class.text-[#727C84]]="activeRange() !== tab.value">
+            {{ tab.label }}
+          </button>
+        }
+
+        <ps-date-range-picker
+          placeholder="Filter by date range"
+          (rangeChange)="onRangeChange($event)">
+        </ps-date-range-picker>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats cards -->
+  <app-notification-stats />
+
+  <!-- Tabs -->
+  <div class="flex items-center justify-center gap-3 mb-6 mt-6">
+    @for (tab of tabs; track tab.value) {
+      <button
+        type="button"
+        (click)="activeTab.set(tab.value)"
+        class="flex items-center gap-2 rounded-full border text-sm font-medium
+          transition-all duration-150 cursor-pointer py-2.5 px-7 h-10"
+        [ngClass]="activeTab() === tab.value
+          ? 'border-[#00B3FF] text-[#00B3FF] bg-[#00B3FF]/[0.04]'
+          : 'border-[#E1E8ED] text-[#51575B] bg-white'">
+        <span class="flex items-center justify-center w-4 h-4">
+          <ps-svg-icon [name]="tab.icon"></ps-svg-icon>
+        </span>
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Tab content -->
+  @if (activeTab() === 'send') {
+    <app-send-notification />
+  } @else if (activeTab() === 'template') {
+    <app-template-list />
+  } @else if (activeTab() === 'history') {
+    <app-notification-history />
+  }
+
+</div>

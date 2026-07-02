@@ -7,6 +7,8 @@ import { PsEmptyComponent }      from '@pcsl-ui/ui/ps-empty/ps-empty.component';
 import { DropdownComponent }     from '@shared/components/dropdown/dropdown.component';
 import { CustomerStore }         from '@core/store/customer.store';
 import { CustomerRaw }           from '@core/interfaces/customer.model';
+import { PsModalService } from '@pcsl-ui/ui/ps-modal/ps-modal.service';
+import { SuspendCustomerModalComponent } from '@shared/components/modals/suspend-customer-modal/suspend-customer-modal.component';
 
 @Component({
   selector: 'app-recent-customers',
@@ -22,6 +24,7 @@ import { CustomerRaw }           from '@core/interfaces/customer.model';
 export class RecentCustomersComponent implements OnInit {
   private readonly router = inject(Router);
   readonly store          = inject(CustomerStore);
+  private readonly modalService = inject(PsModalService);
 
   skeletonRows = new Array(5);
   columns      = ['Date & Time', 'Customer Details', 'KYC Status', 'Wallet Status', ''];
@@ -82,17 +85,31 @@ export class RecentCustomersComponent implements OnInit {
     return map[status] ?? '#F3F4F6';
   }
 
-   viewCustomer(customer: CustomerRaw): void {
+  viewCustomer(customer: CustomerRaw): void {
     this.router.navigate(['/users', customer.id]);
   }
 
-  viewLoanHistory(customer: CustomerRaw): void {
-    console.log('View loan history', customer.id);
-  }
+viewLoanHistory(customer: CustomerRaw): void {
+  this.router.navigate(['/users', customer.id], { queryParams: { tab: 'loans' } });
+}
 
-  deactivateCustomer(customer: CustomerRaw): void {
-    console.log('Deactivate', customer.id);
-  }
+deactivateCustomer(customer: CustomerRaw): void {
+  this.modalService.open(SuspendCustomerModalComponent, {
+    data: {
+     customerId: customer.id,
+      customerName: `${customer.firstName} ${customer.lastName}`,
+      onSuspend: (reason: string, customReason?: string) => {
+        this.store.suspendCustomer(
+          customer.id,
+          () => {
+            },
+          (message) => {
+         }
+        );
+      },
+    },
+  });
+}
 
 
   // ── Wallet pill styles ─────────────────────────────────────────────────────

@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
-import { TransactionStat }  from '@core/interfaces/transaction.model';
+import { TransactionStore } from '@core/store/transaction.store';
+import { TransactionMetricsData, TransactionStat } from '@core/interfaces/transaction.model';
 
 @Component({
   selector: 'app-transaction-stats',
@@ -9,13 +10,43 @@ import { TransactionStat }  from '@core/interfaces/transaction.model';
   imports: [CommonModule, PsSvgIconComponent],
   templateUrl: './transaction-stats.component.html',
 })
-export class TransactionStatsComponent {
-  isLoading    = signal(false);
-  skeletonItems = new Array(3);
+export class TransactionStatsComponent implements OnInit {
+  private readonly store = inject(TransactionStore);
 
-  stats = signal<TransactionStat[]>([
-    { label: 'Total Transactions', value: 1_000_090, trend: 12, trendUp: true  },
-    { label: 'Total Volume',       value: '₦1.9B',   trend: 12, trendUp: true, prefix: '' },
-    { label: 'Successful Transactions', value: 100,  trend: 12, trendUp: true  },
-  ]);
+  readonly isLoading     = this.store.metricsLoading;
+  readonly skeletonItems = new Array(3);
+
+  readonly stats = computed<TransactionStat[]>(() => {
+    const data = this.store.metrics();
+    if (!data) return [];
+    return this.mapStats(data);
+  });
+
+  ngOnInit(): void {
+    this.store.fetchMetrics();
+  }
+
+  private mapStats(data: TransactionMetricsData): TransactionStat[] {
+    return [
+      {
+        label:   'Total Transactions',
+        value:   data.total_transactions,
+        trend:   null,
+        trendUp: true,
+      },
+      {
+        label:   'Total Volume',
+        value:   data.total_amount,
+        trend:   null,
+        trendUp: true,
+        prefix:  '₦',
+      },
+      {
+        label:   'Successful Transactions',
+        value:   data.successful_transactions,
+        trend:   null,
+        trendUp: true,
+      },
+    ];
+  }
 }

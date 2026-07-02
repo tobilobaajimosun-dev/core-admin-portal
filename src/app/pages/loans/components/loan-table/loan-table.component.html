@@ -1,54 +1,118 @@
 <div class="flex items-center justify-between mb-3">
 
-    <!-- Filter pills -->
-    <div class="flex items-center gap-2 flex-wrap">
-        @for (filter of filters; track filter.type; let i = $index) {
-        <div class="relative">
-            <!-- Filter Trigger Pill -->
-            <button type="button" (click)="toggleFilter(i)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-                 text-xs font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
-                [class.border-[#00B3FF]]="filter.selected !== null" [class.text-[#00B3FF]]="filter.selected !== null"
-                [class.border-[#E2E8F0]]="filter.selected === null">
-                {{ filterLabels[filter.type] }}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    class="shrink-0">
-                    <line x1="4" y1="6" x2="20" y2="6" />
-                    <line x1="6" y1="12" x2="18" y2="12" />
-                    <line x1="8" y1="18" x2="16" y2="18" />
-                </svg>
-            </button>
+     <!-- Filter pills -->
+  <div class="flex items-center gap-2 flex-wrap">
+    @for (def of filterDefs; track def.type; let i = $index) {
 
-            <!-- Dropdown Panel -->
-            @if (filter.open) {
-            <div class="absolute top-full left-0 mt-1 z-20 bg-white rounded-xl border border-[#E1E6ED]
-                      shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[180px] py-1">
-                @for (option of filter.options; track option.value) {
-                <button type="button" (click)="selectFilterOption(i, option.value)" class="w-full text-left px-4 py-2.5 text-sm text-[#131719]
-                       hover:bg-[#00B3FF]/[0.06] transition-colors cursor-pointer"
-                    [class.text-[#00B3FF]]="filter.selected === option.value"
-                    [class.font-semibold]="filter.selected === option.value">
-                    {{ option.label }}
-                </button>
-                }
-                <div class="px-3 py-2 border-t border-[#ECF1F5]">
-                    <button type="button" (click)="applyFilter(i)"
-                        class="w-full text-sm py-1.5 rounded-md flex items-center justify-center gap-2 transition-colors"
-                        [class.bg-[#00B3FF]]="filter.selected !== null" [class.text-white]="filter.selected !== null"
-                        [class.bg-gray-100]="filter.selected === null" [class.text-gray-400]="filter.selected === null">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <line x1="4" y1="6" x2="20" y2="6" />
-                            <line x1="6" y1="12" x2="18" y2="12" />
-                            <line x1="8" y1="18" x2="16" y2="18" />
-                        </svg>
-                        Filter
-                    </button>
-                </div>
-            </div>
+      <app-dropdown placement="bottom-start" #filterDropdown [isStatic]="true">
+
+        <!-- Pill trigger -->
+        <button dropdownHeader type="button"
+           (click)="closeOtherDropdowns(i)"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+                 text-xs font-medium transition-colors cursor-pointer"
+          [class.border-[#00B3FF]]="isFilterActive(i)"
+          [class.text-[#00B3FF]]="isFilterActive(i)"
+          [class.border-[#E2E8F0]]="!isFilterActive(i)"
+          [class.text-[#131719]]="!isFilterActive(i)"
+          [class.hover:bg-[#F8FCFE]]="!isFilterActive(i)">
+          {{ filterDisplayLabel(i) }}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" class="shrink-0">
+            <line x1="4" y1="6" x2="20" y2="6"/>
+            <line x1="6" y1="12" x2="18" y2="12"/>
+            <line x1="8" y1="18" x2="16" y2="18"/>
+          </svg>
+        </button>
+
+        <!-- Dropdown panel -->
+        <div dropdownMenu
+          class="z-20 bg-white rounded-xl border border-[#E1E6ED]
+                 shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[220px]">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-[#ECF1F5]">
+            <span class="text-sm font-semibold text-[#131719]">By {{ def.label }}</span>
+            <button type="button" (click)="filterDropdown.close()"
+              class="text-[#9CA3AF] hover:text-[#131719] transition-colors cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Radio options -->
+          <ul class="py-1">
+            @for (opt of def.options; track opt.value; let last = $last) {
+              <li class="hover:bg-primary/[0.06] cursor-pointer has-[:checked]:bg-primary/[0.06]"
+                [class.border-b]="!last || (last && opt.value === 'custom_range' && !showCustomRange[i])"
+                [class.border-[#ECF1F5]]="!last || (last && opt.value === 'custom_range' && !showCustomRange[i])">
+                <ps-radio
+                  class="px-4 py-2.5"
+                  [name]="'loanFilter_' + def.type"
+                  [(ngModel)]="selectedValues[i]"
+                  (ngModelChange)="onRadioChange(i, $event)"
+                  [defaultValue]="opt.value"
+                  [label]="opt.label">
+                </ps-radio>
+              </li>
+
+              <!-- Inline custom range fields, shown after "Custom range" option -->
+              @if (opt.value === 'custom_range' && showCustomRange[i]) {
+                <li class="bg-primary/[0.05] border-b border-[#ECF1F5]">
+                  <form class="py-3 px-4 space-y-3" [formGroup]="customRangeForms[i]">
+                    <div>
+                      <label class="block text-xs font-medium text-[#2B3033] mb-1">Start Date</label>
+                      <input formControlName="start_date" type="date"
+                        class="w-full px-3 py-1.5 border border-[#ECF0F3] rounded-md text-xs
+                               outline-none focus:border-primary focus:ring-primary"/>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-[#2B3033] mb-1">End Date</label>
+                      <input formControlName="end_date" type="date"
+                        class="w-full px-3 py-1.5 border border-[#ECF0F3] rounded-md text-xs
+                               outline-none focus:border-primary focus:ring-primary"/>
+                    </div>
+                  </form>
+                </li>
+              }
             }
+          </ul>
+
+          <!-- Footer -->
+          <div class="px-3 py-2 shadow-[0px_-1px_6px_0px_rgba(0,0,0,0.09)]">
+            @if (isFilterActive(i)) {
+              <button type="button" (click)="clearFilter(i)"
+                class="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs
+                       font-medium text-[#51575B] border border-[#E2E8F0] hover:bg-gray-50
+                       transition-colors cursor-pointer mb-2">
+                Clear filter
+              </button>
+            }
+            <button type="button"
+              (click)="applyFilter(i, filterDropdown)"
+              [disabled]="!selectedValues[i]"
+              class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg
+                     text-sm font-medium transition-all duration-200
+                     bg-[#EBEBEB] text-[#ABABAB] cursor-not-allowed
+                     enabled:bg-[#00B3FF] enabled:text-white enabled:cursor-pointer
+                     enabled:hover:opacity-90">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="6" y1="12" x2="18" y2="12"/>
+                <line x1="8" y1="18" x2="16" y2="18"/>
+              </svg>
+              Apply filter
+            </button>
+          </div>
+
         </div>
-        }
-    </div>
+      </app-dropdown>
+
+    }
+  </div>
 
     <div class="flex items-center gap-3">
 
@@ -229,7 +293,7 @@
 
                     <app-dropdown placement="bottom-end">
                 <button dropdownHeader type="button" class="size-7 inline-flex items-center justify-center rounded-md
-                             text-[#9CA3AF] hover:text-[#44444B] transition-colors cursor-pointer">
+                             text-[#44444B] transition-colors cursor-pointer">
                   <ps-svg-icon name="more"></ps-svg-icon>
                 </button>
                 <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
