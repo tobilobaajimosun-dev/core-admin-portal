@@ -20,6 +20,8 @@ import {
   CustomerLoanRaw,
   CustomerTransactionRaw,
   CustomerTransactionListParams,
+  CustomerActivityRaw, 
+  CustomerActivityListParams
 } from '@core/interfaces/customer.model';
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -55,6 +57,13 @@ type CustomerState = {
 
   isSuspending: boolean;
   suspendError: string | null;
+
+  customerActivity:              CustomerActivityRaw[];
+  customerActivityTotal:         number;
+  customerActivityTotalPages:    number;
+  activityListConfig:            CustomerActivityListParams;
+  isLoadingActivity:             boolean;
+  activityError:                 string | null;
 };
 
 const initialCustomerState: CustomerState = {
@@ -88,6 +97,13 @@ const initialCustomerState: CustomerState = {
 
   isSuspending: false,
   suspendError: null,
+
+  customerActivity: [],
+  customerActivityTotal: 0,
+  customerActivityTotalPages: 0,
+  activityListConfig: { page: 1, limit: 10 },
+  isLoadingActivity: false,
+  activityError: null,
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -275,6 +291,37 @@ export const CustomerStore = signalStore(
     },
   });
 };
+
+const fetchCustomerActivity = rxMethod<{ customerId: string; params: CustomerActivityListParams }>(
+  pipe(
+    distinctUntilChanged(),
+    tap(({ params }) =>
+      patchState(store, {
+        isLoadingActivity: true,
+        activityError: null,
+        activityListConfig: params,
+      })
+    ),
+    switchMap(({ customerId, params }) =>
+      customerService.getCustomerRecentActivity(customerId, params).pipe(
+        tapResponse({
+          next: (res) =>
+            patchState(store, {
+              customerActivity: res.data.data,
+              customerActivityTotal: res.data.meta.total,
+              customerActivityTotalPages: res.data.meta.totalPages,
+              isLoadingActivity: false,
+            }),
+          error: (err: any) =>
+            patchState(store, {
+              activityError: err?.error?.message ?? 'Failed to load activity.',
+              isLoadingActivity: false,
+            }),
+        })
+      )
+    )
+  )
+);
     const patchSelectedCustomer = (patch: Partial<CustomerRaw>) => {
       const current = store.selectedCustomer();
       if (!current) return;
@@ -371,33 +418,55 @@ export const CustomerStore = signalStore(
     };
     const clearError = () => patchState(store, { error: null });
 
-    return {
-      fetchCustomers,
-      fetchCustomerById,
-      fetchFinancialSummary,
-      patchSelectedCustomer,
-      setPage,
-      setPageSize,
-      setSearch,
-      setKycFilter,
-      setLoanFilter,
-      setTimeframe,
-      setCustomDateRange,
-      clearError,
-      fetchCustomerLoans,
-      setLoanPage,
-      setLoanPageSize,
-      setLoanSearch,
-      setLoanStatusFilter,
-      setLoanDateRange,
-      fetchCustomerTransactions,
-      setTransactionPage,
-      setTransactionPageSize,
-      setTransactionSearch,
-      setTransactionStatusFilter,
-      setTransactionTypeFilter,
-      setTransactionDateRange,
-      suspendCustomer 
-    };
-  })
+    
+const setActivityPage = (customerId: string, page: number) => {
+  fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), page } });
+};
+
+const setActivityPageSize = (customerId: string, limit: number) => {
+  fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), limit, page: 1 } });
+};
+
+const setActivitySearch = (customerId: string, search: string) => {
+  fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), search: search || undefined, page: 1 } });
+};
+
+const setActivityModuleFilter = (customerId: string, module: string) => {
+  fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), module: module || undefined, page: 1 } });
+};
+
+   return {
+  fetchCustomers,
+  fetchCustomerById,
+  fetchFinancialSummary,
+  patchSelectedCustomer,
+  setPage,
+  setPageSize,
+  setSearch,
+  setKycFilter,
+  setLoanFilter,
+  setTimeframe,
+  setCustomDateRange,
+  clearError,
+  fetchCustomerLoans,
+  setLoanPage,
+  setLoanPageSize,
+  setLoanSearch,
+  setLoanStatusFilter,
+  setLoanDateRange,
+  fetchCustomerTransactions,
+  setTransactionPage,
+  setTransactionPageSize,
+  setTransactionSearch,
+  setTransactionStatusFilter,
+  setTransactionTypeFilter,
+  setTransactionDateRange,
+  suspendCustomer,
+  fetchCustomerActivity,
+  setActivityPage,
+  setActivityPageSize,
+  setActivitySearch,
+  setActivityModuleFilter,
+};
+})
 );

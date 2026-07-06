@@ -187,6 +187,10 @@ export class TransactionsTableComponent implements OnInit {
     }
   }
 
+  exportTransactions(): void {
+  this.store.exportTransactions();
+}
+
   clearFilter(i: number): void {
     this.appliedValues[i]   = '';
     this.selectedValues[i]  = '';

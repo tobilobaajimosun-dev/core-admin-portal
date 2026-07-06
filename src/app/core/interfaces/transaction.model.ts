@@ -62,15 +62,17 @@ export type TransactionDateRange =
   | 'custom';
 
 export interface TransactionListParams {
-  page?:         number;
-  limit?:        number;
-  search?:       string;
-  type?:         string;
-  category?:     string;
-  status?:       string;
-  custom_range?: TransactionDateRange;
-  start_date?:   string;
-  end_date?:     string;
+  page?:               number;
+  limit?:              number;
+  search?:             string;
+  type?:               string;
+  category?:           string;
+  status?:             string;
+  custom_range?:       TransactionDateRange;
+  start_date?:         string;
+  end_date?:           string;
+  transactionable_type?: string;
+  customer_id?:        string;
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────

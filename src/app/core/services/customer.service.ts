@@ -14,7 +14,9 @@ import {
   CustomerTransactionListResponse,
   CustomerMetricsResponse,
   CustomerNeedsActionListResponse,
-  CustomerDeleteResponse
+  CustomerDeleteResponse,
+  CustomerActivityListParams,
+  CustomerActivityListResponse
 
 } from '@core/interfaces/customer.model';
 
@@ -82,6 +84,16 @@ getNeedsAttention(
 deleteCustomer(customerId: string): Observable<CustomerDeleteResponse> {
   return this.httpClient.delete<CustomerDeleteResponse>(
     `${this.apiBaseUrl}/api/v1/customers/delete-customer/${customerId}`
+  );
+}
+
+getCustomerRecentActivity(
+  customerId: string,
+  params: CustomerActivityListParams = {}
+): Observable<CustomerActivityListResponse> {
+  const urlParams = buildURLSearchParams(params);
+  return this.httpClient.get<CustomerActivityListResponse>(
+    `${this.apiBaseUrl}/api/v1/customers/recent-activity/${customerId}?${urlParams}`
   );
 }
 }

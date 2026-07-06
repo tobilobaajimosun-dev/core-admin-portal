@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   TransactionListParams,
@@ -34,6 +34,23 @@ export class TransactionService {
 getTransactionMetrics(): Observable<TransactionMetricsResponse> {
   return this.httpClient.get<TransactionMetricsResponse>(
     `${this.apiBaseUrl}/api/v1/transactions/metrics`
+  );
+}
+
+getTransactionExport(
+  params: TransactionListParams = {}
+): Observable<HttpResponse<Blob>> {
+  const urlParams = buildURLSearchParams(params);
+  return this.httpClient.get(
+    `${this.apiBaseUrl}/api/v1/transactions/export?${urlParams}`,
+    { responseType: 'blob', observe: 'response' }
+  );
+}
+
+getTransactionReceipt(id: string): Observable<HttpResponse<Blob>> {
+  return this.httpClient.get(
+    `${this.apiBaseUrl}/api/v1/transactions/${id}/receipt`,
+    { responseType: 'blob', observe: 'response' }
   );
 }
 }

@@ -30,6 +30,7 @@ export class ViewTransactionComponent implements OnInit {
 
   transaction = computed(() => this.store.selectedTransaction());
   isLoading   = computed(() => this.store.isLoadingDetail());
+  isDownloadingReceipt = computed(() => this.store.isDownloadingReceipt());
 
   constructor() {
     effect(() => {
@@ -132,9 +133,10 @@ export class ViewTransactionComponent implements OnInit {
 
   goBack(): void { this.router.navigate(['/transactions']); }
 
-  downloadReceipt(): void {
-    console.log('Download receipt for', this.transaction()?.reference_no);
-  }
+ downloadReceipt(): void {
+  const id = this.transaction()?.id;
+  if (id) this.store.downloadReceipt(id);
+}
 
   getCustomerInitials(): string {
     const c = this.customer();

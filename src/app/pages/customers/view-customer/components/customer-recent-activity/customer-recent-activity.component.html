@@ -78,14 +78,14 @@
             <!-- IP Address -->
             <td class="py-3 px-4">
               <p class="text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-                {{ log.ipAddress }}
+                {{ log.ip_address ?? '—' }}
               </p>
             </td>
 
             <!-- Date & Time -->
             <td class="py-3 px-4">
               <p class="text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-                {{ log.dateTime | date:'MMM d, yyyy · h:mm a' }}
+                {{ log.createdAt | date:'MMM d, yyyy · h:mm a' }}
               </p>
             </td>
 

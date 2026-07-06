@@ -428,3 +428,60 @@ export interface CustomerDeleteResponse {
   data:         CustomerDeleteData;
   responseCode: string;
 }
+
+// ─── Customer Recent Activity ─────────────────────────────────────────────────
+
+export interface CustomerActivityRequestMetadata {
+  action:  string;
+  payload: Record<string, unknown>;
+}
+
+export interface CustomerActivityMetadata {
+  request: CustomerActivityRequestMetadata;
+}
+
+export interface CustomerActivityRaw {
+  id:            string;
+  customer_id:   string;
+  action:        string;
+  module:        string;
+  status:        string;
+  description:   string;
+  metadata:      CustomerActivityMetadata;
+  ip_address:    string | null;
+  user_agent:    string | null;
+  duration_ms:   number;
+  error_message: string | null;
+  createdAt:     string;
+}
+
+export interface CustomerActivityMeta {
+  page:            number;
+  limit:           number;
+  total:           number;
+  totalPages:      number;
+  hasNextPage:     boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface CustomerActivityListData {
+  data: CustomerActivityRaw[];
+  meta: CustomerActivityMeta;
+}
+
+export interface CustomerActivityListResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         CustomerActivityListData;
+  responseCode: string;
+}
+
+export interface CustomerActivityListParams {
+  page?:       number;
+  limit?:      number;
+  search?:     string;
+  module?:     string;
+  start_date?: string;
+  end_date?:   string;
+}
