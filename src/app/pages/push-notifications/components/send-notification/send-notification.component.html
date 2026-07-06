@@ -30,47 +30,41 @@
         <p class="text-xs font-normal text-[#51575B] mb-3">Narrow down recipients using filters.</p>
 
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-[#51575B] mb-1.5">Employment type</label>
-            <select
-              [ngModel]="employmentType()"
-              (ngModelChange)="employmentType.set($event)"
-              class="w-full border border-[#E1E8ED] rounded-lg px-3 py-2.5 text-sm text-[#131719]
-                bg-white outline-none focus:border-[#00B3FF] transition-colors cursor-pointer">
-              <option value="">All Employment Types</option>
-              <option value="employed">Employed</option>
-              <option value="self_employed">Self-Employed</option>
-              <option value="unemployed">Unemployed</option>
-            </select>
-          </div>
+        <div>
+  <label class="block text-xs font-medium text-[#51575B] mb-1.5">Employment type</label>
+  <ps-select
+    placeholder="All Employment Types"
+    [ngModel]="employmentType()"
+    (selectionChanged)="employmentType.set($any($event))">
+    @for (opt of employmentTypeOptions; track opt.value) {
+      <ps-select-option [value]="opt.value" [label]="opt.label"></ps-select-option>
+    }
+  </ps-select>
+</div>
 
-          <div>
-            <label class="block text-xs font-medium text-[#51575B] mb-1.5">Active loan status</label>
-            <select
-              [ngModel]="loanStatus()"
-              (ngModelChange)="loanStatus.set($event)"
-              class="w-full border border-[#E1E8ED] rounded-lg px-3 py-2.5 text-sm text-[#131719]
-                bg-white outline-none focus:border-[#00B3FF] transition-colors cursor-pointer">
-              <option value="">All Loan</option>
-              <option value="active">Active</option>
-              <option value="overdue">Overdue</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
+<div>
+  <label class="block text-xs font-medium text-[#51575B] mb-1.5">Active loan status</label>
+  <ps-select
+    placeholder="All Loan"
+    [ngModel]="loanStatus()"
+    (selectionChanged)="loanStatus.set($any($event))">
+    @for (opt of loanStatusOptions; track opt.value) {
+      <ps-select-option [value]="opt.value" [label]="opt.label"></ps-select-option>
+    }
+  </ps-select>
+</div>
 
-          <div>
-            <label class="block text-xs font-medium text-[#51575B] mb-1.5">KYC status</label>
-            <select
-              [ngModel]="kycStatus()"
-              (ngModelChange)="kycStatus.set($event)"
-              class="w-full border border-[#E1E8ED] rounded-lg px-3 py-2.5 text-sm text-[#131719]
-                bg-white outline-none focus:border-[#00B3FF] transition-colors cursor-pointer">
-              <option value="">All Status</option>
-              <option value="verified">Verified</option>
-              <option value="pending">Pending</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
+<div>
+  <label class="block text-xs font-medium text-[#51575B] mb-1.5">KYC status</label>
+  <ps-select
+    placeholder="All Status"
+    [ngModel]="kycStatus()"
+    (selectionChanged)="kycStatus.set($any($event))">
+    @for (opt of kycStatusOptions; track opt.value) {
+      <ps-select-option [value]="opt.value" [label]="opt.label"></ps-select-option>
+    }
+  </ps-select>
+</div>
 
           <div>
             <label class="block text-xs font-medium text-[#51575B] mb-1.5">Wallet balance range (₦)</label>

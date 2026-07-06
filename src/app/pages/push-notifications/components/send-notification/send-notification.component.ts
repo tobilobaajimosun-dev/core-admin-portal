@@ -78,6 +78,28 @@ export class SendNotificationComponent {
   scheduledTime = signal('');
 
   readonly templateOptions = ['', 'Loan Repayment Reminder', 'Loan Approved'];
+
+  readonly employmentTypeOptions = [
+  { value: '', label: 'All Employment Types' },
+  { value: 'employed', label: 'Employed' },
+  { value: 'self_employed', label: 'Self-Employed' },
+  { value: 'unemployed', label: 'Unemployed' },
+];
+
+readonly loanStatusOptions = [
+  { value: '', label: 'All Loan' },
+  { value: 'active', label: 'Active' },
+  { value: 'overdue', label: 'Overdue' },
+  { value: 'completed', label: 'Completed' },
+];
+
+readonly kycStatusOptions = [
+  { value: '', label: 'All Status' },
+  { value: 'verified', label: 'Verified' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'rejected', label: 'Rejected' },
+];
+
   readonly availableVariables = AVAILABLE_VARIABLES;
 
   readonly recipientTabs: { value: RecipientTab; label: string; icon: string }[] = [

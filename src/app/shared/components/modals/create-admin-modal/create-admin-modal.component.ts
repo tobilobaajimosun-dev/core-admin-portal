@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   effect,
   inject,
@@ -61,8 +62,13 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
   private isSubmittingAction = false;
   private destroy$ = new Subject<void>();
   private modalService = inject(PsModalService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private initialPrefillDone = false;
   private pendingRoleId: string | null = null;
+
+  // Guards against overlapping/late rAF polling loops (e.g. if the modal
+  // is reopened with a different adminId before a previous loop settles).
+  private roleWritePollToken = 0;
 
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly injector = inject(Injector);
@@ -81,7 +87,11 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
     firstname: ['', Validators.required],
     lastname: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
-    roleId: ['', Validators.required],
+    // IMPORTANT: null, not '' — ps-select's writeValue() treats '' as a
+    // real value to resolve against options() (which can crash with
+    // NG0950 if options haven't finished binding yet). null takes the
+    // cheap resetSelection() path instead.
+    roleId: [null as string | null, Validators.required],
     addCustomPermissions: [false],
   });
 
@@ -120,11 +130,19 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
         const selectedAdmin = this.adminStore.selectedAdmin();
         if (!selectedAdmin) return;
 
+        // IMPORTANT: roleId is deliberately NOT included in this patchValue.
+        // patchValue() triggers Angular's ControlValueAccessor.writeValue()
+        // on the bound <ps-select> synchronously, in the very same tick —
+        // before our own readiness poll ever gets a chance to run. If
+        // ps-select's options() haven't fully settled at that instant, its
+        // internal applyPendingValue() effect throws NG0950 once options()
+        // does populate a moment later. So: patch the plain text fields
+        // here (no ps-select involved), and defer roleId until
+        // pollAndWriteRoleSelect() has confirmed options() is populated.
         this.inviteForm.patchValue({
           firstname: selectedAdmin.first_name,
           lastname: selectedAdmin.last_name,
           email: selectedAdmin.email,
-          roleId: selectedAdmin.role?.id ?? '',
         });
 
         this.pendingRoleId = selectedAdmin.role?.id ?? null;
@@ -147,12 +165,13 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
         this.initialPrefillDone = true;
         this.rolesAndDataReady.set(true);
 
-        // Give Angular one tick to mount ps-select with options, then write value
-        setTimeout(() => {
-          if (this.pendingRoleId) {
-            this.roleSelect?.writeValue(this.pendingRoleId);
-          }
-        });
+        // ps-select's content-children `options()` query needs at least
+        // one render pass after `rolesAndDataReady` flips true (which is
+        // what mounts <ps-select> in the template) before it has any
+        // options to resolve `writeValue()` against. Rather than guessing
+        // a fixed setTimeout delay, poll on rAF until options() is
+        // actually populated, then write the value.
+        this.pollAndWriteRoleSelect(this.pendingRoleId);
 
       } else {
         this.syncPermissionControls([]);
@@ -198,7 +217,7 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
 
     this.inviteForm.get('roleId')!.valueChanges
       .pipe(takeUntil(this.destroy$))
-      .subscribe((selectedRoleId: string) => {
+      .subscribe((selectedRoleId: string | null) => {
         if (!this.initialPrefillDone) return;
         if (!selectedRoleId) return;
 
@@ -211,15 +230,73 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
   }
 
   ngAfterViewInit(): void {
-    // If roleSelect is already available and we have a pending value, apply it
+    // If roleSelect is already available and we have a pending value, apply it.
+    // (Covers the case where the view was ready before effect 2 ran.)
     if (this.pendingRoleId && this.roleSelect) {
-      this.roleSelect.writeValue(this.pendingRoleId);
+      this.pollAndWriteRoleSelect(this.pendingRoleId);
     }
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    // Invalidate any in-flight rAF polling loop.
+    this.roleWritePollToken++;
+  }
+
+  // ── Role select prefill helper ───────────────────────────────────────────────
+
+  /**
+   * Waits (via requestAnimationFrame) until the shared <ps-select>'s public
+   * `options()` signal actually has entries, then assigns the role onto the
+   * FormControl itself (NOT by calling ps-select.writeValue() directly).
+   *
+   * Why through the control and not straight at the component: reactive
+   * forms' NgControl already owns writeValue() and calls it automatically
+   * the instant the control's value changes. If we called
+   * `roleSelect.writeValue()` ourselves *and* patched the control, we'd be
+   * writing twice from two different places. Routing everything through
+   * `setValue()` means there is exactly one path that ever pushes a value
+   * into ps-select, and we simply control *when* that path fires — only
+   * once options() is confirmed non-empty, which is the actual fix for the
+   * NG0950 crash (options not ready yet) and the "only shows after a click"
+   * bug (writeValue firing before options existed, silently queued as
+   * ps-select's internal pendingValue, and only flushed later by an
+   * unrelated change-detection pass from clicking).
+   *
+   * emitEvent: false is required here — the roleId valueChanges subscriber
+   * in ngOnInit() re-syncs permission checkboxes to the *role's* defaults
+   * whenever roleId changes. That's correct for a user manually switching
+   * roles, but wrong here: we've already synced checkboxes to the admin's
+   * actual custom permissions, and letting this emit would silently
+   * overwrite them with the role's defaults right after prefill.
+   */
+  private pollAndWriteRoleSelect(roleId: string | null, attempt = 0): void {
+    if (!roleId) return;
+
+    const token = ++this.roleWritePollToken;
+    const maxAttempts = 30; // ~30 animation frames safety net (~0.5s worst case)
+
+    const tryWrite = () => {
+      // A newer poll (e.g. modal reopened) has superseded this one — bail.
+      if (token !== this.roleWritePollToken) return;
+
+      const select = this.roleSelect;
+
+      if (select && select.options().length > 0) {
+        this.inviteForm.get('roleId')?.setValue(roleId, { emitEvent: false });
+        // Force our own OnPush view to reflect the change without
+        // requiring the user to click/interact with anything first.
+        this.cdr.markForCheck();
+        return;
+      }
+
+      if (attempt >= maxAttempts) return;
+
+      requestAnimationFrame(() => this.pollAndWriteRoleSelect(roleId, attempt + 1));
+    };
+
+    requestAnimationFrame(tryWrite);
   }
 
   // ── Permission helpers ──────────────────────────────────────────────────────
@@ -265,11 +342,15 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
     const { firstname, lastname, email, roleId, addCustomPermissions } =
       this.inviteForm.getRawValue();
 
+    // roleId is guaranteed non-null here: Validators.required blocks
+    // submission (and the early return above) while it's null.
+    const resolvedRoleId = roleId as string;
+
     let permissionIds: string[];
     if (addCustomPermissions) {
       permissionIds = this.getSelectedPermissionIds();
     } else {
-      const selectedRole = this.roles().find((r) => r.id === roleId);
+      const selectedRole = this.roles().find((r) => r.id === resolvedRoleId);
       permissionIds = (selectedRole?.rolePermissions ?? []).map((rp: any) => rp.permission.id);
     }
 
@@ -277,7 +358,7 @@ export class CreateAdminModalComponent extends PsModalComponent implements OnIni
       email,
       first_name: firstname,
       last_name: lastname,
-      roleId,
+      roleId: resolvedRoleId,
       permissionIds,
     };
 
