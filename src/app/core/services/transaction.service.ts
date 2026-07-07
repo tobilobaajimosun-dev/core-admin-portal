@@ -5,7 +5,8 @@ import {
   TransactionListParams,
   TransactionListResponse,
   TransactionDetailResponse,
-  TransactionMetricsResponse
+  TransactionMetricsResponse,
+  TransactionActionResponse 
 } from '@core/interfaces/transaction.model';
 import { buildURLSearchParams } from '@pcsl-ui/utils/strings';
 
@@ -51,6 +52,20 @@ getTransactionReceipt(id: string): Observable<HttpResponse<Blob>> {
   return this.httpClient.get(
     `${this.apiBaseUrl}/api/v1/transactions/${id}/receipt`,
     { responseType: 'blob', observe: 'response' }
+  );
+}
+
+retryTransaction(id: string): Observable<TransactionActionResponse> {
+  return this.httpClient.post<TransactionActionResponse>(
+    `${this.apiBaseUrl}/api/v1/transactions/${id}/retry`,
+    {}
+  );
+}
+
+refundTransaction(id: string): Observable<TransactionActionResponse> {
+  return this.httpClient.post<TransactionActionResponse>(
+    `${this.apiBaseUrl}/api/v1/transactions/${id}/refund`,
+    {}
   );
 }
 }

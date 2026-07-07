@@ -64,6 +64,9 @@ type CustomerState = {
   activityListConfig:            CustomerActivityListParams;
   isLoadingActivity:             boolean;
   activityError:                 string | null;
+
+  isExporting: boolean;
+  exportError: string | null;
 };
 
 const initialCustomerState: CustomerState = {
@@ -104,6 +107,9 @@ const initialCustomerState: CustomerState = {
   activityListConfig: { page: 1, limit: 10 },
   isLoadingActivity: false,
   activityError: null,
+
+  isExporting: false,
+  exportError: null,
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -264,6 +270,41 @@ export const CustomerStore = signalStore(
         )
       )
     );
+
+    const exportCustomers = (params?: CustomerListParams) => {
+  patchState(store, { isExporting: true, exportError: null });
+
+  customerService.exportCustomers(params ?? store.listConfig()).subscribe({
+    next: (response) => {
+      const blob = response.body;
+      if (!blob) {
+        patchState(store, { isExporting: false, exportError: 'Export failed: empty response.' });
+        return;
+      }
+
+      const disposition = response.headers.get('content-disposition');
+      const match = disposition?.match(/filename="?([^"]+)"?/);
+      const filename = match?.[1] ?? `customers_export_${Date.now()}.csv`;
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      patchState(store, { isExporting: false });
+    },
+    error: (err: any) => {
+      patchState(store, {
+        isExporting: false,
+        exportError: err?.error?.message ?? 'Failed to export customers.',
+      });
+    },
+  });
+};
 
  const suspendCustomer = (
   customerId: string,
@@ -435,7 +476,7 @@ const setActivityModuleFilter = (customerId: string, module: string) => {
   fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), module: module || undefined, page: 1 } });
 };
 
-   return {
+return {
   fetchCustomers,
   fetchCustomerById,
   fetchFinancialSummary,
@@ -467,6 +508,7 @@ const setActivityModuleFilter = (customerId: string, module: string) => {
   setActivityPageSize,
   setActivitySearch,
   setActivityModuleFilter,
+  exportCustomers,
 };
 })
 );

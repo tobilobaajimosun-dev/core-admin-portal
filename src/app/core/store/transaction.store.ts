@@ -65,6 +65,19 @@ private readonly _receiptError         = signal<string | null>(null);
 readonly isDownloadingReceipt = computed(() => this._isDownloadingReceipt());
 readonly receiptError         = computed(() => this._receiptError());
 
+// ── Retry state ─────────────────────────────────────────────────────────
+private readonly _isRetrying = signal(false);
+private readonly _retryError = signal<string | null>(null);
+readonly isRetrying = computed(() => this._isRetrying());
+readonly retryError = computed(() => this._retryError());
+
+// ── Refund state ────────────────────────────────────────────────────────
+private readonly _isRefunding = signal(false);
+private readonly _refundError = signal<string | null>(null);
+readonly isRefunding = computed(() => this._isRefunding());
+readonly refundError = computed(() => this._refundError());
+
+
 // Track the last params used to fetch the list, so export can reuse
 // the active filters/search without page & limit.
 private readonly _lastParams = signal<TransactionListParams>({ page: 1, limit: 10 });
@@ -209,6 +222,39 @@ downloadReceipt(id: string): void {
       } else {
         this._receiptError.set(err?.error?.message ?? fallback);
       }
+    },
+  });
+}
+
+retryTransaction(id: string): void {
+  this._isRetrying.set(true);
+  this._retryError.set(null);
+
+  this.transactionService.retryTransaction(id).subscribe({
+    next: () => {
+      this._isRetrying.set(false);
+      // Refresh the detail in case retry changed the status
+      this.fetchTransactionById(id);
+    },
+    error: (err) => {
+      this._isRetrying.set(false);
+      this._retryError.set(err?.error?.message ?? 'Failed to retry transaction.');
+    },
+  });
+}
+
+refundTransaction(id: string): void {
+  this._isRefunding.set(true);
+  this._refundError.set(null);
+
+  this.transactionService.refundTransaction(id).subscribe({
+    next: () => {
+      this._isRefunding.set(false);
+      this.fetchTransactionById(id);
+    },
+    error: (err) => {
+      this._isRefunding.set(false);
+      this._refundError.set(err?.error?.message ?? 'Failed to refund transaction.');
     },
   });
 }

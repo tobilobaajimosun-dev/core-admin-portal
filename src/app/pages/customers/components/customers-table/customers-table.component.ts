@@ -206,6 +206,10 @@ deactivateCustomer(customer: CustomerRaw): void {
     },
   });
 }
+
+exportCustomers(): void {
+  this.store.exportCustomers(this.store.listConfig());
+}
   // ── Helpers ────────────────────────────────────────────────────────────────
   getInitials(f: string, l: string): string {
     return `${(f ?? ' ').charAt(0)}${(l ?? ' ').charAt(0)}`.toUpperCase();

@@ -155,6 +155,15 @@ export class WalletsTableComponent implements OnInit {
     }
   }
 
+  exportWallets(): void {
+    this.store.exportWallets({
+      page: this.store.currentPage(),
+      limit: this.store.currentLimit(),
+      search: this.searchQuery() || undefined,
+      status: this.appliedValues[0] || undefined,
+    });
+  }
+
   clearFilter(i: number): void {
     this.appliedValues[i]  = '';
     this.selectedValues[i] = '';
@@ -192,11 +201,11 @@ export class WalletsTableComponent implements OnInit {
   onPageSizeChange(size: number): void { this.currentPage.set(1); this.store.setPageSize(size); }
 
   // ── Display helpers ──────────────────────────────────────────────────────
-  getInitials(f: string, l: string): string {
+  getInitials(f?: string | null, l?: string | null): string {
     return `${(f ?? ' ').charAt(0)}${(l ?? ' ').charAt(0)}`.toUpperCase();
   }
 
-  getStatusColor(status: string): string {
+  getStatusColor(status?: string | null): string {
     switch (status) {
       case 'ACTIVE':   return 'text-[#12B76A]';
       case 'INACTIVE': return 'text-[#F59E0B]';
@@ -205,7 +214,7 @@ export class WalletsTableComponent implements OnInit {
     }
   }
 
-  getStatusBg(status: string): string {
+  getStatusBg(status?: string | null): string {
     switch (status) {
       case 'ACTIVE':   return 'bg-[#ECFDF5]';
       case 'INACTIVE': return 'bg-[#FFFBEB]';
@@ -214,12 +223,20 @@ export class WalletsTableComponent implements OnInit {
     }
   }
 
-  getStatusLabel(status: string): string {
+  getStatusLabel(status?: string | null): string {
+    if (!status) return 'Unknown';
     return status.charAt(0) + status.slice(1).toLowerCase();
   }
 
-  formatAmount(amount: number): string {
+  // TODO: totalFunded isn't on the raw API payload yet — showing '—'
+  // until backend confirms the source field (see wallet.model.ts).
+  formatAmount(amount?: number | null): string {
+    if (amount === undefined || amount === null) return '—';
     return `₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
+  }
+
+  getWalletId(wallet: WalletRaw): string {
+    return wallet.public_id ?? wallet.account_number ?? wallet.id;
   }
 
   viewWallet(wallet: WalletRaw): void {

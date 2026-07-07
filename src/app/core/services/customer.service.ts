@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { buildURLSearchParams } from '@pcsl-ui/utils/strings';
 import {
@@ -94,6 +94,14 @@ getCustomerRecentActivity(
   const urlParams = buildURLSearchParams(params);
   return this.httpClient.get<CustomerActivityListResponse>(
     `${this.apiBaseUrl}/api/v1/customers/recent-activity/${customerId}?${urlParams}`
+  );
+}
+
+exportCustomers(params: CustomerListParams = {}): Observable<HttpResponse<Blob>> {
+  const urlParams = buildURLSearchParams(params);
+  return this.httpClient.get(
+    `${this.apiBaseUrl}/api/v1/customers/export?${urlParams}`,
+    { responseType: 'blob', observe: 'response' }
   );
 }
 }

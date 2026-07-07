@@ -104,7 +104,7 @@
     }
   </div>
 
-  <!-- Search + Export (unchanged) -->
+  <!-- Search + Export -->
   <div class="flex items-center gap-2">
     <div class="relative">
       <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
@@ -132,20 +132,23 @@
         </button>
       }
     </div>
-    <button type="button"
-      class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
-             text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
-      Export
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-      </svg>
-    </button>
+   <button type="button"
+  (click)="exportWallets()"
+  [disabled]="store.isExporting()"
+  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+         text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer
+         disabled:opacity-60 disabled:cursor-not-allowed">
+  {{ store.isExporting() ? 'Exporting...' : 'Export' }}
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+  </svg>
+</button>
   </div>
 
 </div>
 
-<!-- Active filter banner (unchanged) -->
+<!-- Active filter banner -->
 @if (hasActiveFilters()) {
   <div class="flex items-center gap-1.5 mb-3 text-sm">
     <span class="font-normal text-[#51575B]">{{ bannerPrefix() }}</span>
@@ -218,31 +221,37 @@
 
             <!-- Date & Time -->
             <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-              <p class="text-sm font-medium text-[#131719]">{{ wallet.createdAt | date:'MMM dd, yyyy,' }}</p>
-              <p class="text-xs font-normal text-[#51575B]">{{ wallet.createdAt | date:'h:mm:ss a zzz' }}</p>
+              <p class="text-sm font-medium text-[#131719]">{{ wallet.created_at | date:'MMM dd, yyyy,' }}</p>
+              <p class="text-xs font-normal text-[#51575B]">{{ wallet.created_at | date:'h:mm:ss a zzz' }}</p>
             </td>
 
-            <!-- Customer Details -->
-            <td class="py-3 px-4">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-[#F0F9FF] flex items-center justify-center
-                            text-xs font-semibold text-[#00B3FF] shrink-0">
-                  {{ getInitials(wallet.customer.firstName, wallet.customer.lastName) }}
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-                    {{ wallet.customer.firstName }} {{ wallet.customer.lastName }}
-                  </p>
-                  <p class="text-xs font-normal text-[#51575B] tracking-[-0.005em]">
-                    {{ wallet.customer.email }}
-                  </p>
-                </div>
-              </div>
-            </td>
+        <!-- Customer Details -->
+<td class="py-3 px-4">
+  @if (wallet.customer) {
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-[#F0F9FF] flex items-center justify-center
+                  text-xs font-semibold text-[#00B3FF] shrink-0">
+        {{ getInitials(wallet.customer.firstName, wallet.customer.lastName) }}
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+          {{ wallet.customer.firstName }} {{ wallet.customer.lastName }}
+        </p>
+        <p class="text-xs font-normal text-[#51575B] tracking-[-0.005em]">
+          {{ wallet.customer.email }}
+        </p>
+      </div>
+    </div>
+ } @else {
+  <div class="flex items-center h-8">
+    <span class="text-sm font-medium text-[#131719]">—</span>
+  </div>
+}
+</td>
 
             <!-- Wallet ID -->
             <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-              {{ wallet.walletId }}
+              {{ getWalletId(wallet) }}
             </td>
 
             <!-- Status -->

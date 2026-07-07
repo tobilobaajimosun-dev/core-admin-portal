@@ -2,6 +2,8 @@ import { Component, inject, signal, computed, OnInit, effect, untracked } from '
 import { CommonModule }               from '@angular/common';
 import { Router, ActivatedRoute }     from '@angular/router';
 import { PsSvgIconComponent }         from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
+import { PsModalService }            from '@pcsl-ui/ui/ps-modal/ps-modal.service';
+import { RefundConfirmModalComponent } from '@shared/components/modals/refund-confirm-modal/refund-confirm-modal.component';
 import { TransactionStore }           from '@core/store/transaction.store';
 import { TransactionCustomer }        from '@core/interfaces/transaction.model';
 import { CustomerService }            from '@core/services/customer.service';
@@ -23,31 +25,40 @@ export class ViewTransactionComponent implements OnInit {
   private readonly router          = inject(Router);
   private readonly route           = inject(ActivatedRoute);
   private readonly customerService = inject(CustomerService);
+  private readonly modalService    = inject(PsModalService);
   readonly store                   = inject(TransactionStore);
 
   customer  = signal<TransactionCustomer | null>(null);
   revealPhone = false;
 
+  // Tracks whether a retry has been attempted for the currently loaded
+  // transaction. Refund stays locked until this flips to true.
+  hasAttemptedRetry = signal(false);
+
   transaction = computed(() => this.store.selectedTransaction());
   isLoading   = computed(() => this.store.isLoadingDetail());
   isDownloadingReceipt = computed(() => this.store.isDownloadingReceipt());
+  isRetrying  = computed(() => this.store.isRetrying());
+  isRefunding = computed(() => this.store.isRefunding());
+
+  isSuccessful = computed(() => this.transactionStatus().toUpperCase() === 'SUCCESSFUL');
+
+  canRefund = computed(() => {
+    if (this.isSuccessful()) return false;
+    if (this.isRefunding()) return false;
+    return this.hasAttemptedRetry();
+  });
 
   constructor() {
     effect(() => {
       const tx = this.transaction();
-        console.log('effect fired, tx:', tx?.customer_id, 'customer:', untracked(() => this.customer()));
-
       if (!tx) return; // not loaded yet — effect will re-run when tx arrives
 
-      // Only fetch if we don't already have customer data
-      // Use untracked so reading customer() doesn't add it as a dependency
       const alreadyHasCustomer = untracked(() => this.customer());
       if (alreadyHasCustomer) return;
-  console.log('fetching customer for id:', tx.customer_id);
 
       this.customerService.getCustomerById(tx.customer_id).subscribe({
         next: (res) => {
-                console.log('customer response:', res);
           const c = res.data.customer;
           this.customer.set({
             id:        c.id,
@@ -69,6 +80,7 @@ export class ViewTransactionComponent implements OnInit {
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
+      this.hasAttemptedRetry.set(false);
       this.store.fetchTransactionById(id);
     }
   }
@@ -77,7 +89,7 @@ export class ViewTransactionComponent implements OnInit {
     const transaction = this.transaction();
     if (!transaction) return [];
     const transactionable = transaction.transactionable;
-      if (!transactionable) return [];
+    if (!transactionable) return [];
     return [
       {
         label:      'Transaction Type',
@@ -117,6 +129,7 @@ export class ViewTransactionComponent implements OnInit {
       case 'FAILED':     return 'bg-[#FEF2F2] text-[#DC2626]';
       case 'PENDING':    return 'bg-[#FFFBEB] text-[#D97706]';
       case 'REVERSED':   return 'bg-[#EEF2FF] text-[#6366F1]';
+      case 'REFUNDED':   return 'bg-[#EBF5FF] text-[#1041B7]';
       default:           return 'bg-gray-100 text-gray-600';
     }
   }
@@ -133,10 +146,33 @@ export class ViewTransactionComponent implements OnInit {
 
   goBack(): void { this.router.navigate(['/transactions']); }
 
- downloadReceipt(): void {
-  const id = this.transaction()?.id;
-  if (id) this.store.downloadReceipt(id);
-}
+  downloadReceipt(): void {
+    const id = this.transaction()?.id;
+    if (id) this.store.downloadReceipt(id);
+  }
+
+  retryTransaction(): void {
+    const id = this.transaction()?.id;
+    if (!id || this.isRetrying()) return;
+    this.store.retryTransaction(id);
+    // Unlocks refund regardless of retry outcome — an attempt was made.
+    this.hasAttemptedRetry.set(true);
+  }
+
+  openRefundModal(): void {
+    if (!this.canRefund()) return;
+    const id = this.transaction()?.id;
+    if (!id) return;
+
+    this.modalService.open(RefundConfirmModalComponent, {
+      maxWidth: '520px',
+      isCentered: true,
+      data: {
+        amount: this.transactionAmount(),
+        onConfirm: () => this.store.refundTransaction(id),
+      },
+    });
+  }
 
   getCustomerInitials(): string {
     const c = this.customer();

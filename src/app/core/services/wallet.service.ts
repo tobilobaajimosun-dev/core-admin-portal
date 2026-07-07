@@ -1,7 +1,13 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { WalletMetricsResponse } from '@core/interfaces/wallet.model';
+import { buildURLSearchParams } from '@pcsl-ui/utils/strings';
+import {
+  WalletMetricsResponse,
+  WalletListParams,
+  WalletListResponse,
+  WalletDetailResponse 
+} from '@core/interfaces/wallet.model';
 
 @Injectable({ providedIn: 'root' })
 export class WalletService {
@@ -13,4 +19,25 @@ export class WalletService {
       `${this.apiBaseUrl}/api/v1/wallets/metrics`
     );
   }
+
+  getWallets(params: WalletListParams = {}): Observable<WalletListResponse> {
+    const urlParams = buildURLSearchParams(params);
+    return this.httpClient.get<WalletListResponse>(
+      `${this.apiBaseUrl}/api/v1/wallets/fetch-paginated-wallets?${urlParams}`
+    );
+  }
+
+  exportWallets(params: WalletListParams = {}): Observable<HttpResponse<Blob>> {
+    const urlParams = buildURLSearchParams(params);
+    return this.httpClient.get(
+      `${this.apiBaseUrl}/api/v1/wallets/export?${urlParams}`,
+      { responseType: 'blob', observe: 'response' }
+    );
+  }
+
+  getWalletById(id: string): Observable<WalletDetailResponse> {
+  return this.httpClient.get<WalletDetailResponse>(
+    `${this.apiBaseUrl}/api/v1/wallets/${id}`
+  );
+}
 }

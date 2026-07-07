@@ -39,10 +39,10 @@
           </div>
         </div>
 
-        <!-- Linked bank skeleton -->
+        <!-- Wallet account skeleton -->
         <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 py-5 flex flex-col gap-4">
           <div class="h-4 w-40 rounded-full bg-gray-200 animate-pulse"></div>
-          @for (i of [1,2,3,4]; track i) {
+          @for (i of [1,2,3]; track i) {
             <div class="flex justify-between py-3 border-b border-[#F3F7F9]">
               <div class="h-3.5 w-24 rounded-full bg-gray-200 animate-pulse"></div>
               <div class="h-3.5 w-28 rounded-full bg-gray-200 animate-pulse"></div>
@@ -114,7 +114,7 @@
               class="mt-2 w-full flex items-center justify-center gap-2 px-6 py-2 rounded-lg
                 border transition-colors cursor-pointer text-sm font-medium"
               [ngClass]="wallet()!.status === 'Frozen'
-                ? 'border-[#FCA5A5] bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEE2E2]'
+                ? 'border-[#93C5FD] bg-[#EFF6FF] text-[#3B82F6] hover:bg-[#DBEAFE]'
                 : 'border-[#FCA5A5] bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEE2E2]'">
               {{ wallet()!.status === 'Frozen' ? 'Unfreeze wallet' : 'Freeze wallet' }}
               <ps-svg-icon name="freeze-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
@@ -123,37 +123,31 @@
           </div>
         </div>
 
-        <!-- ── Linked Bank Account card ── -->
-        @if (wallet()!.linkedBankAccount) {
+        <!-- ── Wallet Account card ── -->
+        @if (wallet()!.walletAccount) {
           <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 pt-5 pb-2">
 
             <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-2">
-              Linked Bank Account
+              Wallet Account
             </h3>
 
             <dl class="flex flex-col">
               <div class="flex items-center justify-between py-3 border-b border-[#F3F7F9]">
                 <dt class="text-sm text-[#51575B]">Bank Name</dt>
                 <dd class="text-sm font-medium text-[#131719]">
-                  {{ wallet()!.linkedBankAccount!.bankName }}
+                  {{ wallet()!.walletAccount.bankName }}
                 </dd>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-[#F3F7F9]">
                 <dt class="text-sm text-[#51575B]">Account Number</dt>
                 <dd class="text-sm font-medium text-[#131719]">
-                  {{ wallet()!.linkedBankAccount!.accountNumber }}
-                </dd>
-              </div>
-              <div class="flex items-center justify-between py-3 border-b border-[#F3F7F9]">
-                <dt class="text-sm text-[#51575B]">Account Name</dt>
-                <dd class="text-sm font-medium text-[#131719]">
-                  {{ wallet()!.linkedBankAccount!.accountName }}
+                  {{ wallet()!.walletAccount.accountNumber }}
                 </dd>
               </div>
               <div class="flex items-center justify-between py-3 last:border-b-0">
-                <dt class="text-sm text-[#51575B]">Date Linked</dt>
+                <dt class="text-sm text-[#51575B]">Account Name</dt>
                 <dd class="text-sm font-medium text-[#131719]">
-                  {{ wallet()!.linkedBankAccount!.dateLinked | date:'MMMM d, yyyy' }}
+                  {{ wallet()!.walletAccount.accountName }}
                 </dd>
               </div>
             </dl>
@@ -166,8 +160,8 @@
     </div>
 
     <!-- RIGHT COLUMN -->
-   
-     <div class="flex-1 flex flex-col gap-4 min-w-0">
+
+    <div class="flex-1 flex flex-col gap-4 min-w-0">
 
       @if (isLoading()) {
         <!-- Stats card skeleton -->
@@ -188,6 +182,20 @@
             <div class="flex justify-between py-3 border-b border-[#F3F7F9]">
               <div class="h-3.5 w-28 rounded-full bg-gray-200 animate-pulse"></div>
               <div class="h-3.5 w-24 rounded-full bg-gray-200 animate-pulse"></div>
+            </div>
+          }
+        </div>
+
+        <!-- Recent transactions skeleton -->
+        <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 pt-5 pb-2">
+          <div class="h-4 w-40 rounded-full bg-gray-200 animate-pulse mb-4"></div>
+          @for (i of [1,2,3,4,5]; track i) {
+            <div class="flex items-center justify-between py-3 border-b border-[#F3F7F9] last:border-b-0">
+              <div class="flex flex-col gap-1.5">
+                <div class="h-3.5 w-40 rounded-full bg-gray-200 animate-pulse"></div>
+                <div class="h-3 w-28 rounded-full bg-gray-200 animate-pulse"></div>
+              </div>
+              <div class="h-4 w-20 rounded-full bg-gray-200 animate-pulse"></div>
             </div>
           }
         </div>
@@ -268,6 +276,41 @@
           </dl>
 
         </div>
+
+        <!-- ── Recent Transactions card ── -->
+        @if (wallet()!.recentTransactions.length) {
+          <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 pt-5 pb-2">
+
+            <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-2">
+              Recent Transactions
+            </h3>
+
+            <dl class="flex flex-col">
+              @for (txn of wallet()!.recentTransactions; track txn.id) {
+                <div class="flex items-center justify-between py-3
+                  border-b border-[#F3F7F9] last:border-b-0">
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-sm font-medium text-[#131719] tracking-[-0.005em]">
+                      {{ txn.description }}
+                    </span>
+                    <span class="text-xs font-normal text-[#51575B]">
+                      {{ txn.created_at | date:'MMM d, yyyy, h:mm a' }} · {{ txn.reference }}
+                    </span>
+                  </div>
+                  <div class="flex flex-col items-end gap-0.5">
+                    <span class="text-sm font-semibold tracking-[-0.005em]"
+                      [class.text-[#059669]]="txn.action_type === 'CREDIT'"
+                      [class.text-[#DC2626]]="txn.action_type === 'DEBIT'">
+                      {{ txn.action_type === 'CREDIT' ? '+' : '-' }}₦{{ txn.amount | number:'1.0-0' }}
+                    </span>
+                    <span class="text-xs font-normal text-[#51575B]">{{ txn.status }}</span>
+                  </div>
+                </div>
+              }
+            </dl>
+
+          </div>
+        }
 
       }
 

@@ -8,40 +8,8 @@ import {
 } from '@shared/components/modals/update-balance-modal/update-balance-modal.component';
 import { FreezeWalletModalComponent } from '@shared/components/modals/freeze-wallet-modal/freeze-wallet-modal.component';
 import { PsModalService } from '@pcsl-ui/ui/ps-modal/ps-modal.service';
-
-export interface WalletCustomer {
-  id:         string;
-  firstName:  string;
-  lastName:   string;
-  email:      string;
-  phone:      string;
-  avatarUrl?: string;
-}
-
-export interface LinkedBankAccount {
-  bankName:      string;
-  accountNumber: string;
-  accountName:   string;
-  dateLinked:    string; 
-}
-
-export interface WalletDetail {
-  id:                 string;
-  walletId:           string;
-  status:             'Active' | 'Frozen' | 'Inactive';
-  availableBalance:   number;
-  totalFunded:        number;
-  totalSpent:         number;
-  transactionsCount:  number;
-  dateCreated:        string; 
-  kyc:                'Verified' | 'Unverified' | 'Pending';
-  accountTier:        'Tier 1' | 'Tier 2' | 'Tier 3';
-  lastFunded:         string; // ISO date string
-  lastActivity:       string; 
-  restrictions:       string;
-  customer?:          WalletCustomer;
-  linkedBankAccount?: LinkedBankAccount;
-}
+import { WalletStore } from '@core/store/wallet.store';
+import { WalletTransactionDetail } from '@core/interfaces/wallet.model';
 
 interface InfoRow {
   label:       string;
@@ -65,11 +33,55 @@ export class ViewWalletComponent implements OnInit {
   private readonly router       = inject(Router);
   private readonly route        = inject(ActivatedRoute);
   private readonly modalService = inject(PsModalService);
+  readonly store                = inject(WalletStore);
 
   revealPhone = false;
 
-  isLoading = signal(false);
-  wallet    = signal<WalletDetail | null>(null);
+  isLoading = this.store.isLoadingDetail;
+
+  // The API doesn't return a wallet `status` field yet, so freeze/unfreeze is
+  // tracked locally until the backend adds one.
+  // TODO: remove this once GET /wallets/:id returns a real status.
+  private frozenOverride = signal(false);
+
+  wallet = computed(() => {
+    const detail = this.store.walletDetail();
+    if (!detail) return null;
+
+    const { wallet, metrics, recent_transactions } = detail;
+
+    return {
+      walletId:         wallet.public_id,
+      status:            this.frozenOverride() ? 'Frozen' : 'Active',
+      availableBalance:  wallet.available_balance,
+      totalFunded:       metrics.total_funded,
+      totalSpent:        metrics.total_spent,
+      transactionsCount: metrics.transaction_count,
+      dateCreated:       wallet.created_at,
+      // Derived from BVN verification since there's no dedicated KYC field yet.
+      kyc:               wallet.customer.is_bvn_verified ? 'Verified' : 'Unverified',
+      accountTier:       '—', // TODO: not returned by API yet
+      lastFunded:        metrics.last_funded_date,
+      lastActivity:      wallet.updated_at,
+      restrictions:      'None', // TODO: not returned by API yet
+      customer: {
+        id:        wallet.customer.id,
+        firstName: wallet.customer.firstName,
+        lastName:  wallet.customer.lastName,
+        email:     wallet.customer.email,
+        phone:     wallet.customer.phone,
+        avatarUrl: wallet.customer.profile_image,
+      },
+      // This is the wallet's own settlement/virtual account, not a separate
+      // linked withdrawal bank account — the API only returns this one.
+      walletAccount: {
+        bankName:      wallet.bank_name,
+        accountNumber: wallet.account_number,
+        accountName:   wallet.account_name,
+      },
+      recentTransactions: recent_transactions as WalletTransactionDetail[],
+    };
+  });
 
   infoRows = computed((): InfoRow[] => {
     const wallet = this.wallet();
@@ -101,7 +113,9 @@ export class ViewWalletComponent implements OnInit {
       },
       {
         label: 'Last Funded',
-        value: new DatePipe('en-US').transform(wallet.lastFunded, 'MMMM d, yyyy') ?? '',
+        value: wallet.lastFunded
+          ? new DatePipe('en-US').transform(wallet.lastFunded, 'MMMM d, yyyy') ?? '—'
+          : '—',
       },
       {
         label: 'Last Activity',
@@ -113,43 +127,7 @@ export class ViewWalletComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.loadWallet(id);
-  }
-
-  private loadWallet(id: string): void {
-    this.isLoading.set(true);
-    setTimeout(() => {
-      this.wallet.set({
-        id,
-        walletId:           'WAL-273682',
-        status:             'Active',
-        availableBalance:   80000,
-        totalFunded:        400000,
-        totalSpent:         320000,
-        transactionsCount:  89,
-        dateCreated:        '2027-06-12T00:00:00',
-        kyc:                'Verified',
-        accountTier:        'Tier 3',
-        lastFunded:         '2028-06-13T00:00:00',
-        lastActivity:       '2029-06-13T00:00:00',
-        restrictions:       'None',
-        customer: {
-          id:        'cust-001',
-          firstName: 'Ademilua Josephine',
-          lastName:  'Tayo',
-          email:     'ademilua.josjos@gmail.com',
-          phone:     '09030601323',
-          avatarUrl: '',
-        },
-        linkedBankAccount: {
-          bankName:      'Guaranty Trust Bank',
-          accountNumber: '0557932377',
-          accountName:   'Ekundayo Thomas',
-          dateLinked:    '2028-06-13T00:00:00',
-        },
-      });
-      this.isLoading.set(false);
-    }, 0);
+    if (id) this.store.fetchWalletById(id);
   }
 
   statusBadgeClass(status: string): string {
@@ -192,11 +170,11 @@ export class ViewWalletComponent implements OnInit {
     this.modalService.open(UpdateBalanceModalComponent, {
       data: {
         walletId:     wallet.walletId,
-        walletHolder: wallet.customer
-          ? `${wallet.customer.firstName} ${wallet.customer.lastName}`
-          : wallet.walletId,
+        walletHolder: `${wallet.customer.firstName} ${wallet.customer.lastName}`,
         onUpdate: (action: UpdateBalanceAction, amount: number, reason: string) => {
-          //console.log('Update balance', { walletId: wallet.walletId, action, amount, reason });
+          // TODO: call WalletStore/WalletService update-balance endpoint, then re-fetch
+          const id = this.route.snapshot.paramMap.get('id');
+          if (id) this.store.fetchWalletById(id);
         },
       },
       maxWidth:   '560px',
@@ -211,14 +189,12 @@ export class ViewWalletComponent implements OnInit {
     this.modalService.open(FreezeWalletModalComponent, {
       data: {
         walletId:     wallet.walletId,
-        walletHolder: wallet.customer
-          ? `${wallet.customer.firstName} ${wallet.customer.lastName}`
-          : wallet.walletId,
+        walletHolder: `${wallet.customer.firstName} ${wallet.customer.lastName}`,
         isFrozen: wallet.status === 'Frozen',
         onConfirm: () => {
-          const newStatus = wallet.status === 'Frozen' ? 'Active' : 'Frozen';
-          this.wallet.update(current => current ? { ...current, status: newStatus } : null);
-         // console.log('Freeze/unfreeze wallet', { walletId: wallet.walletId, newStatus });
+          // TODO: call the real freeze/unfreeze endpoint once it exists;
+          // this only flips local state for now.
+          this.frozenOverride.update(v => !v);
         },
       },
       maxWidth:   '560px',

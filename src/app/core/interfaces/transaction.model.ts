@@ -1,7 +1,7 @@
 // ─── Raw API response ─────────────────────────────────────────────────────────
 
 export type TransactionType   = 'DEBIT' | 'CREDIT';
-export type TransactionStatus = 'SUCCESSFUL' | 'PENDING' | 'FAILED' | 'REVERSED';
+export type TransactionStatus = 'SUCCESSFUL' | 'PENDING' | 'FAILED' | 'REVERSED' | 'REFUNDED';
 export type TransactionCategory =
   | 'Airtime'
   | 'Data Subscription'
@@ -154,5 +154,13 @@ export interface TransactionMetricsResponse {
   status:       string;
   message:      string;
   data:         TransactionMetricsData;
+  responseCode: string;
+}
+
+export interface TransactionActionResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data?:        unknown;
   responseCode: string;
 }
