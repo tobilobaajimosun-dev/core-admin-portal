@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { LoanService } from '@core/services/loan.service';
+import { HttpResponse } from '@angular/common/http';
 import {
   LoanRaw,
   LoanView,
@@ -111,6 +112,23 @@ function toLoanDetailHeaderView(raw: LoanDetailRaw): LoanDetailHeaderView {
   };
 }
 
+  function extractFilename(contentDisposition: string | null): string | null {
+  if (!contentDisposition) return null;
+  const match = contentDisposition.match(/filename="?([^"]+)"?/);
+  return match?.[1] ?? null;
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}
+
 
 @Injectable({ providedIn: 'root' })
 export class LoanStore {
@@ -153,6 +171,16 @@ export class LoanStore {
   private readonly _product   = signal('');
   private readonly _minAmount = signal<number | null>(null);
   private readonly _maxAmount = signal<number | null>(null);
+
+  // ── Export state ─────────────────────────────────────────────────────────
+  private readonly _isExporting = signal(false);
+  private readonly _exportError = signal<string | null>(null);
+  readonly isExporting = computed(() => this._isExporting());
+  readonly exportError = computed(() => this._exportError());
+
+  // Track the last params used to fetch the list, so export can reuse
+  // the active filters/search without page & limit.
+  private readonly _lastParams = signal<LoanListParams>({ page: 1, limit: 10 });
 
   // ── Public selectors ──────────────────────────────────────────────────────
   readonly loans          = computed(() => this._loans());
@@ -236,24 +264,25 @@ export class LoanStore {
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
-  fetchLoans(params: LoanListParams = {}): void {
-    this._isLoading.set(true);
-    this._error.set(null);
+ fetchLoans(params: LoanListParams = {}): void {
+  this._lastParams.set(params);
+  this._isLoading.set(true);
+  this._error.set(null);
 
-    this.loanService.getLoans(params).subscribe({
-      next: (res) => {
-        this._loans.set(res.data.data);
-        this._total.set(res.data.meta.total);
-        this._page.set(res.data.meta.page);
-        this._limit.set(res.data.meta.limit);
-        this._isLoading.set(false);
-      },
-      error: (err) => {
-        this._error.set(err?.error?.message ?? 'Failed to load loans');
-        this._isLoading.set(false);
-      },
-    });
-  }
+  this.loanService.getLoans(params).subscribe({
+    next: (res) => {
+      this._loans.set(res.data.data);
+      this._total.set(res.data.meta.total);
+      this._page.set(res.data.meta.page);
+      this._limit.set(res.data.meta.limit);
+      this._isLoading.set(false);
+    },
+    error: (err) => {
+      this._error.set(err?.error?.message ?? 'Failed to load loans');
+      this._isLoading.set(false);
+    },
+  });
+}
 
   fetchMetrics(): void {
     this._metricsLoading.set(true);
@@ -305,6 +334,44 @@ export class LoanStore {
       },
     });
   }
+
+exportLoans(): void {
+  this._isExporting.set(true);
+  this._exportError.set(null);
+
+  // Only forward the params the export endpoint actually supports.
+  const { search, status, start_date, end_date } = this._lastParams();
+
+  this.loanService.getLoanExport({ search, status, start_date, end_date }).subscribe({
+    next: (response: HttpResponse<Blob>) => {
+      this._isExporting.set(false);
+      const blob = response.body as Blob;
+      const filename =
+        extractFilename(response.headers.get('content-disposition')) ??
+        `loan_applications_${new Date().toISOString().slice(0, 10)}.csv`;
+      downloadBlob(blob, filename);
+    },
+    error: (err: any) => {
+      this._isExporting.set(false);
+      const fallback = 'Failed to export loan applications.';
+
+      if (err?.error instanceof Blob) {
+        err.error.text().then((text: string) => {
+          let message = fallback;
+          try {
+            message = JSON.parse(text)?.message ?? fallback;
+          } catch {
+            /* not JSON, use fallback */
+          }
+          this._exportError.set(message);
+        });
+      } else {
+        this._exportError.set(err?.error?.message ?? fallback);
+      }
+    },
+  });
+}
+
 
   setFailedDisbursementsSearch(query: string): void {
     this.fetchFailedDisbursements({ page: 1, limit: this._failedDisbursementsLimit(), search: query });

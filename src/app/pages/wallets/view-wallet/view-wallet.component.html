@@ -285,7 +285,7 @@
               Recent Transactions
             </h3>
 
-            <dl class="flex flex-col">
+     <dl class="flex flex-col max-h-[600px] overflow-y-auto pr-3 -mr-3">
               @for (txn of wallet()!.recentTransactions; track txn.id) {
                 <div class="flex items-center justify-between py-3
                   border-b border-[#F3F7F9] last:border-b-0">

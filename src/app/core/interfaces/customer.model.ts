@@ -11,10 +11,11 @@ export interface CustomerRaw {
   dateOfBirth:               string | null;
   bvn:                       string | null;
   nin:                       string | null;
-  bvnVerified:               string | null;   // ISO date string, not boolean
+  bvnVerified:               string | null;   
   is_bvn_verified:           boolean;
-  emailVerified:             string | null;   // ISO date string, not boolean
+  emailVerified:             string | null;   
   isActive:                  boolean;
+  is_suspended?:             boolean; 
   has_loan:                  boolean;
   has_wallet:                boolean;
   has_external_id_for_loan:  boolean;
@@ -367,6 +368,7 @@ export interface CustomerMetricsResponse {
 // ─── Needs Attention ──────────────────────────────────────────────────────────
 
 export type CustomerIssue =
+  | 'INCOMPLETE_ACCOUNT_REGISTRATION'
   | 'INCOMPLETE_BVN_VERIFICATION'
   | 'INCOMPLETE_WALLET_CREATION'
   | 'INCOMPLETE_ACCOUNT_CREATION_ON_CALTOS';
@@ -484,4 +486,54 @@ export interface CustomerActivityListParams {
   module?:     string;
   start_date?: string;
   end_date?:   string;
+}
+
+// ─── Update Customer ──────────────────────────────────────────────────────────
+
+export interface CustomerUpdatePayload {
+  firstName?:       string;
+  lastName?:        string;
+  gender?:          string;
+  workType?:        string;
+  workplace?:       string;
+  religion?:        string;
+  bvn?:             string;
+  nin?:             string;
+  dob?:             string;
+  isActive?:        boolean;
+  is_bvn_verified?: boolean;
+}
+
+export interface CustomerUpdateResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         unknown; 
+  responseCode: string;
+}
+
+export interface CustomerToggleSuspensionPayload {
+  reason: string;
+}
+ 
+export interface CustomerToggleSuspensionData {
+  customer_id:  string;
+  is_suspended: boolean;
+  reason:       string;
+}
+ 
+export interface CustomerToggleSuspensionResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         CustomerToggleSuspensionData;
+  responseCode: string;
+}
+
+export interface CustomerNeedsActionResolutionResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         Record<string, never>; 
+  responseCode: string;
 }

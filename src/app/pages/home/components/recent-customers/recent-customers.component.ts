@@ -93,23 +93,17 @@ viewLoanHistory(customer: CustomerRaw): void {
   this.router.navigate(['/users', customer.id], { queryParams: { tab: 'loans' } });
 }
 
-deactivateCustomer(customer: CustomerRaw): void {
-  this.modalService.open(SuspendCustomerModalComponent, {
-    data: {
-     customerId: customer.id,
-      customerName: `${customer.firstName} ${customer.lastName}`,
-      onSuspend: (reason: string, customReason?: string) => {
-        this.store.suspendCustomer(
-          customer.id,
-          () => {
-            },
-          (message) => {
-         }
-        );
+  toggleSuspension(customer: CustomerRaw): void {
+    this.modalService.open(SuspendCustomerModalComponent, {
+      data: {
+        customerId:   customer.id,
+        customerName: `${customer.firstName} ${customer.lastName}`,
+        isSuspended:  customer.is_suspended ?? false,
       },
-    },
-  });
-}
+      maxWidth:   '560px',
+      isCentered: true,
+    });
+  }
 
 
   // ── Wallet pill styles ─────────────────────────────────────────────────────

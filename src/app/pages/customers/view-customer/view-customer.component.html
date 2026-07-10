@@ -113,11 +113,14 @@
                 Edit user details
               </button>
 
-              <button (click)="deactivateCustomer()"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#EF4444]
-                  text-sm font-medium text-[#8E1F0B] bg-[#E51C00]/[0.1] transition-colors cursor-pointer">
-                Suspend user
-                <ps-svg-icon name="pause-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+            <button (click)="toggleSuspension()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium
+                  transition-colors cursor-pointer"
+                [ngClass]="isSuspended()
+                  ? 'border-[#93C5FD] bg-[#EFF6FF] text-[#3B82F6] hover:bg-[#DBEAFE]'
+                  : 'border-[#EF4444] text-[#8E1F0B] bg-[#E51C00]/[0.1]'">
+                {{ isSuspended() ? 'Unsuspend user' : 'Suspend user' }}
+                 <ps-svg-icon [name]="isSuspended() ? 'play-icon' : 'pause-icon'" class="w-4 h-4 shrink-0"></ps-svg-icon>
               </button>
             </div>
 

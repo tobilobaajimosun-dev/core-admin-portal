@@ -6,7 +6,9 @@ import {
   TransactionListResponse,
   TransactionDetailResponse,
   TransactionMetricsResponse,
-  TransactionActionResponse 
+  TransactionActionResponse,
+  TransactionRefundPayload,
+  TransactionReceiptResponse
 } from '@core/interfaces/transaction.model';
 import { buildURLSearchParams } from '@pcsl-ui/utils/strings';
 
@@ -27,45 +29,47 @@ export class TransactionService {
   }
 
   getTransactionById(id: string): Observable<TransactionDetailResponse> {
-  return this.httpClient.get<TransactionDetailResponse>(
-    `${this.apiBaseUrl}/api/v1/transactions/${id}`
+    return this.httpClient.get<TransactionDetailResponse>(
+      `${this.apiBaseUrl}/api/v1/transactions/${id}`
+    );
+  }
+
+  getTransactionMetrics(): Observable<TransactionMetricsResponse> {
+    return this.httpClient.get<TransactionMetricsResponse>(
+      `${this.apiBaseUrl}/api/v1/transactions/metrics`
+    );
+  }
+
+  getTransactionExport(
+    params: TransactionListParams = {}
+  ): Observable<HttpResponse<Blob>> {
+    const urlParams = buildURLSearchParams(params);
+    return this.httpClient.get(
+      `${this.apiBaseUrl}/api/v1/transactions/export?${urlParams}`,
+      { responseType: 'blob', observe: 'response' }
+    );
+  }
+
+
+  getTransactionReceipt(id: string): Observable<TransactionReceiptResponse> {
+  return this.httpClient .get<TransactionReceiptResponse>(
+    `${this.apiBaseUrl}/api/v1/transactions/${id}/receipt`
   );
 }
 
-getTransactionMetrics(): Observable<TransactionMetricsResponse> {
-  return this.httpClient.get<TransactionMetricsResponse>(
-    `${this.apiBaseUrl}/api/v1/transactions/metrics`
-  );
-}
+  retryTransaction(id: string): Observable<TransactionActionResponse> {
+    return this.httpClient.post<TransactionActionResponse>(
+      `${this.apiBaseUrl}/api/v1/transactions/${id}/requery`,
+      {}
+    );
+  }
 
-getTransactionExport(
-  params: TransactionListParams = {}
-): Observable<HttpResponse<Blob>> {
-  const urlParams = buildURLSearchParams(params);
-  return this.httpClient.get(
-    `${this.apiBaseUrl}/api/v1/transactions/export?${urlParams}`,
-    { responseType: 'blob', observe: 'response' }
-  );
-}
-
-getTransactionReceipt(id: string): Observable<HttpResponse<Blob>> {
-  return this.httpClient.get(
-    `${this.apiBaseUrl}/api/v1/transactions/${id}/receipt`,
-    { responseType: 'blob', observe: 'response' }
-  );
-}
-
-retryTransaction(id: string): Observable<TransactionActionResponse> {
-  return this.httpClient.post<TransactionActionResponse>(
-    `${this.apiBaseUrl}/api/v1/transactions/${id}/retry`,
-    {}
-  );
-}
-
-refundTransaction(id: string): Observable<TransactionActionResponse> {
-  return this.httpClient.post<TransactionActionResponse>(
-    `${this.apiBaseUrl}/api/v1/transactions/${id}/refund`,
-    {}
-  );
-}
+  refundTransaction(
+    payload: TransactionRefundPayload
+  ): Observable<TransactionActionResponse> {
+    return this.httpClient.post<TransactionActionResponse>(
+      `${this.apiBaseUrl}/api/v1/transactions/refund`,
+      payload
+    );
+  }
 }

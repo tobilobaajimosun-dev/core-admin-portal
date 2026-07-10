@@ -1,0 +1,104 @@
+<div class="w-full bg-white border border-[#ECF0F3] rounded-2xl overflow-hidden">
+
+  <!-- ── Header ── -->
+  <div class="flex items-start justify-between px-6 pt-6 pb-2 flex-shrink-0 print:hidden">
+    <h3 class="text-[18.46px] font-semibold text-[#060708] leading-none tracking-[-0.005em]">
+      Receipt
+    </h3>
+    <button
+      type="button"
+      (click)="close()"
+      class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+             bg-gray-100 hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+             disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+      aria-label="Close">
+      <span class="sr-only">Close</span>
+      <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666"
+          stroke="#121212" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="w-8 h-8 border-2 border-[#00B3FF] border-t-transparent rounded-full animate-spin"></div>
+      <span class="text-sm text-[#51575B]">Loading receipt...</span>
+    </div>
+  }
+
+  @if (!isLoading() && receipt(); as r) {
+    <div id="receipt-printable" class="flex flex-col">
+
+      <!-- Header: logo, provider, status -->
+      <div class="flex flex-col items-center pt-6 pb-5 px-6 border-b border-dashed border-[#E2E8F0]">
+        @if (r.transactionable.logoUrl) {
+          <img [src]="r.transactionable.logoUrl" alt=""
+            class="w-12 h-12 rounded-full object-cover mb-3 border border-[#ECF1F5]" />
+        }
+        <span class="text-sm font-medium text-[#51575B] mb-1">{{ r.transactionable.provider }}</span>
+        <span class="text-[28px] font-bold tracking-[-0.02em] text-[#131719] leading-none mb-3">
+          ₦{{ r.amount | number:'1.2-2' }}
+        </span>
+        <span [ngClass]="statusBadgeClass(r.status)"
+          class="text-xs font-semibold px-3 py-1 rounded-full">
+          {{ isSuccess(r.status) ? 'Payment Successful' : (r.status | titlecase) }}
+        </span>
+      </div>
+
+      <!-- Biller / transaction details -->
+      <div class="px-6 py-4 flex flex-col">
+        <dl class="flex flex-col">
+          <div class="flex items-center justify-between py-2.5">
+            <dt class="text-sm text-[#51575B]">Category</dt>
+            <dd class="text-sm font-medium text-[#131719]">{{ r.transactionable.category | titlecase }}</dd>
+          </div>
+          <div class="flex items-center justify-between py-2.5">
+            <dt class="text-sm text-[#51575B]">Service</dt>
+            <dd class="text-sm font-medium text-[#131719]">{{ r.transactionable.service }}</dd>
+          </div>
+
+          <!-- Dynamic details, since these differ per category -->
+          @for (entry of detailEntries(r.transactionable.details); track entry[0]) {
+            <div class="flex items-center justify-between py-2.5">
+              <dt class="text-sm text-[#51575B]">{{ formatLabel(entry[0]) }}</dt>
+              <dd class="text-sm font-medium text-[#131719] text-right max-w-[220px] truncate">
+                {{ entry[1] }}
+              </dd>
+            </div>
+          }
+        </dl>
+      </div>
+
+      <!-- Footer: reference + date -->
+      <div class="px-6 pt-3 pb-6 border-t border-dashed border-[#E2E8F0] flex flex-col gap-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-[#AAB3BA]">Reference No</span>
+          <span class="text-xs font-medium text-[#51575B]">{{ r.reference_no }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-[#AAB3BA]">Date</span>
+          <span class="text-xs font-medium text-[#51575B]">
+            {{ r.createdAt | date:'MMM d, yyyy • h:mm a' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions (hidden when printing) -->
+    <div class="print:hidden flex items-center gap-3 px-6 pb-6">
+      <button type="button" (click)="close()"
+        class="flex-1 px-4 py-2.5 rounded-lg border border-[#E2E8F0] text-sm font-medium
+          text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
+        Close
+      </button>
+      <button type="button" (click)="print()"
+        class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+          bg-[#00B3FF] text-white text-sm font-medium hover:bg-[#0090CC] transition-colors cursor-pointer">
+        <ps-svg-icon name="download-icon" class="w-4 h-4"></ps-svg-icon>
+        Download as PDF
+      </button>
+    </div>
+  }
+
+</div>

@@ -106,9 +106,42 @@
       <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
         Message
       </label>
+
+      @if (isEmailChannel()) {
+        <div class="flex items-center gap-1">
+          <button type="button"
+            (mousedown)="$event.preventDefault()"
+            (click)="applyBold()"
+            title="Bold"
+            class="w-7 h-7 flex items-center justify-center rounded-md border border-[#D2DBE1]
+              text-xs font-bold text-[#2B3033] bg-white hover:bg-gray-50 transition-colors cursor-pointer">
+            B
+          </button>
+          <button type="button"
+            (mousedown)="$event.preventDefault()"
+            (click)="applyItalic()"
+            title="Italic"
+            class="w-7 h-7 flex items-center justify-center rounded-md border border-[#D2DBE1]
+              text-xs italic text-[#2B3033] bg-white hover:bg-gray-50 transition-colors cursor-pointer">
+            I
+          </button>
+          <button type="button"
+            (mousedown)="$event.preventDefault()"
+            (click)="applyHeader()"
+            title="Header"
+            class="w-7 h-7 flex items-center justify-center rounded-md border border-[#D2DBE1]
+              text-[11px] font-bold text-[#2B3033] bg-white hover:bg-gray-50 transition-colors cursor-pointer">
+            H
+          </button>
+          <span class="text-[10px] text-[#9CA3AF] ml-1">Select text and click to format &middot; inserts real HTML tags</span>
+        </div>
+      }
+
       <textarea
+        #messageTextarea
         [ngModel]="message()"
         (ngModelChange)="onMessageChange($event)"
+        [attr.maxlength]="messageMaxLength()"
         placeholder="Write your message here..."
         class="w-full bg-white outline-none resize-none transition-colors font-normal
                text-[#2B3033] placeholder-[#D2DBE1]
@@ -116,6 +149,13 @@
                h-[121px] rounded-lg border border-[#D2DBE1] px-3 py-[10.26px]
                text-[13.33px] leading-[140%] tracking-[-0.005em]">
       </textarea>
+      <div class="flex justify-end">
+        @if (isEmailChannel()) {
+          <span class="text-[10px] text-[#9CA3AF]">{{ message().length }} characters &middot; no limit for email</span>
+        } @else {
+          <span class="text-[10px] text-[#9CA3AF]">{{ message().length }} / {{ messageMaxLength() }} characters</span>
+        }
+      </div>
     </div>
 
   </div>

@@ -164,3 +164,52 @@ export interface TransactionActionResponse {
   data?:        unknown;
   responseCode: string;
 }
+
+export interface TransactionRefundPayload {
+  transaction_id: string;
+  reason:         string;
+}
+
+// transaction.model.ts
+
+export interface TransactionReceiptTransactionable {
+  id:                            string;
+  reference_no:                  string;
+  amount:                        number;
+  provider:                      string;
+  category:                      string;
+  service:                       string;
+  details:                       Record<string, string | number> | null;
+  customer_id:                   string;
+  status:                        string;
+  tag:                           string;
+  message:                       string | null;
+  wallet_transaction_reference:  string | null;
+  wallet_transaction_payload:    TransactionWalletPayload | null;
+  createdAt:                     string;
+  updatedAt:                     string;
+  logoUrl:                       string;
+}
+
+export interface TransactionReceiptData {
+  id:                   string;
+  reference_no:         string;
+  amount:               number;
+  transactionable_id:   string;
+  transactionable_type: string;
+  customer_id:          string;
+  type:                 TransactionType;
+  status:               string;
+  external_customer_id: string | null;
+  createdAt:            string;
+  updatedAt:            string;
+  transactionable:      TransactionReceiptTransactionable;
+}
+
+export interface TransactionReceiptResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         TransactionReceiptData;
+  responseCode: string;
+}

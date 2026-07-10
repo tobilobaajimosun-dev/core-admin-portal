@@ -81,6 +81,10 @@ export class ViewCustomerComponent implements OnInit {
     };
   });
 
+  // Whether the customer is currently suspended. Drives the button label/icon
+  // and is passed into the modal so it can show the right copy either way.
+  isSuspended = computed(() => this.store.selectedCustomer()?.customer.is_suspended ?? false);
+
 ngOnInit(): void {
   const id = this.route.snapshot.paramMap.get('id');
   if (id) this.store.fetchCustomerById(id);
@@ -119,46 +123,52 @@ ngOnInit(): void {
     });
   }
 
-  openEditCustomerModal(): void {
-    const customer = this.customer();
-    if (!customer) return;
-    this.modalService.open(EditCustomerModalComponent, {
-      data: {
-        firstName:   customer.firstName,
-        lastName:    customer.lastName,
-        email:       customer.email,
-        phoneNumber: customer.phone,
-        gender:      this.store.selectedCustomer()?.customer.gender ?? '',
-        workType:    '',
-        workplace:   '',
-        onSave: (updated: { firstName: string; lastName: string; gender: string; workType: string; workplace: string }) => {
-          const raw = this.store.selectedCustomer();
-          if (!raw) return;
-          this.store.patchSelectedCustomer({
+openEditCustomerModal(): void {
+  const customer = this.customer();
+  if (!customer) return;
+  this.modalService.open(EditCustomerModalComponent, {
+    data: {
+      firstName:   customer.firstName,
+      lastName:    customer.lastName,
+      email:       customer.email,
+      phoneNumber: customer.phone,
+      gender:      this.store.selectedCustomer()?.customer.gender ?? '',
+      workType:    '',
+      workplace:   '', 
+      onSave: (updated: { firstName: string; lastName: string; gender: string; workType: string; workplace: string }) => {
+        this.store.updateCustomer({
+          customerId: customer.id,
+          payload: {
             firstName: updated.firstName,
             lastName:  updated.lastName,
-          });
-        },
+            gender:    updated.gender,
+            workType:  updated.workType,
+            workplace: updated.workplace,
+          },
+        });
+      },
+    },
+    maxWidth:   '560px',
+    isCentered: true,
+  });
+}
+
+  // Opens the suspend/unsuspend modal. The modal itself decides its copy and
+  // reason list based on `isSuspended` — this just wires it to the store.
+  toggleSuspension(): void {
+    const customer = this.customer();
+    if (!customer) return;
+
+    this.modalService.open(SuspendCustomerModalComponent, {
+      data: {
+        customerId:   customer.id,
+        customerName: `${customer.firstName} ${customer.lastName}`,
+        isSuspended:  this.isSuspended(),
       },
       maxWidth:   '560px',
       isCentered: true,
     });
   }
-
-deactivateCustomer(): void {
-  const customer = this.customer();
-  if (!customer) return;
-
-  this.modalService.open(SuspendCustomerModalComponent, {
-    data: {
-      customerId:   customer.id,
-      customerName: `${customer.firstName} ${customer.lastName}`,
-      onSuccess: () => {
-        this.router.navigate(['/users']);
-      },
-    },
-  });
-}
 
   maskPhone(phone: string): string {
   if (!phone || phone === '—') return '—';

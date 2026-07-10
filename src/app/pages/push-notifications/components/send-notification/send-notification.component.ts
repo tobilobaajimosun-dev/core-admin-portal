@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PsSelectModule } from '@pcsl-ui/ui/ps-select/ps-select.module';
@@ -46,6 +46,10 @@ export class SendNotificationComponent {
   private readonly store = inject(NotificationStore);
 
   readonly isSending = this.store.isSendingNotification;
+
+  // Reference to the textarea, used to read/restore cursor selection when
+  // applying formatting from the toolbar.
+  private readonly messageTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('messageTextarea');
 
   recipientTab = signal<RecipientTab>('all');
   channel = signal<ChannelType>('push');
@@ -102,6 +106,11 @@ readonly kycStatusOptions = [
 
   readonly availableVariables = AVAILABLE_VARIABLES;
 
+  // Email has no character cap (it's rendered as HTML); other channels
+  // (e.g. in-app/push) stay capped at 500 chars.
+  readonly isEmailChannel = computed(() => this.channel() === 'email');
+  readonly messageMaxLength = computed<number | null>(() => (this.isEmailChannel() ? null : 500));
+
   readonly recipientTabs: { value: RecipientTab; label: string; icon: string }[] = [
     { value: 'all',      label: 'All Customers',      icon: 'customers-icon'      },
     { value: 'segment',  label: 'Customer Segment',   icon: 'add-user-icon'       },
@@ -140,8 +149,88 @@ readonly kycStatusOptions = [
   insertVariable(variable: string): void {
     this.notificationMessage.update(msg => {
       const combined = msg + variable;
-      return combined.length > 500 ? combined.slice(0, 500) : combined;
+      const max = this.messageMaxLength();
+      return max !== null && combined.length > max ? combined.slice(0, max) : combined;
     });
+  }
+
+  /** Wraps the current textarea selection in an HTML tag (e.g. <strong>...</strong>). */
+  applyBold(): void {
+    this.wrapSelection('<strong>', '</strong>');
+  }
+
+  applyItalic(): void {
+    this.wrapSelection('<em>', '</em>');
+  }
+
+  /** Toggles an <h1>...</h1> wrapper around the line the cursor is in. */
+  applyHeader(): void {
+    const el = this.messageTextarea()?.nativeElement;
+    if (!el) return;
+
+    const value = this.notificationMessage();
+    const cursor = el.selectionStart;
+    const lineStart = value.lastIndexOf('\n', cursor - 1) + 1;
+    const lineEndIdx = value.indexOf('\n', cursor);
+    const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
+    const line = value.slice(lineStart, lineEnd);
+
+    const isHeader = line.startsWith('<h1>') && line.endsWith('</h1>');
+    const newLine = isHeader ? line.slice(4, -5) : `<h1>${line}</h1>`;
+    const newValue = value.slice(0, lineStart) + newLine + value.slice(lineEnd);
+    const offset = isHeader ? -4 : 4;
+
+    this.notificationMessage.set(newValue);
+    this.restoreSelection(el, cursor + offset, cursor + offset);
+  }
+
+  private wrapSelection(openTag: string, closeTag: string): void {
+    const el = this.messageTextarea()?.nativeElement;
+    if (!el) return;
+
+    const value = this.notificationMessage();
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = value.slice(start, end) || 'text';
+
+    const newValue = value.slice(0, start) + openTag + selected + closeTag + value.slice(end);
+    this.notificationMessage.set(newValue);
+    this.restoreSelection(el, start + openTag.length, start + openTag.length + selected.length);
+  }
+
+  /** Restores focus/selection on the textarea after the DOM updates with the new value. */
+  private restoreSelection(el: HTMLTextAreaElement, start: number, end: number): void {
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start, end);
+    });
+  }
+
+  // Tags that already render as their own block/paragraph in email clients —
+  // lines starting with one of these are left as-is rather than re-wrapped.
+  private readonly BLOCK_TAG_PATTERN = /^<(h[1-6]|p|div|ul|ol|li|blockquote|table)[\s>]/i;
+
+  /**
+   * Prepares the message for HTML email delivery. The textarea already
+   * contains real HTML tags (from the toolbar, or typed directly by the
+   * sender). Each line is treated as its own block: lines that already start
+   * with a block-level tag (<h1>, <p>, etc.) are left alone; everything else
+   * — plain text or a line wrapped only in inline tags like <strong>/<em> —
+   * gets wrapped in <p>...</p> so it renders as a proper paragraph with
+   * normal spacing instead of running everything together.
+   *
+   * NOTE: this intentionally does NOT escape the input. Anyone using this
+   * form can inject arbitrary HTML/script into the outgoing email — that's
+   * the point (rich formatting), but it means this field must stay
+   * restricted to trusted admin users.
+   */
+  private toHtmlMessage(message: string): string {
+    return message
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line !== '')
+      .map(line => (this.BLOCK_TAG_PATTERN.test(line) ? line : `<p>${line}</p>`))
+      .join('\n');
   }
 
   removeCustomer(name: string): void {
@@ -153,11 +242,14 @@ readonly kycStatusOptions = [
   }
 
   private buildPayload(): NotificationSendPayload {
+    const isEmail = this.isEmailChannel();
+
     const payload: NotificationSendPayload = {
       recipient_type: this.recipientTab(),
       channel: this.channel(),
       title: this.notificationTitle(),
-      message: this.notificationMessage(),
+      message: isEmail ? this.toHtmlMessage(this.notificationMessage()) : this.notificationMessage(),
+      isHtml: isEmail,
     };
 
     if (this.selectedTemplate()) {

@@ -1,5 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { WalletService } from '@core/services/wallet.service';
+import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 import {
   WalletRaw,
   TopFundedWallet,
@@ -9,7 +10,8 @@ import {
   WalletExportParams,
   WalletListParams,
   WalletDetailData,
-  WalletDetailResponse  
+  WalletDetailResponse,
+  WalletAdjustParams,
 } from '@core/interfaces/wallet.model';
 
 export interface FetchWalletsParams {
@@ -22,6 +24,7 @@ export interface FetchWalletsParams {
 @Injectable({ providedIn: 'root' })
 export class WalletStore {
   private readonly walletService = inject(WalletService);
+  private readonly toast         = inject(PsToastService);
 
   // ── Wallets state ──────────────────────────────────────────────────────────
   private readonly _wallets          = signal<WalletRaw[]>([]);
@@ -45,6 +48,17 @@ export class WalletStore {
   private readonly _exportError = signal<string | null>(null);
   isExporting = this._isExporting.asReadonly();
   exportError = this._exportError.asReadonly();
+
+  // ── Adjust balance / status state ────────────────────────────────────────────
+  private readonly _isAdjustingBalance = signal(false);
+  private readonly _adjustBalanceError = signal<string | null>(null);
+  private readonly _isUpdatingStatus   = signal(false);
+  private readonly _updateStatusError  = signal<string | null>(null);
+
+  isAdjustingBalance = this._isAdjustingBalance.asReadonly();
+  adjustBalanceError = this._adjustBalanceError.asReadonly();
+  isUpdatingStatus   = this._isUpdatingStatus.asReadonly();
+  updateStatusError  = this._updateStatusError.asReadonly();
 
   // ── Public selectors ───────────────────────────────────────────────────────
   wallets          = this._wallets.asReadonly();
@@ -162,6 +176,62 @@ fetchWalletById(id: string): void {
     error: (err: any) => {
       this._walletDetailError.set(err?.error?.message ?? 'Failed to load wallet details.');
       this._isLoadingDetail.set(false);
+    },
+  });
+}
+
+adjustWalletBalance(id: string, params: WalletAdjustParams, onSuccess?: () => void): void {
+  this._isAdjustingBalance.set(true);
+  this._adjustBalanceError.set(null);
+
+  this.walletService.adjustWalletBalance(id, params).subscribe({
+    next: (res) => {
+      const { wallet, transaction } = res.data;
+      const current = this._walletDetail();
+      if (current) {
+        this._walletDetail.set({
+          ...current,
+          wallet: { ...current.wallet, ...wallet },
+          recent_transactions: [transaction, ...current.recent_transactions],
+        });
+      }
+      this._isAdjustingBalance.set(false);
+      this.toast.success('Wallet balance updated successfully.');
+      onSuccess?.();
+    },
+    error: (err: any) => {
+      const message = err?.error?.message ?? 'Failed to update wallet balance.';
+      this._adjustBalanceError.set(message);
+      this._isAdjustingBalance.set(false);
+      this.toast.error(message);
+    },
+  });
+}
+
+updateWalletStatus(id: string, status: WalletStatus, onSuccess?: () => void): void {
+  this._isUpdatingStatus.set(true);
+  this._updateStatusError.set(null);
+
+  this.walletService.updateWalletStatus(id, { status }).subscribe({
+    next: (res) => {
+      const current = this._walletDetail();
+      if (current) {
+        this._walletDetail.set({
+          ...current,
+          wallet: { ...current.wallet, ...res.data },
+        });
+      }
+      this._isUpdatingStatus.set(false);
+      this.toast.success(
+        status === 'FROZEN' ? 'Wallet frozen successfully.' : 'Wallet unfrozen successfully.'
+      );
+      onSuccess?.();
+    },
+    error: (err: any) => {
+      const message = err?.error?.message ?? 'Failed to update wallet status.';
+      this._updateStatusError.set(message);
+      this._isUpdatingStatus.set(false);
+      this.toast.error(message);
     },
   });
 }

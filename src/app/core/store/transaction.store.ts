@@ -1,11 +1,14 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { TransactionService } from '@core/services/transaction.service';
+import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service'; 
+
 import {
   TransactionRaw,
   TransactionListParams,
   TransactionDateRange,
   TransactionDetailRaw,
   TransactionMetricsData,
+  TransactionReceiptData 
 } from '@core/interfaces/transaction.model';
 
 function extractFilename(contentDisposition: string | null): string | null {
@@ -28,6 +31,7 @@ function downloadBlob(blob: Blob, filename: string): void {
 @Injectable({ providedIn: 'root' })
 export class TransactionStore {
   private readonly transactionService = inject(TransactionService);
+  private readonly toastService       = inject(PsToastService);
 
   // ── Raw state ─────────────────────────────────────────────────────────────
   private readonly _transactions = signal<TransactionRaw[]>([]);
@@ -60,16 +64,22 @@ readonly isExporting = computed(() => this._isExporting());
 readonly exportError = computed(() => this._exportError());
 
 // ── Receipt download state ─────────────────────────────────────────────
-private readonly _isDownloadingReceipt = signal(false);
-private readonly _receiptError         = signal<string | null>(null);
-readonly isDownloadingReceipt = computed(() => this._isDownloadingReceipt());
-readonly receiptError         = computed(() => this._receiptError());
+private readonly _receipt          = signal<TransactionReceiptData | null>(null);
+private readonly _isLoadingReceipt = signal(false);
+private readonly _receiptError     = signal<string | null>(null);
+
+readonly receipt          = computed(() => this._receipt());
+readonly isLoadingReceipt = computed(() => this._isLoadingReceipt());
+readonly receiptError     = computed(() => this._receiptError());
 
 // ── Retry state ─────────────────────────────────────────────────────────
-private readonly _isRetrying = signal(false);
-private readonly _retryError = signal<string | null>(null);
-readonly isRetrying = computed(() => this._isRetrying());
-readonly retryError = computed(() => this._retryError());
+private readonly _isRetrying     = signal(false);
+private readonly _retryError     = signal<string | null>(null);
+private readonly _retrySucceeded = signal(false);
+readonly isRetrying     = computed(() => this._isRetrying());
+readonly retryError     = computed(() => this._retryError());
+readonly retrySucceeded = computed(() => this._retrySucceeded());
+
 
 // ── Refund state ────────────────────────────────────────────────────────
 private readonly _isRefunding = signal(false);
@@ -122,8 +132,13 @@ private readonly _lastParams = signal<TransactionListParams>({ page: 1, limit: 1
     });
   }
 
-  fetchTransactionById(id: string): void {
-    this._isLoadingDetail.set(true);
+ // `silent` skips the full-page loading flag — used for background refreshes
+  // (e.g. after retry/refund) so already-rendered content like the customer
+  // card doesn't unmount and disappear mid-refresh.
+  fetchTransactionById(id: string, opts: { silent?: boolean } = {}): void {
+    if (!opts.silent) {
+      this._isLoadingDetail.set(true);
+    }
     this._detailError.set(null);
 
     this.transactionService.getTransactionById(id).subscribe({
@@ -136,6 +151,13 @@ private readonly _lastParams = signal<TransactionListParams>({ page: 1, limit: 1
         this._isLoadingDetail.set(false);
       },
     });
+  }
+
+   // Call this once when a transaction is freshly navigated to, so
+  // stale retry state from a previous transaction doesn't leak in.
+  resetRetryState(): void {
+    this._retrySucceeded.set(false);
+    this._retryError.set(null);
   }
 
   fetchMetrics(): void {
@@ -192,72 +214,58 @@ private readonly _lastParams = signal<TransactionListParams>({ page: 1, limit: 1
   });
 }
 
-downloadReceipt(id: string): void {
-  this._isDownloadingReceipt.set(true);
+fetchReceipt(id: string): void {
+  this._isLoadingReceipt.set(true);
   this._receiptError.set(null);
+  this._receipt.set(null);
 
   this.transactionService.getTransactionReceipt(id).subscribe({
-    next: (response) => {
-      this._isDownloadingReceipt.set(false);
-      const blob = response.body as Blob;
-      const filename =
-        extractFilename(response.headers.get('content-disposition')) ??
-        `receipt_${id}.pdf`;
-      downloadBlob(blob, filename);
+    next: (res) => {
+      this._receipt.set(res.data);
+      this._isLoadingReceipt.set(false);
     },
     error: (err) => {
-      this._isDownloadingReceipt.set(false);
-      const fallback = 'Failed to download receipt.';
-
-      if (err?.error instanceof Blob) {
-        err.error.text().then((text: string) => {
-          let message = fallback;
-          try {
-            message = JSON.parse(text)?.message ?? fallback;
-          } catch {
-            /* not JSON, use fallback */
-          }
-          this._receiptError.set(message);
-        });
-      } else {
-        this._receiptError.set(err?.error?.message ?? fallback);
-      }
+      this._isLoadingReceipt.set(false);
+      this._receiptError.set(err?.error?.message ?? 'Failed to load receipt.');
     },
   });
 }
 
-retryTransaction(id: string): void {
-  this._isRetrying.set(true);
-  this._retryError.set(null);
+ retryTransaction(id: string): void {
+    this._isRetrying.set(true);
+    this._retryError.set(null);
 
-  this.transactionService.retryTransaction(id).subscribe({
-    next: () => {
-      this._isRetrying.set(false);
-      // Refresh the detail in case retry changed the status
-      this.fetchTransactionById(id);
-    },
-    error: (err) => {
-      this._isRetrying.set(false);
-      this._retryError.set(err?.error?.message ?? 'Failed to retry transaction.');
-    },
-  });
-}
+    this.transactionService.retryTransaction(id).subscribe({
+      next: (res) => {
+        this._isRetrying.set(false);
+        this._retrySucceeded.set(true);
+        this.toastService.success(res?.message ?? 'Transaction requeried successfully.');
+        // Silent refresh — keeps the customer card mounted while it updates.
+        this.fetchTransactionById(id, { silent: true });
+      },
+      error: (err) => {
+        this._isRetrying.set(false);
+        this._retryError.set(err?.error?.message ?? 'Failed to retry transaction.');
+      },
+    });
+  }
 
-refundTransaction(id: string): void {
-  this._isRefunding.set(true);
-  this._refundError.set(null);
+  refundTransaction(id: string, reason: string): void {
+    this._isRefunding.set(true);
+    this._refundError.set(null);
 
-  this.transactionService.refundTransaction(id).subscribe({
-    next: () => {
-      this._isRefunding.set(false);
-      this.fetchTransactionById(id);
-    },
-    error: (err) => {
-      this._isRefunding.set(false);
-      this._refundError.set(err?.error?.message ?? 'Failed to refund transaction.');
-    },
-  });
-}
+    this.transactionService.refundTransaction({ transaction_id: id, reason }).subscribe({
+      next: (res) => {
+        this._isRefunding.set(false);
+        this.toastService.success(res?.message ?? 'Transaction refunded successfully.');
+        this.fetchTransactionById(id, { silent: true });
+      },
+      error: (err) => {
+        this._isRefunding.set(false);
+        this._refundError.set(err?.error?.message ?? 'Failed to refund transaction.');
+      },
+    });
+  }
 
   setSearch(query: string): void {
     this._search.set(query);

@@ -91,21 +91,16 @@ export class ViewAllNeedsAttentionComponent implements OnInit {
     this.router.navigate(['/customers']);
   }
 
-  openVerificationModal(customer: CustomerNeedsActionRaw): void {
-    this.modalService.open(AddressVerificationModalComponent, {
-      maxWidth: '820px',
-      isCentered: true,
-      data: {
-        customerName:     `${customer.firstName} ${customer.lastName}`,
-        stateOfResidence: 'Lagos',
-        streetAddress:    '12, Johnson Street, Ikeja',
-        localGovernment:  'Lagos Mainland',
-        nearestLandmark:  '-',
-        documentImageUrl: '',
-        kycLabel:         issueToLabel(customer.issue),
-        onApprove: () => console.log('Approved:', customer.id),
-        onReject:  (reason: string) => console.log('Rejected:', customer.id, reason),
-      },
-    });
-  }
+ openVerificationModal(customer: CustomerNeedsActionRaw): void {
+  this.modalService.open(AddressVerificationModalComponent, {
+    maxWidth: '893px',
+    isCentered: true,
+    data: {
+      customerId:   customer.id,
+      customerName: `${customer.firstName} ${customer.lastName}`,
+      issue:        customer.issue,
+      onSent: () => this.loadPage(this.currentPage()), // needs-attention.component.ts uses its own reload call
+    },
+  });
+}
 }

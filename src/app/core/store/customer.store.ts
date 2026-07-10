@@ -21,7 +21,9 @@ import {
   CustomerTransactionRaw,
   CustomerTransactionListParams,
   CustomerActivityRaw, 
-  CustomerActivityListParams
+  CustomerActivityListParams,
+  CustomerUpdatePayload,
+
 } from '@core/interfaces/customer.model';
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -67,6 +69,9 @@ type CustomerState = {
 
   isExporting: boolean;
   exportError: string | null;
+
+  isUpdatingCustomer: boolean;
+  updateCustomerError: string | null;
 };
 
 const initialCustomerState: CustomerState = {
@@ -110,6 +115,9 @@ const initialCustomerState: CustomerState = {
 
   isExporting: false,
   exportError: null,
+
+  isUpdatingCustomer: false,
+  updateCustomerError: null,
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -271,6 +279,36 @@ export const CustomerStore = signalStore(
       )
     );
 
+    const updateCustomer = rxMethod<{ customerId: string; payload: CustomerUpdatePayload }>(
+  pipe(
+    tap(() => patchState(store, { isUpdatingCustomer: true, updateCustomerError: null })),
+    switchMap(({ customerId, payload }) =>
+      customerService.updateCustomer(customerId, payload).pipe(
+        tapResponse({
+          next: () => {
+            const current = store.selectedCustomer();
+            patchState(store, {
+              isUpdatingCustomer: false,
+              selectedCustomer: current
+                ? { ...current, customer: { ...current.customer, ...payload } }
+                : current,
+              customers: store.customers().map((c) =>
+                c.id === customerId ? { ...c, ...payload } : c
+              ),
+            });
+          },
+          error: (err: any) => {
+            patchState(store, {
+              updateCustomerError: err?.error?.message ?? 'Failed to update customer.',
+              isUpdatingCustomer: false,
+            });
+          },
+        })
+      )
+    )
+  )
+);
+
     const exportCustomers = (params?: CustomerListParams) => {
   patchState(store, { isExporting: true, exportError: null });
 
@@ -306,28 +344,52 @@ export const CustomerStore = signalStore(
   });
 };
 
- const suspendCustomer = (
+    // Toggles suspension on/off. Unlike the old delete-based flow, this never
+    // removes the customer from state — it just flips `is_suspended` in place
+    // on both the selected customer and the list, so the UI (badge/button)
+    // updates instantly without a refetch or navigation.
+    const toggleCustomerSuspension = (
+      customerId: string,
+      reason: string,
+      onSuccess?: (isSuspended: boolean) => void,
+      onError?: (message: string) => void
+    ) => {
+      patchState(store, { isSuspending: true, suspendError: null });
+
+      customerService.toggleCustomerSuspension(customerId, { reason }).subscribe({
+        next: (res) => {
+          const { is_suspended } = res.data;
+          const current = store.selectedCustomer();
+
+          patchState(store, {
+            isSuspending: false,
+            selectedCustomer: current
+              ? { ...current, customer: { ...current.customer, is_suspended } }
+              : current,
+            customers: store.customers().map((c) =>
+              c.id === customerId ? { ...c, is_suspended } : c
+            ),
+          });
+
+          onSuccess?.(is_suspended);
+        },
+        error: (err: any) => {
+          const message = err?.error?.message ?? 'Failed to update suspension status.';
+          patchState(store, { isSuspending: false, suspendError: message });
+          onError?.(message);
+        },
+      });
+    };
+
+const performNeedsActionResolution = (
   customerId: string,
-  onSuccess?: () => void,
+  onSuccess?: (message: string) => void,
   onError?: (message: string) => void
 ) => {
-  patchState(store, { isSuspending: true, suspendError: null });
-
-  customerService.deleteCustomer(customerId).subscribe({
-    next: () => {
-      const current = store.selectedCustomer();
-      patchState(store, {
-        isSuspending: false,
-        customers: store.customers().filter((c) => c.id !== customerId),
-        total: Math.max(0, store.total() - 1),
-        selectedCustomer:
-          current?.customer.id === customerId ? null : current,
-      });
-      onSuccess?.();
-    },
+  customerService.performNeedsActionResolution(customerId).subscribe({
+    next: (res) => onSuccess?.(res.message),
     error: (err: any) => {
-      const message = err?.error?.message ?? 'Failed to suspend customer.';
-      patchState(store, { isSuspending: false, suspendError: message });
+      const message = err?.error?.message ?? 'Failed to complete action.';
       onError?.(message);
     },
   });
@@ -502,13 +564,15 @@ return {
   setTransactionStatusFilter,
   setTransactionTypeFilter,
   setTransactionDateRange,
-  suspendCustomer,
+  toggleCustomerSuspension,
   fetchCustomerActivity,
   setActivityPage,
   setActivityPageSize,
   setActivitySearch,
   setActivityModuleFilter,
   exportCustomers,
+  updateCustomer,
+  performNeedsActionResolution,
 };
 })
 );

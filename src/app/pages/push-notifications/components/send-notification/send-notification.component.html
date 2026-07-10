@@ -256,9 +256,41 @@
     <!-- Notification message -->
     <div class="mb-4">
       <label class="block text-xs font-medium text-[#51575B] mb-1.5">Notification message</label>
+
+      @if (isEmailChannel()) {
+        <div class="flex items-center gap-1 mb-2">
+          <button type="button"
+            (mousedown)="$event.preventDefault()"
+            (click)="applyBold()"
+            title="Bold"
+            class="w-8 h-8 flex items-center justify-center rounded-md border border-[#E1E8ED]
+              text-sm font-bold text-[#131719] bg-white hover:bg-[#F3F7F9] transition-colors cursor-pointer">
+            B
+          </button>
+          <button type="button"
+            (mousedown)="$event.preventDefault()"
+            (click)="applyItalic()"
+            title="Italic"
+            class="w-8 h-8 flex items-center justify-center rounded-md border border-[#E1E8ED]
+              text-sm italic text-[#131719] bg-white hover:bg-[#F3F7F9] transition-colors cursor-pointer">
+            I
+          </button>
+          <button type="button"
+            (mousedown)="$event.preventDefault()"
+            (click)="applyHeader()"
+            title="Header"
+            class="w-8 h-8 flex items-center justify-center rounded-md border border-[#E1E8ED]
+              text-xs font-bold text-[#131719] bg-white hover:bg-[#F3F7F9] transition-colors cursor-pointer">
+            H
+          </button>
+          <span class="text-[10px] text-[#9CA3AF] ml-2">Select text and click to format &middot; inserts real HTML tags &middot; Header applies to the current line</span>
+        </div>
+      }
+
       <textarea
+        #messageTextarea
         rows="6"
-        maxlength="500"
+        [attr.maxlength]="messageMaxLength()"
         placeholder="Write your notification message here."
         [ngModel]="notificationMessage()"
         (ngModelChange)="notificationMessage.set($event)"
@@ -266,7 +298,11 @@
           bg-white outline-none focus:border-[#00B3FF] transition-colors placeholder:text-[#9CA3AF]
           resize-none leading-relaxed"></textarea>
       <div class="flex justify-end mt-1">
-        <span class="text-[10px] text-[#9CA3AF]">{{ notificationMessage().length }} / 500 characters</span>
+        @if (isEmailChannel()) {
+          <span class="text-[10px] text-[#9CA3AF]">{{ notificationMessage().length }} characters &middot; no limit for email</span>
+        } @else {
+          <span class="text-[10px] text-[#9CA3AF]">{{ notificationMessage().length }} / {{ messageMaxLength() }} characters</span>
+        }
       </div>
     </div>
 
@@ -279,7 +315,7 @@
             <button
               type="button"
               (click)="insertVariable(v)"
-              [disabled]="notificationMessage().length >= 500"
+              [disabled]="!isEmailChannel() && notificationMessage().length >= 500"
               class="text-xs font-medium text-[#00B3FF] border border-[#00B3FF] rounded-md
                 px-3 py-1.5 bg-white hover:bg-[#EAF8FF]
                 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">

@@ -9,7 +9,7 @@ import {
 import { FreezeWalletModalComponent } from '@shared/components/modals/freeze-wallet-modal/freeze-wallet-modal.component';
 import { PsModalService } from '@pcsl-ui/ui/ps-modal/ps-modal.service';
 import { WalletStore } from '@core/store/wallet.store';
-import { WalletTransactionDetail } from '@core/interfaces/wallet.model';
+import { WalletStatus, WalletTransactionDetail } from '@core/interfaces/wallet.model';
 
 interface InfoRow {
   label:       string;
@@ -39,50 +39,50 @@ export class ViewWalletComponent implements OnInit {
 
   isLoading = this.store.isLoadingDetail;
 
-  // The API doesn't return a wallet `status` field yet, so freeze/unfreeze is
-  // tracked locally until the backend adds one.
-  // TODO: remove this once GET /wallets/:id returns a real status.
-  private frozenOverride = signal(false);
+ wallet = computed(() => {
+  const detail = this.store.walletDetail();
+  if (!detail) return null;
 
-  wallet = computed(() => {
-    const detail = this.store.walletDetail();
-    if (!detail) return null;
+  const { wallet, metrics, recent_transactions } = detail;
 
-    const { wallet, metrics, recent_transactions } = detail;
+  return {
+    walletId:         wallet.public_id,
+    status:            this.formatStatus(wallet.status),   
+    availableBalance:  wallet.available_balance,
+    totalFunded:       metrics.total_funded,
+    totalSpent:        metrics.total_spent,
+    transactionsCount: metrics.transaction_count,
+    dateCreated:       wallet.created_at,
+    kyc:               wallet.customer.is_bvn_verified ? 'Verified' : 'Unverified',
+    accountTier:       '—',
+    lastFunded:        metrics.last_funded_date,
+    lastActivity:      wallet.updated_at,
+    restrictions:      'None',
+    customer: {
+      id:        wallet.customer.id,
+      firstName: wallet.customer.firstName,
+      lastName:  wallet.customer.lastName,
+      email:     wallet.customer.email,
+      phone:     wallet.customer.phone,
+      avatarUrl: wallet.customer.profile_image,
+    },
+    walletAccount: {
+      bankName:      wallet.bank_name,
+      accountNumber: wallet.account_number,
+      accountName:   wallet.account_name,
+    },
+    recentTransactions: recent_transactions as WalletTransactionDetail[],
+  };
+});
 
-    return {
-      walletId:         wallet.public_id,
-      status:            this.frozenOverride() ? 'Frozen' : 'Active',
-      availableBalance:  wallet.available_balance,
-      totalFunded:       metrics.total_funded,
-      totalSpent:        metrics.total_spent,
-      transactionsCount: metrics.transaction_count,
-      dateCreated:       wallet.created_at,
-      // Derived from BVN verification since there's no dedicated KYC field yet.
-      kyc:               wallet.customer.is_bvn_verified ? 'Verified' : 'Unverified',
-      accountTier:       '—', // TODO: not returned by API yet
-      lastFunded:        metrics.last_funded_date,
-      lastActivity:      wallet.updated_at,
-      restrictions:      'None', // TODO: not returned by API yet
-      customer: {
-        id:        wallet.customer.id,
-        firstName: wallet.customer.firstName,
-        lastName:  wallet.customer.lastName,
-        email:     wallet.customer.email,
-        phone:     wallet.customer.phone,
-        avatarUrl: wallet.customer.profile_image,
-      },
-      // This is the wallet's own settlement/virtual account, not a separate
-      // linked withdrawal bank account — the API only returns this one.
-      walletAccount: {
-        bankName:      wallet.bank_name,
-        accountNumber: wallet.account_number,
-        accountName:   wallet.account_name,
-      },
-      recentTransactions: recent_transactions as WalletTransactionDetail[],
-    };
-  });
-
+private formatStatus(status?: WalletStatus): string {
+  switch (status) {
+    case 'ACTIVE':   return 'Active';
+    case 'FROZEN':   return 'Frozen';
+    case 'INACTIVE': return 'Inactive';
+    default:         return 'Active';
+  }
+}
   infoRows = computed((): InfoRow[] => {
     const wallet = this.wallet();
     if (!wallet) return [];
@@ -163,42 +163,49 @@ export class ViewWalletComponent implements OnInit {
     this.router.navigate(['/wallets']);
   }
 
-  updateBalance(): void {
-    const wallet = this.wallet();
-    if (!wallet) return;
+updateBalance(): void {
+  const wallet = this.wallet();
+  const id = this.route.snapshot.paramMap.get('id');
+  if (!wallet || !id) return;
 
-    this.modalService.open(UpdateBalanceModalComponent, {
-      data: {
-        walletId:     wallet.walletId,
-        walletHolder: `${wallet.customer.firstName} ${wallet.customer.lastName}`,
-        onUpdate: (action: UpdateBalanceAction, amount: number, reason: string) => {
-          // TODO: call WalletStore/WalletService update-balance endpoint, then re-fetch
-          const id = this.route.snapshot.paramMap.get('id');
-          if (id) this.store.fetchWalletById(id);
-        },
+  this.modalService.open(UpdateBalanceModalComponent, {
+    data: {
+      walletId:     wallet.walletId,
+      walletHolder: `${wallet.customer.firstName} ${wallet.customer.lastName}`,
+      onUpdate: (action: UpdateBalanceAction, amount: number, description: string) => {
+        this.store.adjustWalletBalance(id, {
+          action_type:   action === 'credit' ? 'CREDIT' : 'DEBIT',
+          top_up_method: action === 'credit' ? 'manual-funding' : 'manual-deduction',
+          amount,
+          description,
+        });
       },
-      maxWidth:   '560px',
-      isCentered: true,
-    });
-  }
+    },
+    maxWidth:   '560px',
+    isCentered: true,
+  });
+}
 
-  toggleFreezeWallet(): void {
-    const wallet = this.wallet();
-    if (!wallet) return;
+toggleFreezeWallet(): void {
+  const wallet = this.wallet();
+  const id = this.route.snapshot.paramMap.get('id');
+  if (!wallet || !id) return;
 
-    this.modalService.open(FreezeWalletModalComponent, {
-      data: {
-        walletId:     wallet.walletId,
-        walletHolder: `${wallet.customer.firstName} ${wallet.customer.lastName}`,
-        isFrozen: wallet.status === 'Frozen',
-        onConfirm: () => {
-          // TODO: call the real freeze/unfreeze endpoint once it exists;
-          // this only flips local state for now.
-          this.frozenOverride.update(v => !v);
-        },
+  const isFrozen   = wallet.status === 'Frozen';
+  const nextStatus: WalletStatus = isFrozen ? 'ACTIVE' : 'FROZEN';
+
+  this.modalService.open(FreezeWalletModalComponent, {
+    data: {
+      walletId:     wallet.walletId,
+      walletHolder: `${wallet.customer.firstName} ${wallet.customer.lastName}`,
+      isFrozen,
+      onConfirm: () => {
+        this.store.updateWalletStatus(id, nextStatus);
       },
-      maxWidth:   '560px',
-      isCentered: true,
-    });
-  }
+    },
+    maxWidth:   '560px',
+    isCentered: true,
+  });
+}
+
 }

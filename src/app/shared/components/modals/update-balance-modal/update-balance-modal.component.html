@@ -77,28 +77,21 @@
                text-[13.33px] leading-[140%] tracking-[-0.005em]" />
     </div>
 
-    <!-- Select a reason -->
-    <div class="flex flex-col gap-3">
+    <!-- Reason -->
+    <div class="flex flex-col gap-1.5">
       <label class="font-medium text-[#2B3033] text-sm leading-[136%]">
-        Select a reason
+        Reason
       </label>
-      <div class="flex flex-col gap-3">
-        @for (reason of reasons; track reason.value) {
-          <label class="flex items-center gap-2.5 cursor-pointer group">
-            <input
-              type="radio"
-              name="update-balance-reason"
-              [value]="reason.value"
-              [checked]="selectedReason() === reason.value"
-              (change)="selectReason(reason.value)"
-              class="w-4 h-4 accent-[#00ABF5] cursor-pointer shrink-0" />
-            <span class="text-sm font-normal text-[#2B3033] leading-[136%]
-              group-hover:text-[#131719] transition-colors">
-              {{ reason.label }}
-            </span>
-          </label>
-        }
-      </div>
+      <textarea
+        rows="3"
+        [ngModel]="reason()"
+        (ngModelChange)="onReasonChange($event)"
+        placeholder="Enter a reason for this balance update"
+        class="w-full bg-white outline-none transition-colors font-normal text-[#2B3033]
+               placeholder-[#D2DBE1] focus:border-[#00ABF5] focus:ring-1 focus:ring-[#00ABF5]
+               rounded-lg border border-[#D2DBE1] px-3 py-2.5 resize-none
+               text-[13.33px] leading-[140%] tracking-[-0.005em]">
+      </textarea>
     </div>
 
   </div>

@@ -541,3 +541,13 @@ footer.product-stepper-footer {
   cursor: not-allowed;
   pointer-events: none;
 }
+
+@media print {
+  body * { visibility: hidden; }
+  #receipt-printable, #receipt-printable * { visibility: visible; }
+  #receipt-printable {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+  }
+}

@@ -6,8 +6,13 @@ import {
   WalletMetricsResponse,
   WalletListParams,
   WalletListResponse,
-  WalletDetailResponse 
+  WalletDetailResponse,
+  WalletAdjustParams,
+  WalletAdjustResponse,
+  WalletStatusUpdateParams,
+  WalletStatusUpdateResponse,
 } from '@core/interfaces/wallet.model';
+
 
 @Injectable({ providedIn: 'root' })
 export class WalletService {
@@ -38,6 +43,20 @@ export class WalletService {
   getWalletById(id: string): Observable<WalletDetailResponse> {
   return this.httpClient.get<WalletDetailResponse>(
     `${this.apiBaseUrl}/api/v1/wallets/${id}`
+  );
+}
+
+adjustWalletBalance(id: string, params: WalletAdjustParams): Observable<WalletAdjustResponse> {
+  return this.httpClient.post<WalletAdjustResponse>(
+    `${this.apiBaseUrl}/api/v1/wallets/${id}/adjust`,
+    params
+  );
+}
+
+updateWalletStatus(id: string, params: WalletStatusUpdateParams): Observable<WalletStatusUpdateResponse> {
+  return this.httpClient.patch<WalletStatusUpdateResponse>(
+    `${this.apiBaseUrl}/api/v1/wallets/${id}/status`,
+    params
   );
 }
 }

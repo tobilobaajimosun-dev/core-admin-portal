@@ -14,10 +14,13 @@ import {
   CustomerTransactionListResponse,
   CustomerMetricsResponse,
   CustomerNeedsActionListResponse,
-  CustomerDeleteResponse,
   CustomerActivityListParams,
-  CustomerActivityListResponse
-
+  CustomerActivityListResponse,
+  CustomerUpdateResponse,
+  CustomerUpdatePayload,
+  CustomerToggleSuspensionPayload,
+  CustomerToggleSuspensionResponse,
+  CustomerNeedsActionResolutionResponse,  
 } from '@core/interfaces/customer.model';
 
 @Injectable({ providedIn: 'root' })
@@ -81,9 +84,13 @@ getNeedsAttention(
   );
 }
 
-deleteCustomer(customerId: string): Observable<CustomerDeleteResponse> {
-  return this.httpClient.delete<CustomerDeleteResponse>(
-    `${this.apiBaseUrl}/api/v1/customers/delete-customer/${customerId}`
+toggleCustomerSuspension(
+  customerId: string,
+  payload: CustomerToggleSuspensionPayload
+): Observable<CustomerToggleSuspensionResponse> {
+  return this.httpClient.patch<CustomerToggleSuspensionResponse>(
+    `${this.apiBaseUrl}/api/v1/customers/toggle-suspension/${customerId}`,
+    payload
   );
 }
 
@@ -102,6 +109,23 @@ exportCustomers(params: CustomerListParams = {}): Observable<HttpResponse<Blob>>
   return this.httpClient.get(
     `${this.apiBaseUrl}/api/v1/customers/export?${urlParams}`,
     { responseType: 'blob', observe: 'response' }
+  );
+}
+
+updateCustomer(
+  customerId: string,
+  payload: CustomerUpdatePayload
+): Observable<CustomerUpdateResponse> {
+  return this.httpClient.put<CustomerUpdateResponse>(
+    `${this.apiBaseUrl}/api/v1/customers/${customerId}`,
+    payload
+  );
+}
+
+performNeedsActionResolution(customerId: string): Observable<CustomerNeedsActionResolutionResponse> {
+  return this.httpClient.post<CustomerNeedsActionResolutionResponse>(
+    `${this.apiBaseUrl}/api/v1/customers/needs-actions/${customerId}/perform-action`,
+    {}
   );
 }
 }

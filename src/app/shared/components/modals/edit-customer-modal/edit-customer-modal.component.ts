@@ -76,7 +76,7 @@ export class EditCustomerModalComponent extends PsModalComponent implements OnIn
     this.workType().length > 0
   );
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     if (this.data) {
       this.modalData = { ...this.modalData, ...this.data };
       this.firstName.set(this.modalData.firstName);
@@ -95,7 +95,7 @@ export class EditCustomerModalComponent extends PsModalComponent implements OnIn
     if (typeof value === 'string') this.workType.set(value);
   }
 
- save(): void {
+  save(): void {
     if (!this.canSave()) return;
     this.modalData.onSave({
       firstName: this.firstName(),
@@ -109,7 +109,7 @@ export class EditCustomerModalComponent extends PsModalComponent implements OnIn
 
     this.modalService.open(SuccessNotificationModalComponent, {
       data: {
-        iconSrc: 'icons/success-check.svg', 
+        iconSrc: 'icons/success-check.svg',
         title: "Customer's details updated!",
         description: 'The customer details have been updated successfully.',
         doneLabel: 'Done',

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   LoanListParams,
@@ -9,7 +9,7 @@ import {
   FailedDisbursementListResponse,
   RepaymentDueListResponse,
   RepaymentDueListParams,
-  LoanDetailResponse,  
+  LoanDetailResponse,
 } from '@core/interfaces/loan.model';
 import { buildURLSearchParams } from '@pcsl-ui/utils/strings';
 
@@ -31,7 +31,7 @@ export class LoanService {
     );
   }
 
-    getFailedDisbursements(
+  getFailedDisbursements(
     params: FailedDisbursementListParams = { page: 1, limit: 10 }
   ): Observable<FailedDisbursementListResponse> {
     const urlParams = buildURLSearchParams(params);
@@ -41,17 +41,30 @@ export class LoanService {
   }
 
   getRepaymentsDueToday(
-  params: RepaymentDueListParams = { page: 1, limit: 10 }
-): Observable<RepaymentDueListResponse> {
-  const urlParams = buildURLSearchParams(params);
-  return this.httpClient.get<RepaymentDueListResponse>(
-    `${this.apiBaseUrl}/api/v1/loan-applications/repayments-due-today?${urlParams}`
-  );
-}
+    params: RepaymentDueListParams = { page: 1, limit: 10 }
+  ): Observable<RepaymentDueListResponse> {
+    const urlParams = buildURLSearchParams(params);
+    return this.httpClient.get<RepaymentDueListResponse>(
+      `${this.apiBaseUrl}/api/v1/loan-applications/repayments-due-today?${urlParams}`
+    );
+  }
 
   getLoanById(id: string): Observable<LoanDetailResponse> {
     return this.httpClient.get<LoanDetailResponse>(
       `${this.apiBaseUrl}/api/v1/loan-applications/${id}`
     );
+  }
+
+  // ── Export ──────────────────────────────────────────────────────────────
+  // Note: this endpoint only supports page, limit, search, status, start_date,
+  // end_date — no custom_range/tenor/product/min_amount/max_amount.
+  getLoanExport(
+    params: Pick<LoanListParams, 'page' | 'limit' | 'search' | 'status' | 'start_date' | 'end_date'> = {}
+  ): Observable<HttpResponse<Blob>> {
+    const urlParams = buildURLSearchParams(params);
+    return this.httpClient.get(
+      `${this.apiBaseUrl}/api/v1/loan-applications/export?${urlParams}`,
+      { responseType: 'blob', observe: 'response' }
+    ) as Observable<HttpResponse<Blob>>;
   }
 }

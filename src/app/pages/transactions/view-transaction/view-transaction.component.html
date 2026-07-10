@@ -96,20 +96,20 @@
           <!-- ── Action buttons row ── -->
           <div class="flex items-center gap-3">
 
-            @if (!isSuccessful()) {
-              <button type="button" (click)="retryTransaction()" [disabled]="isRetrying()"
-                class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#E2E8F0] bg-white
-                  text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer
-                  disabled:opacity-60 disabled:cursor-not-allowed">
-                <svg class="w-4 h-4" [class.animate-spin]="isRetrying()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                {{ isRetrying() ? 'Retrying...' : 'Retry Transaction' }}
-              </button>
-            }
+          @if (!isSuccessful() && !retrySucceeded()) {
+  <button type="button" (click)="retryTransaction()" [disabled]="isRetrying()"
+    class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#E2E8F0] bg-white
+      text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer
+      disabled:opacity-60 disabled:cursor-not-allowed">
+    <svg class="w-4 h-4" [class.animate-spin]="isRetrying()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+    {{ isRetrying() ? 'Retrying...' : 'Retry Transaction' }}
+  </button>
+}
 
-            <button type="button" (click)="downloadReceipt()" [disabled]="isDownloadingReceipt()"
+            <button type="button" (click)="downloadReceipt()" [disabled]="isLoadingReceipt()"
               class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#E2E8F0] bg-white
                 text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer
                 disabled:opacity-60 disabled:cursor-not-allowed">
@@ -117,7 +117,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              {{ isDownloadingReceipt() ? 'Downloading...' : 'Download Receipt' }}
+              {{ isLoadingReceipt() ? 'Downloading...' : 'Download Receipt' }}
             </button>
 
             <button type="button" (click)="openRefundModal()" [disabled]="!canRefund()"

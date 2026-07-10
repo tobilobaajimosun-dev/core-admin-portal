@@ -17,7 +17,8 @@ import { CustomerStore } from '@core/store/customer.store';
 export interface SuspendCustomerData {
   customerId:   string;
   customerName: string;
-  onSuccess?:   () => void; // optional hook, e.g. navigate away from detail page
+  isSuspended:  boolean;                        // current status when the modal opens
+  onSuccess?:   (isSuspended: boolean) => void;  // optional hook after a successful toggle
 }
 
 @Component({
@@ -34,9 +35,10 @@ export class SuspendCustomerModalComponent extends PsModalComponent implements O
   modalData: SuspendCustomerData = {
     customerId:   '',
     customerName: '',
+    isSuspended:  false,
   };
 
-  readonly reasons = [
+  private readonly suspendReasons = [
     'Suspected fraud',
     'KYC issues',
     'Suspicious activity',
@@ -44,6 +46,21 @@ export class SuspendCustomerModalComponent extends PsModalComponent implements O
     'User request',
     'Other',
   ];
+
+  private readonly unsuspendReasons = [
+    'Issue resolved',
+    'Suspended in error',
+    'Appeal approved',
+    'User request',
+    'Other',
+  ];
+
+  // Reason list flips based on which action this modal instance is performing.
+  // modalData is set once in ngOnInit before first render, so a plain getter
+  // (rather than a signal) is fine here — it never changes mid-lifecycle.
+  get reasons(): string[] {
+    return this.modalData.isSuspended ? this.unsuspendReasons : this.suspendReasons;
+  }
 
   selectedReason = signal('');
   customReason   = signal('');
@@ -76,36 +93,45 @@ export class SuspendCustomerModalComponent extends PsModalComponent implements O
   suspend(): void {
     if (!this.canSuspend()) return;
 
+    const reason = this.selectedReason() === 'Other'
+      ? this.customReason().trim()
+      : this.selectedReason();
+
+    const wasSuspended = this.modalData.isSuspended;
+
     this.isSubmitting.set(true);
     this.submitError.set(null);
 
- this.store.suspendCustomer(
-  this.modalData.customerId,
-  () => {
-    this.isSubmitting.set(false);
-    this.close();
+    this.store.toggleCustomerSuspension(
+      this.modalData.customerId,
+      reason,
+      (isSuspended) => {
+        this.isSubmitting.set(false);
+        this.close();
 
-    this.modalService.open(SuccessNotificationModalComponent, {
-      data: {
-        iconSrc: 'icons/suspend.svg',
-        title: 'Customer suspended!',
-        description: 'The customer has been suspended successfully.',
-        doneLabel: 'Done',
-        onDone: () => {
-          this.modalData.onSuccess?.();
-        },
+        this.modalService.open(SuccessNotificationModalComponent, {
+          data: {
+            iconSrc: wasSuspended ? 'icons/unsuspend.svg' : 'icons/suspend.svg',
+            title: wasSuspended ? 'Customer unsuspended!' : 'Customer suspended!',
+            description: wasSuspended
+              ? 'The customer has been unsuspended successfully.'
+              : 'The customer has been suspended successfully.',
+            doneLabel: 'Done',
+            onDone: () => {
+              this.modalData.onSuccess?.(isSuspended);
+            },
+          },
+        });
       },
-    });
-  },
-  (message) => {
-    this.isSubmitting.set(false);
-    this.submitError.set(message);
-  }
-);
+      (message) => {
+        this.isSubmitting.set(false);
+        this.submitError.set(message);
+      }
+    );
   }
 
-done(): void {
-  this.close();
-  this.data?.onDone?.();
-}
+  done(): void {
+    this.close();
+    this.data?.onDone?.();
+  }
 }

@@ -4,7 +4,6 @@ import {
   OnInit,
   signal,
   computed,
-  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule }  from '@angular/forms';
@@ -22,11 +21,6 @@ export interface UpdateBalanceData {
     amount: number,
     reason: string
   ) => void;
-}
-
-interface ReasonOption {
-  value: string;
-  label: string;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -49,15 +43,7 @@ export class UpdateBalanceModalComponent extends PsModalComponent implements OnI
   // ── State ──────────────────────────────────────────────────────────────────
   selectedAction = signal<UpdateBalanceAction>('credit');
   amount         = signal('');
-  selectedReason = signal('');
-
-  // ── Reason options (matches Figma copy exactly) ────────────────────────────
-  readonly reasons: ReasonOption[] = [
-    { value: 'promotional_credit', label: 'Promotional credit' },
-    { value: 'loyalty_reward',     label: 'Loyalty reward'     },
-    { value: 'referral_bonus',     label: 'Referral boonus'    },
-    { value: 'dispute_settlement', label: 'Dispute settlement' },
-  ];
+  reason         = signal('');
 
   // ── Validation ─────────────────────────────────────────────────────────────
   canSubmit = computed(() => {
@@ -65,7 +51,7 @@ export class UpdateBalanceModalComponent extends PsModalComponent implements OnI
     return (
       !isNaN(amt) &&
       amt > 0 &&
-      this.selectedReason().length > 0
+      this.reason().trim().length > 0
     );
   });
 
@@ -87,14 +73,14 @@ export class UpdateBalanceModalComponent extends PsModalComponent implements OnI
     this.amount.set(formatted);
   }
 
-  selectReason(value: string): void {
-    this.selectedReason.set(value);
+  onReasonChange(value: string): void {
+    this.reason.set(value);
   }
 
   submit(): void {
     if (!this.canSubmit()) return;
     const amt = Number(this.amount().replace(/,/g, ''));
-    this.modalData.onUpdate(this.selectedAction(), amt, this.selectedReason());
+    this.modalData.onUpdate(this.selectedAction(), amt, this.reason().trim());
     this.close();
   }
 }

@@ -141,6 +141,7 @@ export interface WalletDetailRaw {
   available_balance:  number;
   balance:             number;
   on_hold:             number;
+  status?:             WalletStatus;
   created_at:          string;
   updated_at:          string;
 }
@@ -176,5 +177,43 @@ export interface WalletDetailResponse {
   status:       string;
   message:      string;
   data:         WalletDetailData;
+  responseCode: string;
+}
+
+// ─── Adjust balance (credit/debit) ───────────────────────────────────────────
+
+export type WalletAdjustActionType = 'CREDIT' | 'DEBIT';
+
+export interface WalletAdjustParams {
+  action_type:   WalletAdjustActionType;
+  top_up_method: string;
+  amount:        number;
+  description:   string;
+}
+
+export interface WalletAdjustData {
+  wallet:      WalletDetailRaw;
+  transaction: WalletTransactionDetail;
+}
+
+export interface WalletAdjustResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         WalletAdjustData;
+  responseCode: string;
+}
+
+// ─── Update status (freeze / unfreeze) ───────────────────────────────────────
+
+export interface WalletStatusUpdateParams {
+  status: WalletStatus;
+}
+
+export interface WalletStatusUpdateResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         WalletDetailRaw;
   responseCode: string;
 }

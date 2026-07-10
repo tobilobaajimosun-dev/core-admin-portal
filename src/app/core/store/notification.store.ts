@@ -11,7 +11,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { distinctUntilChanged, pipe, switchMap, tap } from 'rxjs';
 import { NotificationService } from '@core/services/notification.service';
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
-
+import { Observable } from 'rxjs'; 
 import {
   NotificationDailyBreakdown,
   NotificationHistoryItemRaw,
@@ -323,7 +323,7 @@ const createTemplate = (payload: NotificationTemplateUpsertPayload) => {
   );
 };
 
-const sendNotification = (payload: NotificationSendPayload) => {
+const sendNotification = (payload: NotificationSendPayload): Observable<NotificationSendResponse> => {
   patchState(store, { isSendingNotification: true, sendNotificationError: null });
 
   return notificationService.sendNotification(payload).pipe(
@@ -334,10 +334,7 @@ const sendNotification = (payload: NotificationSendPayload) => {
       },
       error: (err: any) => {
         const message = err?.error?.message ?? 'Failed to send notification.';
-        patchState(store, {
-          isSendingNotification: false,
-          sendNotificationError: message,
-        });
+        patchState(store, { isSendingNotification: false, sendNotificationError: message });
         toast.error(message);
       },
     })

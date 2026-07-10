@@ -1,14 +1,9 @@
 <div class="flex flex-col bg-white border border-[#ECF0F3] rounded-2xl overflow-hidden w-[480px]">
 
-
-    <!-- ══════════════════════════════════
-         FORM STATE
-    ══════════════════════════════════ -->
-
     <!-- Header -->
     <div class="flex items-start justify-between px-6 pt-6 pb-4 flex-shrink-0">
       <h3 class="text-lg font-semibold text-[#131719] leading-none tracking-[-0.005em]">
-        Suspend customer?
+        {{ modalData.isSuspended ? 'Unsuspend user?' : 'Suspend user?' }}
       </h3>
       <button
         type="button"
@@ -30,7 +25,9 @@
 
       <!-- Warning text -->
       <p class="text-sm font-normal text-[#51575B] leading-[140%]">
-        This action cannot be undone. Type the role name to confirm
+        {{ modalData.isSuspended
+          ? 'This will restore ' + modalData.customerName + '’s access to their account.'
+          : 'This will restrict ' + modalData.customerName + '’s access to their account.' }}
       </p>
 
       <!-- Select reason -->
@@ -41,7 +38,9 @@
         <ps-select
           [ngModel]="selectedReason()"
           (selectionChanged)="onReasonChange($event)"
-          placeholder="Select a reason to suspend this account"
+          [placeholder]="modalData.isSuspended
+            ? 'Select a reason to unsuspend this account'
+            : 'Select a reason to suspend this account'"
           itemId="suspend-reason-select">
           @for (reason of reasons; track reason) {
             <ps-select-option [value]="reason" [label]="reason"></ps-select-option>
@@ -68,6 +67,10 @@
         </div>
       }
 
+      @if (submitError()) {
+        <p class="text-sm text-[#DC2626]">{{ submitError() }}</p>
+      }
+
     </div>
 
     <!-- Footer -->
@@ -87,7 +90,9 @@
                disabled:cursor-not-allowed cursor-pointer
                enabled:bg-[#00B3FF] enabled:text-white
                disabled:bg-[#EBEBEB] disabled:text-[#ABABAB]">
-        Suspend customer
+        {{ isSubmitting()
+          ? (modalData.isSuspended ? 'Unsuspending…' : 'Suspending…')
+          : (modalData.isSuspended ? 'Unsuspend customer' : 'Suspend customer') }}
       </button>
     </div>
 

@@ -1,9 +1,9 @@
-<div class="flex flex-col overflow-hidden bg-white rounded-xl max-h[90vh]">
+<div class="flex flex-col overflow-hidden bg-white rounded-xl max-h-[90vh]">
 
   <!-- ── Header ── -->
   <div class="flex items-start justify-between px-6 pt-5 pb-4 flex-shrink-0">
     <div>
-      <h2 class="text-[15px] font-semibold text-[#131719] leading-snug">Address Verification</h2>
+      <h2 class="text-[15px] font-semibold text-[#131719] leading-snug">{{ kycLabel() }}</h2>
     </div>
     <button
       type="button"
@@ -29,7 +29,6 @@
         Find below the details provided by this customer
       </p>
 
-      <!-- Customer Name -->
       <div class="mb-4">
         <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">Customer name</label>
         <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
@@ -38,34 +37,30 @@
         </div>
       </div>
 
-      <!-- State of Residence -->
       <div class="mb-4">
         <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">State of Residence</label>
         <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
                     text-[13px] text-[#131719]">
-          {{ modalData.stateOfResidence }}
+          {{ modalData.stateOfResidence || '-' }}
         </div>
       </div>
 
-      <!-- Street Address -->
       <div class="mb-4">
         <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">Street Address</label>
         <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
                     text-[13px] text-[#131719]">
-          {{ modalData.streetAddress }}
+          {{ modalData.streetAddress || '-' }}
         </div>
       </div>
 
-      <!-- Local Government -->
       <div class="mb-4">
         <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">Local Government</label>
         <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
                     text-[13px] text-[#131719]">
-          {{ modalData.localGovernment }}
+          {{ modalData.localGovernment || '-' }}
         </div>
       </div>
 
-      <!-- Nearest Landmark -->
       <div class="mb-4">
         <label class="block text-[13px] font-medium text-[#2B3033] mb-1.5">Nearest Landmark</label>
         <div class="w-full min-h-[41px] flex items-center px-3 rounded-lg bg-black/[0.08]
@@ -92,53 +87,33 @@
     </div>
   </div>
 
-  <!-- ── Footer ── -->
-  <div class="flex-shrink-0 border-t border-[#F3F7F9] pb-4">
-    <div class="grid grid-cols-2">
+ <!-- ── Footer ── -->
+  <div class="flex-shrink-0 border-t border-[#F3F7F9] px-6 py-4 flex justify-end gap-3">
+    <button
+      type="button"
+      (click)="close()"
+      class="h-10 px-5 rounded-lg border border-[#E1E8ED] bg-white text-[13px] font-medium
+             text-[#51575B] hover:bg-[#F8FCFE] transition-colors cursor-pointer">
+      Cancel
+    </button>
 
-      <!-- Left cell -->
-      <div class="flex items-center gap-3 px-6 h-14 relative">
-
-        <!-- Reject with upward dropdown -->
-        <div class="relative flex-1">
-          <button
-            type="button"
-            (click)="toggleRejectDropdown()"
-            class="w-full h-10 px-4 flex items-center justify-center gap-1.5 rounded-lg border border-[#E1E8ED]
-                   bg-[#7E0002]/[0.03] text-[13px] font-medium text-[#8E1F0B] transition-colors cursor-pointer">
-            <span>{{ selectedReason() || 'Reject' }}</span>
-            <ps-svg-icon name="chevron-down" class="w-3.5 h-3.5 text-[#7E868B]"></ps-svg-icon>
-          </button>
-
-       @if (rejectDropdownOpen()) {
-            <div class="absolute bottom-full left-0 mb-1.5 w-52 rounded-xl
-                        bg-white border border-[#E1E8ED] shadow-lg overflow-hidden z-50">
-              <div class="px-4 py-2.5 border-b border-[#F3F7F9]">
-                <p class="text-xs text-[#7E868B]">Kindly select a reason</p>
-              </div>
-              @for (reason of rejectReasons; track reason) {
-                <button
-                  type="button"
-                  (click)="selectRejectReason(reason)"
-                  class="w-full text-left px-4 py-2.5 text-[13px] text-[#131719]
-                         hover:bg-[#F8FCFE] transition-colors cursor-pointer">
-                  {{ reason }}
-                </button>
-              }
-            </div>
-          }
-        </div>
-
-        <!-- Approve -->
-        <button
-          type="button"
-          (click)="approve()"
-          class="flex-1 h-10 rounded-lg bg-[#00B3FF] text-white text-[13px] font-medium
-                 hover:bg-[#00A3E8] transition-colors cursor-pointer">
-          Approve
-        </button>
-      </div>
-    </div>
+    @if (showSendAction()) {
+      <button
+        type="button"
+        (click)="openSendNotificationModal()"
+        class="h-10 px-5 rounded-lg bg-[#00B3FF] text-white text-[13px] font-medium
+               hover:bg-[#00A3E8] transition-colors cursor-pointer">
+        Send Notification
+      </button>
+    } @else if (showCompleteAction()) {
+      <button
+        type="button"
+        (click)="completeAction()"
+        class="h-10 px-5 rounded-lg bg-[#00B3FF] text-white text-[13px] font-medium
+               hover:bg-[#00A3E8] transition-colors cursor-pointer">
+        Complete Action
+      </button>
+    }
   </div>
 
 </div>

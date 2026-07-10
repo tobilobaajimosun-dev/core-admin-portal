@@ -26,11 +26,15 @@ export class NeedsAttentionComponent implements OnInit {
   customers     = signal<CustomerNeedsActionRaw[]>([]);
 
   ngOnInit(): void {
-    // Fetch only 5 for the dashboard widget; total count comes from meta
+    this.loadNeedsAttention();
+  }
+
+  private loadNeedsAttention(): void {
+    this.isLoading.set(true);
     this.customerService.getNeedsAttention({ page: 1, limit: 5 }).subscribe({
       next: ({ data }) => {
         this.customers.set(data.data);
-        this.count.set(data.meta.total); // show real total, not just current page
+        this.count.set(data.meta.total);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false),
@@ -47,19 +51,14 @@ export class NeedsAttentionComponent implements OnInit {
 
   openVerificationModal(customer: CustomerNeedsActionRaw): void {
     this.modalService.open(AddressVerificationModalComponent, {
-      maxWidth: '820px',
+      maxWidth: '893px',
       isCentered: true,
       data: {
-        customerName:     `${customer.firstName} ${customer.lastName}`,
-        stateOfResidence: 'Lagos',
-        streetAddress:    '12, Johnson Street, Ikeja',
-        localGovernment:  'Lagos Mainland',
-        nearestLandmark:  '-',
-        documentImageUrl: '',
-        kycLabel:         issueToLabel(customer.issue),
-        onApprove: () => console.log('Approved:', customer.id),
-        onReject:  (reason: string) => console.log('Rejected:', customer.id, reason),
+        customerId:   customer.id,
+        customerName: `${customer.firstName} ${customer.lastName}`,
+        issue:        customer.issue,
+        onSent: () => this.loadNeedsAttention(),
       },
     });
   }
-}
+} 

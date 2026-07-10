@@ -194,6 +194,10 @@ export class LoanTableComponent implements OnInit {
     }
   }
 
+  exportLoans(): void {
+  this.store.exportLoans();
+}
+  
   clearFilter(i: number): void {
     this.appliedValues[i] = '';
     this.selectedValues[i] = '';

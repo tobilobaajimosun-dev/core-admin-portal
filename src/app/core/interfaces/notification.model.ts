@@ -172,6 +172,7 @@ export interface NotificationSendPayload {
   templateSlug?:  string;
   title:          string;
   message:        string;
+  isHtml?:        boolean;  // true when `message` is HTML (email channel)
   // NOTE: confirm exact field name/shape against the full Swagger schema —
   // the request body panel was cut off after `message` in the screenshot.
   scheduledAt?:   string;   // ISO datetime, only present when scheduling for later
