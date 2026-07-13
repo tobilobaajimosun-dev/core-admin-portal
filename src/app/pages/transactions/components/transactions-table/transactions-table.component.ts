@@ -65,12 +65,10 @@ export class TransactionsTableComponent implements OnInit {
       type: 'category',
       label: 'Category',
       options: [
-        { label: 'Airtime',           value: 'Airtime'           },
-        { label: 'Data Subscription', value: 'Data Subscription' },
-        { label: 'Electricity',       value: 'Electricity'       },
-        { label: 'TV Subscription',   value: 'TV Subscription'   },
-        { label: 'Wallet Funding',    value: 'Wallet Funding'    },
-        { label: 'Transfer',          value: 'Transfer'          },
+        { label: 'Airtime',           value: 'AIRTIME'           },
+        { label: 'Data Subscription', value: 'DATA' },
+        { label: 'Electricity',       value: 'ELECTRICITY'       },
+        { label: 'TV Subscription',   value: 'CABLE'   },
       ],
     },
     {
@@ -228,26 +226,30 @@ export class TransactionsTableComponent implements OnInit {
   onPageSizeChange(size: number): void { this.currentPage.set(1); this.store.setPageSize(size); }
 
   // ── Display helpers ──────────────────────────────────────────────────────
-  getInitials(f: string, l: string): string {
-    return `${(f ?? ' ').charAt(0)}${(l ?? ' ').charAt(0)}`.toUpperCase();
-  }
+getInitials(firstName?: string, lastName?: string): string {
+  if (!firstName && !lastName) return '-';
+  return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
+}
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'SUCCESSFUL': return 'text-[#12B76A]';
-      case 'PENDING':    return 'text-[#F59E0B]';
-      case 'FAILED':     return 'text-[#F04438]';
-      case 'REVERSED':   return 'text-[#6366F1]';
+      case 'SUCCESS': return 'text-[#006244]';
+      case 'PENDING':    return 'text-[#9E3900]';
+      case 'FAILED':     return 'text-[#A8000F]';
+      case 'REVERSED':   return 'text-[#1041B7]';
+      case 'REFUNDED':   return 'text-[#1041B7]';
       default:           return 'text-[#51575B]';
     }
   }
 
   getStatusBg(status: string): string {
     switch (status) {
-      case 'SUCCESSFUL': return 'bg-[#ECFDF5]';
-      case 'PENDING':    return 'bg-[#FFFBEB]';
-      case 'FAILED':     return 'bg-[#FFF1F2]';
-      case 'REVERSED':   return 'bg-[#EEF2FF]';
+      case 'SUCCESS': return 'bg-[#C6FCE4]';
+      case 'PENDING':    return 'bg-[#FFF4BE]';
+      case 'FAILED':     return 'bg-[#FFE1E2]';
+      case 'REVERSED':   return 'bg-[#FFF4BE]';
+      case 'REFUNDED':   return 'bg-[#FFF4BE]';
+
       default:           return 'bg-[#F3F4F6]';
     }
   }
