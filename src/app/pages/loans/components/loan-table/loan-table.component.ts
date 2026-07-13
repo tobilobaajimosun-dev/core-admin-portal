@@ -90,9 +90,12 @@ export class LoanTableComponent implements OnInit {
       label: 'Status',
       options: [
         { label: 'New',       value: 'NEW' },
+        { label: 'Pending',    value: 'PENDING' },
+        { label: 'Processing',    value: 'PROCESSING' },
         { label: 'Completed', value: 'COMPLETED' },
-        { label: 'Failed',    value: 'FAILED' },
+        { label: 'Disbursed', value: 'DISBURSED' },
         { label: 'Cancelled', value: 'CANCELLED' },
+        { label: 'Failed', value: 'FAILED' },
       ],
     },
     {
@@ -168,7 +171,6 @@ export class LoanTableComponent implements OnInit {
         if (!value || value === 'custom_range') {
           if (value === 'custom_range') {
             const { start_date, end_date } = this.customRangeForms[i].getRawValue();
-            // wire up your store custom-range call here if needed
           }
           this.store.fetchLoans({ page: 1, limit: this.store.currentLimit() });
           return;
