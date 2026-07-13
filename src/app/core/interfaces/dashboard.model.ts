@@ -79,7 +79,7 @@ export interface DashboardStatCard {
 export type DashboardCustomRange =
   | 'today'
   | 'yesterday'
-  | 'past_7_days'
+  | 'this_week'
   | 'this_month'
   | 'custom';
 

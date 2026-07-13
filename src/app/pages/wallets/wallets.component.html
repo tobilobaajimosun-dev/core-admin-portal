@@ -13,7 +13,7 @@
 
       <!-- Filter by date range -->
     <div class="flex items-center gap-1">
-      @for (tab of timeframeTabs; track tab.value) {
+      <!-- @for (tab of timeframeTabs; track tab.value) {
       <button
         type="button"
         (click)="onTimeframeChange(tab.value)"
@@ -22,7 +22,7 @@
         [class.text-[#727C84]]="activeRange() !== tab.value">
         {{ tab.label }}
       </button>
-      }
+      } -->
 
       <ps-date-range-picker
         placeholder="Filter by date range"

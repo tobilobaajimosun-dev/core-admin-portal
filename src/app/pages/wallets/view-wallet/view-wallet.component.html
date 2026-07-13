@@ -128,7 +128,7 @@
           <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 pt-5 pb-2">
 
             <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-2">
-              Wallet Account
+              Linked Bank Account
             </h3>
 
             <dl class="flex flex-col">
@@ -148,6 +148,12 @@
                 <dt class="text-sm text-[#51575B]">Account Name</dt>
                 <dd class="text-sm font-medium text-[#131719]">
                   {{ wallet()!.walletAccount.accountName }}
+                </dd>
+              </div>
+               <div class="flex items-center justify-between py-3 last:border-b-0">
+                <dt class="text-sm text-[#51575B]">Date Linked</dt>
+                <dd class="text-sm font-medium text-[#131719]">
+                   {{ wallet()!.walletAccount.dateLinked | date:'MMM d, yyyy, h:mm a' }}
                 </dd>
               </div>
             </dl>
@@ -276,41 +282,6 @@
           </dl>
 
         </div>
-
-        <!-- ── Recent Transactions card ── -->
-        @if (wallet()!.recentTransactions.length) {
-          <div class="rounded-xl border border-[#ECF1F5] bg-white px-4 pt-5 pb-2">
-
-            <h3 class="text-sm font-semibold text-[#131719] tracking-[-0.005em] mb-2">
-              Recent Transactions
-            </h3>
-
-     <dl class="flex flex-col max-h-[600px] overflow-y-auto pr-3 -mr-3">
-              @for (txn of wallet()!.recentTransactions; track txn.id) {
-                <div class="flex items-center justify-between py-3
-                  border-b border-[#F3F7F9] last:border-b-0">
-                  <div class="flex flex-col gap-0.5">
-                    <span class="text-sm font-medium text-[#131719] tracking-[-0.005em]">
-                      {{ txn.description }}
-                    </span>
-                    <span class="text-xs font-normal text-[#51575B]">
-                      {{ txn.created_at | date:'MMM d, yyyy, h:mm a' }} · {{ txn.reference }}
-                    </span>
-                  </div>
-                  <div class="flex flex-col items-end gap-0.5">
-                    <span class="text-sm font-semibold tracking-[-0.005em]"
-                      [class.text-[#059669]]="txn.action_type === 'CREDIT'"
-                      [class.text-[#DC2626]]="txn.action_type === 'DEBIT'">
-                      {{ txn.action_type === 'CREDIT' ? '+' : '-' }}₦{{ txn.amount | number:'1.0-0' }}
-                    </span>
-                    <span class="text-xs font-normal text-[#51575B]">{{ txn.status }}</span>
-                  </div>
-                </div>
-              }
-            </dl>
-
-          </div>
-        }
 
       }
 

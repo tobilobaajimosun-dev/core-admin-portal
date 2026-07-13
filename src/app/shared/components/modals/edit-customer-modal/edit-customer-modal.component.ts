@@ -110,8 +110,8 @@ export class EditCustomerModalComponent extends PsModalComponent implements OnIn
     this.modalService.open(SuccessNotificationModalComponent, {
       data: {
         iconSrc: 'icons/success-check.svg',
-        title: "Customer's details updated!",
-        description: 'The customer details have been updated successfully.',
+        title: "User's details updated!",
+        description: 'The user details have been updated successfully.',
         doneLabel: 'Done',
       },
     });

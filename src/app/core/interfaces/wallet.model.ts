@@ -3,9 +3,7 @@ export type WalletStatus = 'ACTIVE' | 'INACTIVE' | 'FROZEN';
 export type WalletDateRange =
   | 'today'
   | 'yesterday'
-  | 'last_7_days'
-  | 'past_14_days'
-  | 'last_30_days'
+  | 'this_week'
   | 'this_month'
   | 'custom';
 

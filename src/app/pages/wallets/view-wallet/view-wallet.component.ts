@@ -70,8 +70,8 @@ export class ViewWalletComponent implements OnInit {
       bankName:      wallet.bank_name,
       accountNumber: wallet.account_number,
       accountName:   wallet.account_name,
+      dateLinked:    wallet.created_at,
     },
-    recentTransactions: recent_transactions as WalletTransactionDetail[],
   };
 });
 

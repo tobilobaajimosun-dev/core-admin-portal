@@ -26,7 +26,7 @@ export class WalletsComponent implements OnInit {
   readonly timeframeTabs: { label: string; value: DashboardCustomRange }[] = [
     { label: 'Today',      value: 'today'       },
     { label: 'Yesterday',  value: 'yesterday'   },
-    { label: 'This Week',  value: 'past_7_days' },
+    { label: 'This Week',  value: 'this_week' },
     { label: 'This Month', value: 'this_month'  },
   ];
 
