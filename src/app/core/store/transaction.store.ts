@@ -108,29 +108,40 @@ private readonly _lastParams = signal<TransactionListParams>({ page: 1, limit: 1
   readonly metricsLoading = computed(() => this._metricsLoading());
   readonly metricsError   = computed(() => this._metricsError());
 
-
+// ── Active tab / tag state ──────────────────────────────────────────────
+private readonly _activeTag = signal<string | undefined>(undefined);
+readonly activeTag = computed(() => this._activeTag());
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
-  fetchTransactions(params: TransactionListParams = {}): void {
-    this._lastParams.set(params);
-    this._isLoading.set(true);
-    this._error.set(null);
+  setActiveTag(tag: string | undefined): void {
+  this._activeTag.set(tag);
+}
 
-    this.transactionService.getTransactions(params).subscribe({
-      next: (res) => {
-        this._transactions.set(res.data.data);
-        this._total.set(res.data.meta.total);
-        this._page.set(res.data.meta.page);
-        this._limit.set(res.data.meta.limit);
-        this._isLoading.set(false);
-      },
-      error: (err) => {
-        this._error.set(err?.error?.message ?? 'Failed to load transactions');
-        this._isLoading.set(false);
-      },
-    });
-  }
+fetchTransactions(params: TransactionListParams = {}): void {
+  const mergedParams: TransactionListParams = {
+    ...params,
+    tag: params.tag ?? this._activeTag(),
+  };
+
+  this._lastParams.set(mergedParams);
+  this._isLoading.set(true);
+  this._error.set(null);
+
+  this.transactionService.getTransactions(mergedParams).subscribe({
+    next: (res) => {
+      this._transactions.set(res.data.data);
+      this._total.set(res.data.meta.total);
+      this._page.set(res.data.meta.page);
+      this._limit.set(res.data.meta.limit);
+      this._isLoading.set(false);
+    },
+    error: (err) => {
+      this._error.set(err?.error?.message ?? 'Failed to load transactions');
+      this._isLoading.set(false);
+    },
+  });
+}
 
  // `silent` skips the full-page loading flag — used for background refreshes
   // (e.g. after retry/refund) so already-rendered content like the customer

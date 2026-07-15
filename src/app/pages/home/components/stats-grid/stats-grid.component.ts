@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PsEmptyComponent } from '@pcsl-ui/ui/ps-empty/ps-empty.component';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
+import { PsTooltipModule } from '@pcsl-ui/ui/ps-tooltip/ps-tooltip.module';
 import { DateRange, PsDateRangePickerComponent } from '@ui/ps-date-range-picker/ps-date-range-picker.component';
 import { DashboardStore } from '@core/store/dashboard.store';
 import { DashboardCustomRange } from '@core/interfaces/dashboard.model';
@@ -9,7 +10,13 @@ import { DashboardCustomRange } from '@core/interfaces/dashboard.model';
 @Component({
   selector: 'app-stats-grid',
   standalone: true,
-  imports: [CommonModule, PsEmptyComponent, PsSvgIconComponent, PsDateRangePickerComponent],
+  imports: [
+    CommonModule,
+    PsEmptyComponent,
+    PsSvgIconComponent,
+    PsDateRangePickerComponent,
+    PsTooltipModule,
+  ],
   templateUrl: './stats-grid.component.html',
   styleUrl: './stats-grid.component.scss',
 })
@@ -29,6 +36,12 @@ export class StatsGridComponent implements OnInit {
     { label: 'This Month', value: 'this_month'  },
   ];
 
+  private readonly tooltipDescriptions: Record<string, string> = {
+    total_users:        'The total number of users registered on the platform within the selected timeframe.',
+    active_users:        'Users who performed at least one action on the platform within the selected timeframe.',
+    new_signups:        'The number of new user accounts created within the selected timeframe.',
+  };
+
   ngOnInit(): void {
     this.dashboardStore.fetchDashboardCards(this.dashboardStore.listConfig());
   }
@@ -44,5 +57,9 @@ export class StatsGridComponent implements OnInit {
         range.end.toISOString().split('T')[0]
       );
     }
+  }
+
+  getTooltipDescription(key: string): string {
+    return this.tooltipDescriptions[key] ?? 'No additional information available.';
   }
 }

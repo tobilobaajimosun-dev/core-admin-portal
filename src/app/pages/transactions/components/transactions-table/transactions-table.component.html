@@ -1,3 +1,20 @@
+<!-- ── Tabs ── -->
+<div class="flex items-center justify-center gap-2 mb-4">
+  @for (tab of tabs; track tab.value) {
+  <button type="button" (click)="activeTab.set(tab.value)"
+            class="flex items-center gap-2 rounded-full border text-sm font-medium
+              transition-all duration-150 cursor-pointer py-2.5 px-7 h-10"
+            [ngClass]="activeTab() === tab.value
+              ? 'border-[#00B3FF] text-[#00B3FF] bg-[#00B3FF]/[0.04]'
+              : 'border-[#E1E8ED] text-[#51575B] bg-white'">
+            <span class="flex items-center justify-center w-4 h-4">
+              <ps-svg-icon [name]="tab.icon"></ps-svg-icon>
+            </span>
+            {{ tab.label }}
+          </button>
+  }
+</div>
+
 <div class="flex items-center justify-between mb-3">
 
   <!-- Filter pills -->

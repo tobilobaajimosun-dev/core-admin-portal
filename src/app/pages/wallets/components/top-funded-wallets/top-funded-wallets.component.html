@@ -7,66 +7,65 @@
   <div class="flex flex-col rounded-xl border border-[#F0F4F8] divide-y divide-[#F0F4F8] overflow-hidden">
 
     @if (isLoading()) {
-      @for (item of skeletonItems; track $index) {
-        <div class="flex items-center justify-between px-4 py-4 bg-white animate-pulse">
-          <div class="flex items-center gap-3">
-            <div class="w-6 h-3 rounded bg-gray-200"></div>
-            <div class="w-9 h-9 rounded-full bg-gray-200"></div>
-            <div class="flex flex-col gap-1.5">
-              <div class="h-3 w-32 rounded bg-gray-200"></div>
-              <div class="h-2.5 w-40 rounded bg-gray-200"></div>
-            </div>
-          </div>
-          <div class="flex flex-col items-end gap-1.5">
-            <div class="h-3.5 w-24 rounded bg-gray-200"></div>
-            <div class="h-2.5 w-28 rounded bg-gray-200"></div>
-          </div>
-          <div class="w-16 h-8 rounded-lg bg-gray-200"></div>
+    @for (item of skeletonItems; track $index) {
+    <div class="flex items-center justify-between px-4 py-4 bg-white animate-pulse">
+      <div class="flex items-center gap-3">
+        <div class="w-6 h-3 rounded bg-gray-200"></div>
+        <div class="w-9 h-9 rounded-full bg-gray-200"></div>
+        <div class="flex flex-col gap-1.5">
+          <div class="h-3 w-32 rounded bg-gray-200"></div>
+          <div class="h-2.5 w-40 rounded bg-gray-200"></div>
         </div>
-      }
+      </div>
+      <div class="flex flex-col items-end gap-1.5">
+        <div class="h-3.5 w-24 rounded bg-gray-200"></div>
+        <div class="h-2.5 w-28 rounded bg-gray-200"></div>
+      </div>
+      <div class="w-16 h-8 rounded-lg bg-gray-200"></div>
+    </div>
+    }
     } @else {
 
-      @for (wallet of wallets(); track wallet.id) {
-        <div class="flex items-center justify-between px-4 py-4 bg-white hover:bg-[#F8FCFE] transition-colors">
+    @for (wallet of wallets(); track wallet.id) {
+    <div class="flex items-center justify-between px-4 py-4 bg-white hover:bg-[#F8FCFE] transition-colors">
 
-          <div class="flex items-center gap-3 min-w-0">
-            <span class="text-xs font-semibold text-[#1041B7] w-7 shrink-0">
-              #{{ wallet.rank }}
-            </span>
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="text-xs font-semibold text-[#1041B7] w-7 shrink-0">
+          #{{ wallet.rank }}
+        </span>
 
-            <div class="w-9 h-9 rounded-full bg-[#EBF5FF] flex items-center justify-center
+        <div class="w-9 h-9 rounded-full bg-[#EBF5FF] flex items-center justify-center
                         text-xs font-semibold text-[#1041B7] shrink-0">
-              {{ getInitials(wallet.customer.firstName, wallet.customer.lastName) }}
-            </div>
-
-            <div class="flex flex-col min-w-0">
-              <span class="text-sm font-medium text-[#131719] truncate">
-                {{ wallet.customer.firstName }} {{ wallet.customer.lastName }}
-              </span>
-              <span class="text-xs text-[#7D8489] truncate">
-                {{ wallet.customer.email }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Amount -->
-          <div class="flex flex-col items-end shrink-0 px-4">
-            <span class="text-sm font-semibold text-[#131719]">
-              {{ formatAmount(wallet.totalFunded) }}
-            </span>
-            <span class="text-xs text-[#7D8489]">
-              Last funded {{ formatAmount(wallet.lastFundedAmount) }}
-            </span>
-          </div>
-
-          <!-- View action -->
-          <button type="button" (click)="viewWallet(wallet)"
-            class="px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium
-                   text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer shrink-0">
-            View
-          </button>
+          {{ getInitials(wallet.customer.firstName, wallet.customer.lastName) }}
         </div>
-      }
+
+        <div class="flex flex-col min-w-0">
+          <span class="text-sm font-medium text-[#131719] truncate">
+            {{ wallet.customer.firstName }} {{ wallet.customer.lastName }}
+          </span>
+          <span class="text-xs text-[#7D8489] truncate">
+            {{ wallet.customer.email }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Amount -->
+      <div class="flex flex-col items-end shrink-0 px-4">
+        <span class="text-sm font-semibold text-[#131719]">
+          {{ formatAmount(wallet.balance) }}
+        </span>
+        <span class="text-xs text-[#7D8489]">
+          {{ wallet.accountNumber }}
+        </span>
+      </div>
+
+      <!-- View action -->
+      <button type="button" (click)="viewWallet(wallet)" class="px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium
+                   text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer shrink-0">
+        View
+      </button>
+    </div>
+    }
 
     }
 

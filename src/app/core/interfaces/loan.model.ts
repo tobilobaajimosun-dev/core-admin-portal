@@ -395,4 +395,5 @@ export interface LoanDetailHeaderView {
   applicationDate:     string;
   dueDate:             string;
   tenor:               string;
+  status:              string;
 }

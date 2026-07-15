@@ -25,27 +25,26 @@ export interface WalletRaw {
   customer:     WalletCustomer | null;
 }
 
-export interface TopFundedWallet {
-  id:               string;
-  rank:             number;
-  customer:         WalletCustomer;
-  totalFunded:      number;
-  lastFundedAmount: number;
-}
-
 export interface WalletStat {
   label:    string;
   value:    number | string;
   trend:    number | null;
   trendUp:  boolean;
   prefix?:  string;
+  tooltipDescription: string;
+
 }
 
 export interface WalletMetricsData {
   total_wallets_created: number;
+  total_active_wallet:   number;
+  total_inactive_wallet: number;
   total_funded_amount:   number;
   total_debit_amount:    number;
   total_transactions:    number;
+  custom_range?:         string;
+  period_start?:         string;
+  period_end?:           string;
 }
 
 export interface WalletMetricsResponse {
@@ -214,4 +213,46 @@ export interface WalletStatusUpdateResponse {
   message:      string;
   data:         WalletDetailRaw;
   responseCode: string;
+}
+
+export interface TopFundedWalletCustomer {
+  firstName: string;
+  lastName:  string;
+  email:     string;
+  phone:     string;
+}
+
+export interface TopWalletBalanceRaw {
+  rank:              number;
+  wallet_id:         string;
+  customer_id:       string;
+  balance:           number;
+  available_balance: number;
+  status:            WalletStatus;
+  account_number:    string;
+  account_name:      string;
+  customer:          TopFundedWalletCustomer;
+}
+
+export interface TopFundedWalletsData {
+  top_wallet_balances: TopWalletBalanceRaw[];
+}
+
+export interface TopFundedWalletsResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         TopFundedWalletsData;
+  responseCode: string;
+}
+
+export interface TopFundedWallet {
+  id:            string;   // wallet_id
+  rank:          number;
+  balance:       number;
+  availableBalance: number;
+  accountNumber: string;
+  accountName:   string;
+  status:        WalletStatus;
+  customer:      TopFundedWalletCustomer;
 }

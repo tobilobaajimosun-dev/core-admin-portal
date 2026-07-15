@@ -1,251 +1,263 @@
 <div class="w-full">
+  @if (isLoading() || !loan()) {
 
- @if (loan(); as loan) {
+  <app-view-loan-skeleton />
 
-    <!-- ── Performance banner header ── -->
-    <div class="w-full relative">
-      <img src="/images/performance-banner-bg.png" alt="" class="absolute inset-0 w-full" />
+  } @else if (loan(); as loan) {
 
-      <div class="relative z-10 px-6 py-6">
-        <div class="bg-white rounded-xl border border-[#ECF1F5] overflow-hidden px-7 py-5
+  @if (isSummaryView()) {
+
+  <app-loan-application-summary [loan]="loan" [about]="store.loanAboutView()"
+    [documents]="store.loanDocumentsView()?.documents ?? []"
+    [generatedLetters]="store.loanDocumentsView()?.generatedLetters ?? []" [logs]="store.loanLogsView()" />
+
+  } @else {
+  <!-- ── Performance banner header ── -->
+  <div class="w-full relative">
+    <img src="/images/performance-banner-bg.png" alt="" class="absolute inset-0 w-full" />
+
+    <div class="relative z-10 px-6 py-6">
+      <div class="bg-white rounded-xl border border-[#ECF1F5] overflow-hidden px-7 py-5
           flex flex-col items-center text-center">
 
-          <div class="flex items-center justify-start w-full mb-5">
-            <button type="button" (click)="goBack()"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
+        <div class="flex items-center justify-start w-full mb-5">
+          <button type="button" (click)="goBack()" class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E2E8F0] bg-white
                 text-sm font-medium text-[#131719] hover:bg-gray-50 transition-colors cursor-pointer">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5M12 5l-7 7 7 7"/>
-              </svg>
-              Back to loans
-            </button>
-          </div>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+            Back to loans
+          </button>
+        </div>
 
-          <div class="mb-3">
-            @if (loan.customerAvatar) {
-              <img [src]="loan.customerAvatar" [alt]="loan.customerName"
-                class="w-16 h-16 rounded-full object-cover" />
-            } @else {
-              <div class="w-16 h-16 rounded-full bg-[#00B3FF] flex items-center justify-center
+        <div class="mb-3">
+          @if (loan.customerAvatar) {
+          <img [src]="loan.customerAvatar" [alt]="loan.customerName" class="w-16 h-16 rounded-full object-cover" />
+          } @else {
+          <div class="w-16 h-16 rounded-full bg-[#00B3FF] flex items-center justify-center
                   text-white text-xl font-bold">
-                {{ getInitials() }}
-              </div>
-            }
+            {{ getInitials() }}
           </div>
+          }
+        </div>
 
-          <h2 class="text-[20px] font-semibold text-[#131719] leading-[140%] tracking-[-0.005em] mb-1">
-            {{ loan.customerName }}
-          </h2>
+        <h2 class="text-[20px] font-semibold text-[#131719] leading-[140%] tracking-[-0.005em] mb-1">
+          {{ loan.customerName }}
+        </h2>
 
-          <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-3">
-            {{ loan.customerEmail }} &bull; {{ loan.customerPhone }}
-          </p>
+        <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-3">
+          {{ loan.customerEmail }} &bull; {{ loan.customerPhone }}
+        </p>
 
-          <div class="flex items-center gap-2 mb-6">
-            <span class="text-xs font-medium text-[#51575B] rounded-full px-3 py-[5.5px] bg-[#EEF5F9]">
-              {{ loan.walletType }}
-            </span>
-            @if (loan.isNew) {
-              <span class="text-[12px] font-bold leading-[100%] tracking-[-0.005em] text-[#1041B7]
-                rounded-full px-2 py-[5.5px] bg-[#D7ECFF]">
-                New
-              </span>
-            }
-          </div>
+        <div class="flex items-center gap-2 mb-6">
+          <span class="text-xs font-medium text-[#51575B] rounded-full px-3 py-[5.5px] bg-[#EEF5F9]">
+            {{ loan.walletType }}
+          </span>
+          <span [ngClass]="statusBadgeClass"
+            class="text-[12px] font-bold leading-[100%] tracking-[-0.005em] rounded-full px-2 py-[5.5px]">
+            {{ statusLabel }}
+          </span>
+        </div>
 
-          <div class="flex items-center justify-center gap-3 w-full mb-7">
-           @if (!showEmail()) {
-  <button type="button" (click)="emailCustomer()"
-    class="flex-1 flex items-center justify-center gap-2 h-10 px-4
+        <div class="flex items-center justify-center gap-3 w-full mb-7">
+          @if (!showEmail()) {
+          <button type="button" (click)="emailCustomer()" class="flex-1 flex items-center justify-center gap-2 h-10 px-4
       rounded-lg border border-[#E1E8ED] bg-white
       text-sm font-medium text-[#131719] hover:bg-[#F8FCFE]
       transition-colors cursor-pointer">
-    <svg class="w-4 h-4 text-[#51575B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-    </svg>
-    Email customer
-  </button>
-} @else {
-  <button type="button" (click)="copyEmail()"
-    class="flex-1 flex items-center justify-center gap-2 h-10 px-4
+            <svg class="w-4 h-4 text-[#51575B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Email customer
+          </button>
+          } @else {
+          <button type="button" (click)="copyEmail()" class="flex-1 flex items-center justify-center gap-2 h-10 px-4
       rounded-lg border border-[#E1E8ED] bg-white
       text-sm font-medium text-[#131719] hover:bg-[#F8FCFE]
       transition-colors cursor-pointer">
-    {{ emailCopied() ? 'Copied!' : loan.customerEmail }}
-    <ps-svg-icon [name]="emailCopied() ? 'check-icon' : 'copy-icon'" class="w-4 h-4 text-[#51575B] shrink-0"></ps-svg-icon>
-  </button>
-}
+            {{ emailCopied() ? 'Copied!' : loan.customerEmail }}
+            <ps-svg-icon [name]="emailCopied() ? 'check-icon' : 'copy-icon'"
+              class="w-4 h-4 text-[#51575B] shrink-0"></ps-svg-icon>
+          </button>
+          }
 
-  @if (!showPhone()) {
-  <button type="button" (click)="callCustomer()"
-    class="flex-1 flex items-center justify-center gap-2 h-10 px-4
+          @if (!showPhone()) {
+          <button type="button" (click)="callCustomer()" class="flex-1 flex items-center justify-center gap-2 h-10 px-4
       rounded-lg border border-[#E1E8ED] bg-white
       text-sm font-medium text-[#131719] hover:bg-[#F8FCFE]
       transition-colors cursor-pointer">
-    <svg class="w-4 h-4 text-[#51575B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-    </svg>
-    Call customer
-  </button>
-} @else {
-  <button type="button" (click)="copyPhone()"
-    class="flex-1 flex items-center justify-center gap-2 h-10 px-4
+            <svg class="w-4 h-4 text-[#51575B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            Call customer
+          </button>
+          } @else {
+          <button type="button" (click)="copyPhone()" class="flex-1 flex items-center justify-center gap-2 h-10 px-4
       rounded-lg border border-[#E1E8ED] bg-white
       text-sm font-medium text-[#131719] hover:bg-[#F8FCFE]
       transition-colors cursor-pointer">
-    {{ phoneCopied() ? 'Copied!' : loan.customerPhone }}
-    <ps-svg-icon [name]="phoneCopied() ? 'check-icon' : 'copy-icon'" class="w-4 h-4 text-[#51575B] shrink-0"></ps-svg-icon>
-  </button>
-}
+            {{ phoneCopied() ? 'Copied!' : loan.customerPhone }}
+            <ps-svg-icon [name]="phoneCopied() ? 'check-icon' : 'copy-icon'"
+              class="w-4 h-4 text-[#51575B] shrink-0"></ps-svg-icon>
+          </button>
+          }
 
-            <button type="button" (click)="openSendNotificationModal()"
-              class="flex-1 flex items-center justify-center gap-2 h-10 px-4
+          <button type="button" (click)="openSendNotificationModal()" class="flex-1 flex items-center justify-center gap-2 h-10 px-4
                 rounded-lg border border-[#E1E8ED] bg-white
                 text-sm font-medium text-[#131719] hover:bg-[#F8FCFE]
                 transition-colors cursor-pointer">
-              <svg class="w-4 h-4 text-[#51575B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-              </svg>
-              Send notification
-            </button>
-          </div>
-
-          <div class="w-full rounded-xl border border-[#E1E8ED] overflow-hidden mb-1">
-            <div class="grid grid-cols-4">
-              <div class="flex items-center gap-3 px-4 py-4">
-                <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
-                  <ps-svg-icon name="receipt-text-icon"></ps-svg-icon>
-                </span>
-                <div class="flex flex-col gap-2 text-left min-w-0">
-                  <span class="text-[11px] font-normal text-[#51575B] leading-none whitespace-nowrap">Amount Requested</span>
-                  <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#00ABF5]">₦{{ loan.amountRequested | number }}</span>
-                </div>
-              </div>
-
-              <div class="relative flex items-center gap-3 px-4 py-4">
-                <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
-                <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
-                  <ps-svg-icon name="cash-icon"></ps-svg-icon>
-                </span>
-                <div class="flex flex-col gap-2 text-left min-w-0">
-                  <span class="text-[11px] font-normal text-[#51575B] leading-none whitespace-nowrap">Amount Disbursed</span>
-                  <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#00ABF5]">₦{{ loan.amountDisbursed | number }}</span>
-                </div>
-              </div>
-
-              <div class="relative flex items-center gap-3 px-4 py-4">
-                <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
-                <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
-                  <ps-svg-icon name="pie-chart-icon"></ps-svg-icon>
-                </span>
-                <div class="flex flex-col gap-2 text-left min-w-0">
-                  <span class="text-[11px] font-normal text-[#51575B] leading-none whitespace-nowrap">Outstanding Balance</span>
-                  <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#00ABF5]">₦{{ loan.outstandingBalance | number }}</span>
-                </div>
-              </div>
-
-              <div class="relative flex items-center gap-3 px-4 py-4">
-                <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
-                <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
-                  <ps-svg-icon name="cashier-icon"></ps-svg-icon>
-                </span>
-                <div class="flex flex-col gap-2 text-left min-w-0">
-                  <span class="text-[11px] font-normal text-[#51575B] leading-none whitespace-nowrap">Total Repaid</span>
-                  <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#00ABF5]">₦{{ loan.totalRepaid | number }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-4">
-              <div class="flex items-center gap-3 px-4 py-4">
-                <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
-                  <ps-svg-icon name="calculator-icon"></ps-svg-icon>
-                </span>
-                <div class="flex flex-col gap-2 text-left min-w-0">
-                  <span class="text-[11px] font-normal text-[#51575B] leading-none">Interest</span>
-                  <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#2B3033]">{{ loan.interestRate }}</span>
-                </div>
-              </div>
-
-              <div class="relative flex items-center gap-3 px-4 py-4">
-                <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
-                <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
-                  <ps-svg-icon name="calendar-icon"></ps-svg-icon>
-                </span>
-                <div class="flex flex-col gap-2 text-left min-w-0">
-                  <span class="text-[11px] font-normal text-[#51575B] leading-none">Application Date</span>
-                  <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#2B3033]">{{ loan.applicationDate | date:'MMMM d, yyyy' }}</span>
-                </div>
-              </div>
-
-              <div class="relative flex items-center gap-3 px-4 py-4">
-                <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
-                <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
-                  <ps-svg-icon name="calendar-icon"></ps-svg-icon>
-                </span>
-                <div class="flex flex-col gap-2 text-left min-w-0">
-                  <span class="text-[11px] font-normal text-[#51575B] leading-none">Due Date</span>
-                  <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#2B3033]">{{ loan.dueDate | date:'MMMM d, yyyy' }}</span>
-                </div>
-              </div>
-
-              <div class="relative flex items-center gap-3 px-4 py-4">
-                <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
-                <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
-                  <ps-svg-icon name="calendar-clock-icon"></ps-svg-icon>
-                </span>
-                <div class="flex flex-col gap-2 text-left min-w-0">
-                  <span class="text-[11px] font-normal text-[#51575B] leading-none">Tenor</span>
-                  <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#2B3033]">{{ loan.tenor }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
+            <svg class="w-4 h-4 text-[#51575B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            Send notification
+          </button>
         </div>
+
+        <div class="w-full rounded-xl border border-[#E1E8ED] overflow-hidden mb-1">
+          <div class="grid grid-cols-4">
+            <div class="flex items-center gap-3 px-4 py-4">
+              <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
+                <ps-svg-icon name="receipt-text-icon"></ps-svg-icon>
+              </span>
+              <div class="flex flex-col gap-2 text-left min-w-0">
+                <span class="text-[11px] font-normal text-[#51575B] leading-none whitespace-nowrap">Amount
+                  Requested</span>
+                <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#00ABF5]">₦{{
+                  loan.amountRequested | number }}</span>
+              </div>
+            </div>
+
+            <div class="relative flex items-center gap-3 px-4 py-4">
+              <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
+              <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
+                <ps-svg-icon name="cash-icon"></ps-svg-icon>
+              </span>
+              <div class="flex flex-col gap-2 text-left min-w-0">
+                <span class="text-[11px] font-normal text-[#51575B] leading-none whitespace-nowrap">Amount
+                  Disbursed</span>
+                <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#00ABF5]">₦{{
+                  loan.amountDisbursed | number }}</span>
+              </div>
+            </div>
+
+            <div class="relative flex items-center gap-3 px-4 py-4">
+              <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
+              <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
+                <ps-svg-icon name="pie-chart-icon"></ps-svg-icon>
+              </span>
+              <div class="flex flex-col gap-2 text-left min-w-0">
+                <span class="text-[11px] font-normal text-[#51575B] leading-none whitespace-nowrap">Outstanding
+                  Balance</span>
+                <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#00ABF5]">₦{{
+                  loan.outstandingBalance | number }}</span>
+              </div>
+            </div>
+
+            <div class="relative flex items-center gap-3 px-4 py-4">
+              <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
+              <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
+                <ps-svg-icon name="cashier-icon"></ps-svg-icon>
+              </span>
+              <div class="flex flex-col gap-2 text-left min-w-0">
+                <span class="text-[11px] font-normal text-[#51575B] leading-none whitespace-nowrap">Total Repaid</span>
+                <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#00ABF5]">₦{{
+                  loan.totalRepaid | number }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-4">
+            <div class="flex items-center gap-3 px-4 py-4">
+              <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
+                <ps-svg-icon name="calculator-icon"></ps-svg-icon>
+              </span>
+              <div class="flex flex-col gap-2 text-left min-w-0">
+                <span class="text-[11px] font-normal text-[#51575B] leading-none">Interest</span>
+                <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#2B3033]">{{
+                  loan.interestRate }}</span>
+              </div>
+            </div>
+
+            <div class="relative flex items-center gap-3 px-4 py-4">
+              <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
+              <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
+                <ps-svg-icon name="calendar-icon"></ps-svg-icon>
+              </span>
+              <div class="flex flex-col gap-2 text-left min-w-0">
+                <span class="text-[11px] font-normal text-[#51575B] leading-none">Application Date</span>
+                <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#2B3033]">{{
+                  loan.applicationDate | date:'MMMM d, yyyy' }}</span>
+              </div>
+            </div>
+
+            <div class="relative flex items-center gap-3 px-4 py-4">
+              <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
+              <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
+                <ps-svg-icon name="calendar-icon"></ps-svg-icon>
+              </span>
+              <div class="flex flex-col gap-2 text-left min-w-0">
+                <span class="text-[11px] font-normal text-[#51575B] leading-none">Due Date</span>
+                <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#2B3033]">{{ loan.dueDate
+                  | date:'MMMM d, yyyy' }}</span>
+              </div>
+            </div>
+
+            <div class="relative flex items-center gap-3 px-4 py-4">
+              <span class="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-[#E1E8ED]" style="height: 60%;"></span>
+              <span class="flex items-center justify-center w-8 h-8 text-[#00B3FF] shrink-0">
+                <ps-svg-icon name="calendar-clock-icon"></ps-svg-icon>
+              </span>
+              <div class="flex flex-col gap-2 text-left min-w-0">
+                <span class="text-[11px] font-normal text-[#51575B] leading-none">Tenor</span>
+                <span class="text-[16px] font-semibold leading-[100%] tracking-[-0.02em] text-[#2B3033]">{{ loan.tenor
+                  }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
+  </div>
 
-    <!-- ── Body ── -->
-    <div class="px-6 py-6">
+  <!-- ── Body ── -->
+  <div class="px-6 py-6">
 
-      <div class="flex items-center justify-center gap-3 mb-8">
-        @for (tab of tabs; track tab.value) {
-          <button type="button" (click)="activeTab.set(tab.value)"
-            class="flex items-center gap-2 rounded-full border text-sm font-medium
-              transition-all duration-150 cursor-pointer py-2.5 px-7 h-10"
-            [ngClass]="activeTab() === tab.value
+    <div class="flex items-center justify-center gap-3 mb-8">
+      @for (tab of tabs; track tab.value) {
+      <button type="button" (click)="activeTab.set(tab.value)" class="flex items-center gap-2 rounded-full border text-sm font-medium
+              transition-all duration-150 cursor-pointer py-2.5 px-7 h-10" [ngClass]="activeTab() === tab.value
               ? 'border-[#00B3FF] text-[#00B3FF] bg-[#00B3FF]/[0.04]'
               : 'border-[#E1E8ED] text-[#51575B] bg-white'">
-            <span class="flex items-center justify-center w-4 h-4">
-              <ps-svg-icon [name]="tab.icon"></ps-svg-icon>
-            </span>
-            {{ tab.label }}
-          </button>
-        }
-      </div>
-
-      <!-- ── Tab content ── -->
-      @if (activeTab() === 'about') {
-        @if (store.loanAboutView(); as about) {
-          <app-loan-about [about]="about" />
-        }
-      } @else if (activeTab() === 'schedule') {
-        <app-loan-schedule [schedule]="store.loanScheduleView()" />
-      } @else if (activeTab() === 'liquidation') {
-        @if (store.loanLiquidationView(); as liq) {
-          <app-loan-liquidation [data]="liq" />
-        }
-      } @else if (activeTab() === 'documents') {
-        @if (store.loanDocumentsView(); as docs) {
-          <app-loan-documents [documents]="docs.documents" [generatedLetters]="docs.generatedLetters" />
-        }
+        <span class="flex items-center justify-center w-4 h-4">
+          <ps-svg-icon [name]="tab.icon"></ps-svg-icon>
+        </span>
+        {{ tab.label }}
+      </button>
       }
-
     </div>
 
+    <!-- ── Tab content ── -->
+    @if (activeTab() === 'about') {
+    @if (store.loanAboutView(); as about) {
+    <app-loan-about [about]="about" />
+    }
+    } @else if (activeTab() === 'schedule') {
+    <app-loan-schedule [schedule]="store.loanScheduleView()" />
+    } @else if (activeTab() === 'liquidation') {
+    @if (store.loanLiquidationView(); as liq) {
+    <app-loan-liquidation [data]="liq" />
+    }
+    } @else if (activeTab() === 'documents') {
+    @if (store.loanDocumentsView(); as docs) {
+    <app-loan-documents [documents]="docs.documents" [generatedLetters]="docs.generatedLetters" />
+    }
+    }
+
+  </div>
+  }
   }
 </div>

@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { WalletStore } from '@core/store/wallet.store';
@@ -10,14 +10,18 @@ import { TopFundedWallet } from '@core/interfaces/wallet.model';
   imports: [CommonModule],
   templateUrl: './top-funded-wallets.component.html',
 })
-export class TopFundedWalletsComponent {
+export class TopFundedWalletsComponent implements OnInit {
   readonly store = inject(WalletStore);
   private readonly router = inject(Router);
 
-  isLoading     = signal(false);
   skeletonItems = new Array(4);
 
-  wallets = computed(() => this.store.topFundedWallets());
+  wallets   = computed(() => this.store.topFundedWallets());
+  isLoading = computed(() => this.store.topFundedLoading());
+
+  ngOnInit(): void {
+    this.store.fetchTopFundedWallets();
+  }
 
   getInitials(f: string, l: string): string {
     return `${(f ?? ' ').charAt(0)}${(l ?? ' ').charAt(0)}`.toUpperCase();

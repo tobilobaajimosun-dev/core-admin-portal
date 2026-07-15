@@ -43,7 +43,7 @@ export class WalletsTableComponent implements OnInit {
   currentPage = signal(1);
 
   skeletonRows = new Array(8);
-  columns      = ['Date & Time', 'Customer Details', 'Wallet ID', 'Status', 'Balance', 'Total Funded', ''];
+  columns      = ['Date & Time', 'Customer Details', 'Account Number', 'Status', 'Balance', 'Total Funded', ''];
 
   searchQuery = signal<string>('');
 

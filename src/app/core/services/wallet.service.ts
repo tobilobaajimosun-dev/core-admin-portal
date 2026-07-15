@@ -11,6 +11,7 @@ import {
   WalletAdjustResponse,
   WalletStatusUpdateParams,
   WalletStatusUpdateResponse,
+  TopFundedWalletsResponse,
 } from '@core/interfaces/wallet.model';
 
 
@@ -57,6 +58,12 @@ updateWalletStatus(id: string, params: WalletStatusUpdateParams): Observable<Wal
   return this.httpClient.patch<WalletStatusUpdateResponse>(
     `${this.apiBaseUrl}/api/v1/wallets/${id}/status`,
     params
+  );
+}
+
+getTopFundedWallets(): Observable<TopFundedWalletsResponse> {
+  return this.httpClient.get<TopFundedWalletsResponse>(
+    `${this.apiBaseUrl}/api/v1/wallets/top-five-wallets`
   );
 }
 }

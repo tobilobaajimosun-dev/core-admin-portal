@@ -73,6 +73,7 @@ export interface TransactionListParams {
   end_date?:           string;
   transactionable_type?: string;
   customer_id?:        string;
+  tag?:                string;
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────

@@ -17,6 +17,15 @@ interface FilterOption {
   value: string;
 }
 
+type TransactionTab = 'ALL' | 'BILLS' | 'WALLETS';
+
+interface TabDef {
+  label: string;
+  value: TransactionTab;
+  icon:  string;
+
+}
+
 @Component({
   selector: 'app-transactions-table',
   standalone: true,
@@ -45,6 +54,15 @@ export class TransactionsTableComponent implements OnInit {
   columns      = ['Date & Time', 'Customer Details', 'Reference ID', 'Transaction Type', 'Category', 'Status', 'Amount', ''];
 
   searchQuery = signal<string>('');
+
+  // ── Tabs ─────────────────────────────────────────────────────────────────
+  readonly tabs: TabDef[] = [
+    { label: 'All',     value: 'ALL', icon: 'loan-icon'     },
+    { label: 'Bills',   value: 'BILLS', icon: 'loan-icon'   },
+    { label: 'Wallets',   value: 'WALLETS', icon: 'loan-icon'   },
+  ];
+
+  activeTab = signal<TransactionTab>('ALL');
 
   // ── Filter definitions ──────────────────────────────────────────────────
   readonly filterDefs: {
@@ -75,7 +93,7 @@ export class TransactionsTableComponent implements OnInit {
       type: 'status',
       label: 'Status',
       options: [
-        { label: 'Successful', value: 'SUCCESSFUL' },
+        { label: 'Successful', value: 'SUCCESS' },
         { label: 'Pending',    value: 'PENDING'    },
         { label: 'Failed',     value: 'FAILED'     },
         { label: 'Reversed',   value: 'REVERSED'   },
@@ -122,6 +140,24 @@ export class TransactionsTableComponent implements OnInit {
   bannerPrefix = computed(() =>
     this.searchQuery() ? 'Displaying search result:' : 'Displaying filtered result:'
   );
+
+  // ── Tab handling ─────────────────────────────────────────────────────────
+  onTabChange(value: TransactionTab): void {
+    if (this.activeTab() === value) return;
+    this.activeTab.set(value);
+
+    // Reset filters/search — switching context between All/Bills/Wallets/Loans
+    // means stale filters from the previous tab wouldn't make sense to keep.
+    this.appliedValues   = this.filterDefs.map(() => '');
+    this.selectedValues  = this.filterDefs.map(() => '');
+    this.showCustomRange = this.filterDefs.map(() => false);
+    this.customRangeForms.forEach(f => f.reset());
+    this.searchQuery.set('');
+    this.currentPage.set(1);
+
+    this.store.setActiveTag(value === 'ALL' ? undefined : value);
+    this.store.fetchTransactions({ page: 1, limit: this.store.currentLimit() });
+  }
 
   // ── Helpers ─────────────────────────────────────────────────────────────
   isFilterActive(i: number): boolean { return !!this.appliedValues[i]; }
@@ -186,8 +222,8 @@ export class TransactionsTableComponent implements OnInit {
   }
 
   exportTransactions(): void {
-  this.store.exportTransactions();
-}
+    this.store.exportTransactions();
+  }
 
   clearFilter(i: number): void {
     this.appliedValues[i]   = '';
@@ -226,10 +262,10 @@ export class TransactionsTableComponent implements OnInit {
   onPageSizeChange(size: number): void { this.currentPage.set(1); this.store.setPageSize(size); }
 
   // ── Display helpers ──────────────────────────────────────────────────────
-getInitials(firstName?: string, lastName?: string): string {
-  if (!firstName && !lastName) return '-';
-  return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
-}
+  getInitials(firstName?: string, lastName?: string): string {
+    if (!firstName && !lastName) return '-';
+    return `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
+  }
 
   getStatusColor(status: string): string {
     switch (status) {
