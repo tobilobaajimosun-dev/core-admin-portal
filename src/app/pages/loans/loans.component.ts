@@ -6,6 +6,9 @@ import { DateRange, PsDateRangePickerComponent } from '@ui/ps-date-range-picker/
 import { DashboardStore } from '@core/store/dashboard.store';
 import { DashboardCustomRange } from '@core/interfaces/dashboard.model';
 
+import { LoanStore } from '@core/store/loan.store';
+import { toLocalDateString } from '@shared/utils/date.util';
+
 @Component({
   selector: 'app-loans',
   imports: [
@@ -20,6 +23,7 @@ import { DashboardCustomRange } from '@core/interfaces/dashboard.model';
 })
 export class LoansComponent implements OnInit {
   private readonly dashboardStore = inject(DashboardStore);
+  private readonly loanStore      = inject(LoanStore);
 
   activeRange = this.dashboardStore.activeRange;
 
@@ -33,10 +37,11 @@ export class LoansComponent implements OnInit {
 
   onRangeChange(range: DateRange | null): void {
     if (range?.start && range?.end) {
-      this.dashboardStore.setCustomDateRange(
-        range.start.toISOString().split('T')[0],
-        range.end.toISOString().split('T')[0]
-      );
+      this.loanStore.fetchMetrics({
+        custom_range: 'custom',
+        start_date:   toLocalDateString(range.start),
+        end_date:     toLocalDateString(range.end),
+      });
     }
   }
 }
