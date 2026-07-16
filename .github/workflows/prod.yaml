@@ -31,27 +31,27 @@ jobs:
         run: |
           git submodule update --remote --recursive
 
-      # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
 
-      # - name: Setup Doppler CLI
-      #   uses:  dopplerhq/cli-action@v3
+      - name: Setup Doppler CLI
+        uses:  dopplerhq/cli-action@v3
 
-      # - name:  Retrive Envs from Doppler
-      #   run: |
-      #     doppler secrets download --no-file --format=env > .env
-      #   env:
-      #     DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PROD }}
-      
-      - name:  Retrive Envs from Secrets
+      - name:  Retrive Envs from Doppler
         run: |
-          echo "NG_APP_API_URL=${{ secrets.NG_APP_API_URL }}" > .env
-          echo "NG_APP_ENCRYPTION_KEY=${{ secrets.NG_APP_ENCRYPTION_KEY }}" >> .env
-          echo "NG_APP_AUTH_SESSION_USER=${{ secrets.NG_APP_AUTH_SESSION_USER }}" >> .env
-          echo "NG_APP_AUTH_SESSION_TOKEN=${{ secrets.NG_APP_AUTH_SESSION_TOKEN }}" >> .env
-          echo "NG_APP_AWS_URL=${{ secrets.NG_APP_AWS_URL }}" >> .env
-          cat .env
+          doppler secrets download --no-file --format=env > .env
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PROD }}
+      
+      # - name:  Retrive Envs from Secrets
+      #   run: |
+      #     echo "NG_APP_API_URL=${{ secrets.NG_APP_API_URL }}" > .env
+      #     echo "NG_APP_ENCRYPTION_KEY=${{ secrets.NG_APP_ENCRYPTION_KEY }}" >> .env
+      #     echo "NG_APP_AUTH_SESSION_USER=${{ secrets.NG_APP_AUTH_SESSION_USER }}" >> .env
+      #     echo "NG_APP_AUTH_SESSION_TOKEN=${{ secrets.NG_APP_AUTH_SESSION_TOKEN }}" >> .env
+      #     echo "NG_APP_AWS_URL=${{ secrets.NG_APP_AWS_URL }}" >> .env
+          
       
 
       - name: Login to Docker Hub
@@ -65,8 +65,8 @@ jobs:
         uses:  docker/build-push-action@v6
         with:
           context: .
-          # cache-from: type=gha
-          # cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
           tags: ghcr.io/princeps-finance/core-admin-portal:prod
   
