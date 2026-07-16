@@ -20,7 +20,7 @@ export interface WalletRaw {
   account_number: string;
   balance:      number;
   status?:      WalletStatus;
-  totalFunded?: number;
+  total_funded_amount?: number;  
   created_at:   string;   // ISO date string
   customer:     WalletCustomer | null;
 }

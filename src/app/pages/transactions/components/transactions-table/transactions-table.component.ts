@@ -5,11 +5,11 @@ import { Router } from '@angular/router';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 import { PsPaginationComponent } from '@ui/ps-pagination/ps-pagination.component';
-import { PsEmptyComponent }      from '@pcsl-ui/ui/ps-empty/ps-empty.component';
-import { PsSvgIconComponent }    from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
-import { PsRadioComponent }      from '@pcsl-ui/ui/ps-radio/ps-radio.component';
-import { DropdownComponent }     from '@shared/components/dropdown/dropdown.component';
-import { TransactionStore }      from '@core/store/transaction.store';
+import { PsEmptyComponent } from '@pcsl-ui/ui/ps-empty/ps-empty.component';
+import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
+import { PsRadioComponent } from '@pcsl-ui/ui/ps-radio/ps-radio.component';
+import { DropdownComponent } from '@shared/components/dropdown/dropdown.component';
+import { TransactionStore } from '@core/store/transaction.store';
 import { TransactionRaw, TransactionDateRange } from '@core/interfaces/transaction.model';
 
 interface FilterOption {
@@ -22,7 +22,7 @@ type TransactionTab = 'ALL' | 'BILL' | 'LOAN';
 interface TabDef {
   label: string;
   value: TransactionTab;
-  icon:  string;
+  icon: string;
 
 }
 
@@ -42,24 +42,24 @@ interface TabDef {
   templateUrl: './transactions-table.component.html',
 })
 export class TransactionsTableComponent implements OnInit {
-  readonly store              = inject(TransactionStore);
+  readonly store = inject(TransactionStore);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly router     = inject(Router);
-  private readonly fb         = inject(NonNullableFormBuilder);
+  private readonly router = inject(Router);
+  private readonly fb = inject(NonNullableFormBuilder);
 
   @ViewChildren('filterDropdown') filterDropdowns!: QueryList<DropdownComponent>;
 
-  currentPage  = signal(1);
+  currentPage = signal(1);
   skeletonRows = new Array(8);
-  columns      = ['Date & Time', 'Customer Details', 'Reference ID', 'Transaction Type', 'Category', 'Status', 'Amount', ''];
+  columns = ['Date & Time', 'Customer Details', 'Reference ID', 'Transaction Type', 'Category', 'Status', 'Amount', ''];
 
   searchQuery = signal<string>('');
 
   // ── Tabs ─────────────────────────────────────────────────────────────────
   readonly tabs: TabDef[] = [
-    { label: 'All',     value: 'ALL', icon: 'loan-icon'     },
-    { label: 'Bills',   value: 'BILL', icon: 'loan-icon'   },
-    { label: 'Loans',   value: 'LOAN', icon: 'loan-icon'   },
+    { label: 'All', value: 'ALL', icon: 'loan-icon' },
+    { label: 'Bills', value: 'BILL', icon: 'loan-icon' },
+    { label: 'Loans', value: 'LOAN', icon: 'loan-icon' },
   ];
 
   activeTab = signal<TransactionTab>('ALL');
@@ -71,51 +71,51 @@ export class TransactionsTableComponent implements OnInit {
     options: FilterOption[];
     supportsCustomRange?: boolean;
   }[] = [
-    {
-      type: 'transactionType',
-      label: 'Transaction Type',
-      options: [
-        { label: 'Credit', value: 'CREDIT' },
-        { label: 'Debit',  value: 'DEBIT'  },
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Category',
-      options: [
-        { label: 'Airtime',           value: 'AIRTIME'           },
-        { label: 'Data Subscription', value: 'DATA' },
-        { label: 'Electricity',       value: 'ELECTRICITY'       },
-        { label: 'TV Subscription',   value: 'CABLE'   },
-      ],
-    },
-    {
-      type: 'status',
-      label: 'Status',
-      options: [
-        { label: 'Successful', value: 'SUCCESS' },
-        { label: 'Pending',    value: 'PENDING'    },
-        { label: 'Failed',     value: 'FAILED'     },
-        { label: 'Reversed',   value: 'REVERSED'   },
-      ],
-    },
-    {
-      type: 'date',
-      label: 'Date Range',
-      supportsCustomRange: true,
-      options: [
-        { label: 'Today',        value: 'today'        },
-        { label: 'Yesterday',    value: 'yesterday'    },
-        { label: 'Last 7 Days',  value: 'last_7_days'  },
-        { label: 'Last 30 Days', value: 'last_30_days' },
-        { label: 'Custom range', value: 'custom_range' },
-      ],
-    },
-  ];
+      {
+        type: 'transactionType',
+        label: 'Transaction Type',
+        options: [
+          { label: 'Credit', value: 'CREDIT' },
+          { label: 'Debit', value: 'DEBIT' },
+        ],
+      },
+      {
+        type: 'category',
+        label: 'Category',
+        options: [
+          { label: 'Airtime', value: 'AIRTIME' },
+          { label: 'Data Subscription', value: 'DATA' },
+          { label: 'Electricity', value: 'ELECTRICITY' },
+          { label: 'TV Subscription', value: 'CABLE' },
+        ],
+      },
+      {
+        type: 'status',
+        label: 'Status',
+        options: [
+          { label: 'Successful', value: 'SUCCESS' },
+          { label: 'Pending', value: 'PENDING' },
+          { label: 'Failed', value: 'FAILED' },
+          { label: 'Reversed', value: 'REVERSED' },
+        ],
+      },
+      {
+        type: 'date',
+        label: 'Date Range',
+        supportsCustomRange: true,
+        options: [
+          { label: 'Today', value: 'today' },
+          { label: 'Yesterday', value: 'yesterday' },
+          { label: 'Last 7 Days', value: 'last_7_days' },
+          { label: 'Last 30 Days', value: 'last_30_days' },
+          { label: 'Custom range', value: 'custom_range' },
+        ],
+      },
+    ];
 
   // ── Per-filter state ────────────────────────────────────────────────────
-  selectedValues:  string[]  = this.filterDefs.map(() => '');
-  appliedValues:   string[]  = this.filterDefs.map(() => '');
+  selectedValues: string[] = this.filterDefs.map(() => '');
+  appliedValues: string[] = this.filterDefs.map(() => '');
   showCustomRange: boolean[] = this.filterDefs.map(() => false);
 
   customRangeForms = this.filterDefs.map(() =>
@@ -148,8 +148,8 @@ export class TransactionsTableComponent implements OnInit {
 
     // Reset filters/search — switching context between All/Bills/Wallets/Loans
     // means stale filters from the previous tab wouldn't make sense to keep.
-    this.appliedValues   = this.filterDefs.map(() => '');
-    this.selectedValues  = this.filterDefs.map(() => '');
+    this.appliedValues = this.filterDefs.map(() => '');
+    this.selectedValues = this.filterDefs.map(() => '');
     this.showCustomRange = this.filterDefs.map(() => false);
     this.customRangeForms.forEach(f => f.reset());
     this.searchQuery.set('');
@@ -186,8 +186,8 @@ export class TransactionsTableComponent implements OnInit {
     const value = this.selectedValues[i];
 
     // Enforce single active filter
-    this.appliedValues   = this.appliedValues.map((_, idx)  => idx === i ? value : '');
-    this.selectedValues  = this.selectedValues.map((_, idx) => idx === i ? value : '');
+    this.appliedValues = this.appliedValues.map((_, idx) => idx === i ? value : '');
+    this.selectedValues = this.selectedValues.map((_, idx) => idx === i ? value : '');
     this.showCustomRange = this.showCustomRange.map((_, idx) => idx === i ? this.showCustomRange[idx] : false);
     this.customRangeForms.forEach((f, idx) => { if (idx !== i) f.reset(); });
     this.searchQuery.set('');
@@ -208,10 +208,18 @@ export class TransactionsTableComponent implements OnInit {
         return;
 
       case 'date': {
-        if (!value || value === 'custom_range') {
-          if (value === 'custom_range') {
-            // wire up custom date range store call here if needed
-          }
+        if (value === 'custom_range') {
+          const { start_date, end_date } = this.customRangeForms[i].getRawValue();
+          this.store.fetchTransactions({
+            page: 1,
+            limit: this.store.currentLimit(),
+            custom_range: 'custom',
+            start_date: start_date || undefined,
+            end_date: end_date || undefined,
+          });
+          return;
+        }
+        if (!value) {
           this.store.fetchTransactions({ page: 1, limit: this.store.currentLimit() });
           return;
         }
@@ -226,16 +234,16 @@ export class TransactionsTableComponent implements OnInit {
   }
 
   clearFilter(i: number): void {
-    this.appliedValues[i]   = '';
-    this.selectedValues[i]  = '';
+    this.appliedValues[i] = '';
+    this.selectedValues[i] = '';
     this.showCustomRange[i] = false;
     this.customRangeForms[i].reset();
     this.store.fetchTransactions({ page: 1, limit: this.store.currentLimit() });
   }
 
   clearFilters(): void {
-    this.appliedValues   = this.filterDefs.map(() => '');
-    this.selectedValues  = this.filterDefs.map(() => '');
+    this.appliedValues = this.filterDefs.map(() => '');
+    this.selectedValues = this.filterDefs.map(() => '');
     this.showCustomRange = this.filterDefs.map(() => false);
     this.customRangeForms.forEach(f => f.reset());
     this.searchQuery.set('');
@@ -258,7 +266,7 @@ export class TransactionsTableComponent implements OnInit {
   clearSearch(): void { this.searchQuery.set(''); }
 
   // ── Pagination ───────────────────────────────────────────────────────────
-  onPageChange(page: number):     void { this.currentPage.set(page); this.store.setPage(page); }
+  onPageChange(page: number): void { this.currentPage.set(page); this.store.setPage(page); }
   onPageSizeChange(size: number): void { this.currentPage.set(1); this.store.setPageSize(size); }
 
   // ── Display helpers ──────────────────────────────────────────────────────
@@ -270,23 +278,23 @@ export class TransactionsTableComponent implements OnInit {
   getStatusColor(status: string): string {
     switch (status) {
       case 'SUCCESS': return 'text-[#006244]';
-      case 'PENDING':    return 'text-[#9E3900]';
-      case 'FAILED':     return 'text-[#A8000F]';
-      case 'REVERSED':   return 'text-[#1041B7]';
-      case 'REFUNDED':   return 'text-[#1041B7]';
-      default:           return 'text-[#51575B]';
+      case 'PENDING': return 'text-[#9E3900]';
+      case 'FAILED': return 'text-[#A8000F]';
+      case 'REVERSED': return 'text-[#1041B7]';
+      case 'REFUNDED': return 'text-[#1041B7]';
+      default: return 'text-[#51575B]';
     }
   }
 
   getStatusBg(status: string): string {
     switch (status) {
       case 'SUCCESS': return 'bg-[#C6FCE4]';
-      case 'PENDING':    return 'bg-[#FFF4BE]';
-      case 'FAILED':     return 'bg-[#FFE1E2]';
-      case 'REVERSED':   return 'bg-[#FFF4BE]';
-      case 'REFUNDED':   return 'bg-[#FFF4BE]';
+      case 'PENDING': return 'bg-[#FFF4BE]';
+      case 'FAILED': return 'bg-[#FFE1E2]';
+      case 'REVERSED': return 'bg-[#FFF4BE]';
+      case 'REFUNDED': return 'bg-[#FFF4BE]';
 
-      default:           return 'bg-[#F3F4F6]';
+      default: return 'bg-[#F3F4F6]';
     }
   }
 

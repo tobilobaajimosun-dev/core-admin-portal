@@ -45,7 +45,7 @@ interface FilterDef {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoanTableComponent implements OnInit {
-@ViewChildren('filterDropdown') filterDropdowns!: QueryList<DropdownComponent>;
+  @ViewChildren('filterDropdown') filterDropdowns!: QueryList<DropdownComponent>;
   readonly store = inject(LoanStore);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -62,14 +62,14 @@ export class LoanTableComponent implements OnInit {
       label: 'Application Date',
       supportsCustomRange: true,
       options: [
-        { label: 'Today',          value: 'today' },
-        { label: 'Yesterday',      value: 'yesterday' },
-        { label: 'This Week',      value: 'this_week' },
-        { label: 'This Month',     value: 'this_month' },
-        { label: 'Past 3 months',  value: 'past_3_months' },
-        { label: 'Past 6 months',  value: 'past_6_months' },
-        { label: 'This year',      value: 'this_year' },
-        { label: 'Custom range',   value: 'custom_range' },
+        { label: 'Today', value: 'today' },
+        { label: 'Yesterday', value: 'yesterday' },
+        { label: 'This Week', value: 'this_week' },
+        { label: 'This Month', value: 'this_month' },
+        { label: 'Past 3 months', value: 'past_3_months' },
+        { label: 'Past 6 months', value: 'past_6_months' },
+        { label: 'This year', value: 'this_year' },
+        { label: 'Custom range', value: 'custom_range' },
       ],
     },
     {
@@ -77,11 +77,11 @@ export class LoanTableComponent implements OnInit {
       label: 'Tenor',
       supportsCustomRange: true,
       options: [
-        { label: '1 month',      value: '1' },
-        { label: '3 months',     value: '3' },
-        { label: '6 months',     value: '6' },
-        { label: '9 months',     value: '9' },
-        { label: '12 months',    value: '12' },
+        { label: '1 month', value: '1' },
+        { label: '3 months', value: '3' },
+        { label: '6 months', value: '6' },
+        { label: '9 months', value: '9' },
+        { label: '12 months', value: '12' },
         { label: 'Custom range', value: 'custom_range' },
       ],
     },
@@ -89,9 +89,9 @@ export class LoanTableComponent implements OnInit {
       type: 'status',
       label: 'Status',
       options: [
-        { label: 'New',       value: 'NEW' },
-        { label: 'Pending',    value: 'PENDING' },
-        { label: 'Processing',    value: 'PROCESSING' },
+        { label: 'New', value: 'NEW' },
+        { label: 'Pending', value: 'PENDING' },
+        { label: 'Processing', value: 'PROCESSING' },
         { label: 'Completed', value: 'COMPLETED' },
         { label: 'Disbursed', value: 'DISBURSED' },
         { label: 'Cancelled', value: 'CANCELLED' },
@@ -102,20 +102,20 @@ export class LoanTableComponent implements OnInit {
       type: 'product',
       label: 'Product',
       options: [
-        { label: 'Credit Lite',    value: 'Credit Lite' },
-        { label: 'Credit Rite',    value: 'Credit Rite' },
-        { label: 'Corper Wallet',  value: 'Corper Wallet' },
-        { label: 'Credit Wallet',  value: 'Credit Wallet' },
+        { label: 'Credit Lite', value: 'Credit Lite' },
+        { label: 'Credit Rite', value: 'Credit Rite' },
+        { label: 'Corper Wallet', value: 'Corper Wallet' },
+        { label: 'Credit Wallet', value: 'Credit Wallet' },
       ],
     },
     {
       type: 'amount',
       label: 'Amount',
       options: [
-        { label: '₦1,000 – ₦100,000',   value: '1000_100000' },
+        { label: '₦1,000 – ₦100,000', value: '1000_100000' },
         { label: '₦200,000 – ₦500,000', value: '200000_500000' },
-        { label: '₦500,000 – ₦1m',      value: '500000_1000000' },
-        { label: '₦1m – ₦10m+',         value: '1000000_10000000' },
+        { label: '₦500,000 – ₦1m', value: '500000_1000000' },
+        { label: '₦1m – ₦10m+', value: '1000000_10000000' },
       ],
     },
   ];
@@ -168,10 +168,18 @@ export class LoanTableComponent implements OnInit {
 
     switch (def.type) {
       case 'applicationDate': {
-        if (!value || value === 'custom_range') {
-          if (value === 'custom_range') {
-            const { start_date, end_date } = this.customRangeForms[i].getRawValue();
-          }
+        if (value === 'custom_range') {
+          const { start_date, end_date } = this.customRangeForms[i].getRawValue();
+          this.store.fetchLoans({
+            page: 1,
+            limit: this.store.currentLimit(),
+            custom_range: 'custom',
+            start_date: start_date || undefined,
+            end_date: end_date || undefined,
+          });
+          return;
+        }
+        if (!value) {
           this.store.fetchLoans({ page: 1, limit: this.store.currentLimit() });
           return;
         }
@@ -197,9 +205,9 @@ export class LoanTableComponent implements OnInit {
   }
 
   exportLoans(): void {
-  this.store.exportLoans();
-}
-  
+    this.store.exportLoans();
+  }
+
   clearFilter(i: number): void {
     this.appliedValues[i] = '';
     this.selectedValues[i] = '';
@@ -217,11 +225,11 @@ export class LoanTableComponent implements OnInit {
     this.store.fetchLoans({ page: 1, limit: 10 });
   }
 
- closeOtherDropdowns(currentIndex: number): void {
-  this.filterDropdowns.forEach((dropdown: DropdownComponent, i: number) => {
-    if (i !== currentIndex) dropdown.close();
-  });
-}
+  closeOtherDropdowns(currentIndex: number): void {
+    this.filterDropdowns.forEach((dropdown: DropdownComponent, i: number) => {
+      if (i !== currentIndex) dropdown.close();
+    });
+  }
   // ── Search ────────────────────────────────────────────────────────────────
   private readonly debouncedSearch$ = toObservable(this.searchQuery).pipe(
     skip(1), debounceTime(400), distinctUntilChanged(),
@@ -244,11 +252,11 @@ export class LoanTableComponent implements OnInit {
   statusClass(status: string): string {
     const map: Record<string, string> = {
       'Completed': 'bg-[#ECFDF5] text-[#12B76A]',
-      'New':       'bg-[#EFF8FF] text-[#00B3FF]',
-      'Failed':    'bg-[#FFF1F2] text-[#F04438]',
+      'New': 'bg-[#EFF8FF] text-[#00B3FF]',
+      'Failed': 'bg-[#FFF1F2] text-[#F04438]',
       'Cancelled': 'bg-[#F3F4F6] text-[#51575B]',
-      'Active':    'bg-[#ECFDF5] text-[#12B76A]',
-      'Pending':   'bg-[#FFFBEB] text-[#F59E0B]',
+      'Active': 'bg-[#ECFDF5] text-[#12B76A]',
+      'Pending': 'bg-[#FFFBEB] text-[#F59E0B]',
     };
     return map[status] ?? 'bg-[#F3F4F6] text-[#51575B]';
   }
