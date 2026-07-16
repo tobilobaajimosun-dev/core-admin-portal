@@ -3,8 +3,8 @@ import { WalletStatsComponent }       from './components/wallet-stats/wallet-sta
 import { TopFundedWalletsComponent }  from './components/top-funded-wallets/top-funded-wallets.component';
 import { WalletsTableComponent }      from './components/wallets-table/wallets-table.component';
 import { DateRange, PsDateRangePickerComponent } from '@ui/ps-date-range-picker/ps-date-range-picker.component';
-import { DashboardStore }             from '@core/store/dashboard.store';
-import { DashboardCustomRange }       from '@core/interfaces/dashboard.model';
+import { WalletStore } from '@core/store/wallet.store';
+import { toLocalDateString } from '@shared/utils/date.util';
 
 @Component({
   selector: 'app-wallets',
@@ -18,32 +18,16 @@ import { DashboardCustomRange }       from '@core/interfaces/dashboard.model';
   templateUrl: './wallets.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WalletsComponent implements OnInit {
-  private readonly dashboardStore = inject(DashboardStore);
+export class WalletsComponent {
+  private readonly walletStore    = inject(WalletStore);
 
-  activeRange = this.dashboardStore.activeRange;
-
-  readonly timeframeTabs: { label: string; value: DashboardCustomRange }[] = [
-    { label: 'Today',      value: 'today'       },
-    { label: 'Yesterday',  value: 'yesterday'   },
-    { label: 'This Week',  value: 'this_week' },
-    { label: 'This Month', value: 'this_month'  },
-  ];
-
-  ngOnInit(): void {
-    this.dashboardStore.fetchDashboardCards(this.dashboardStore.listConfig());
+onRangeChange(range: DateRange | null): void {
+  if (range?.start && range?.end) {
+    this.walletStore.fetchMetrics({
+      custom_range: 'custom',
+      start_date:   toLocalDateString(range.start),
+      end_date:     toLocalDateString(range.end),
+    });
   }
-
-  onTimeframeChange(value: DashboardCustomRange): void {
-    this.dashboardStore.setTimeframe(value);
-  }
-
-  onRangeChange(range: DateRange | null): void {
-    if (range?.start && range?.end) {
-      this.dashboardStore.setCustomDateRange(
-        range.start.toISOString().split('T')[0],
-        range.end.toISOString().split('T')[0]
-      );
-    }
-  }
+}
 }

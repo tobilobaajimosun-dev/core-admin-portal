@@ -34,9 +34,10 @@ export class TransactionService {
     );
   }
 
-  getTransactionMetrics(): Observable<TransactionMetricsResponse> {
+  getTransactionMetrics(params: { start_date?: string; end_date?: string; }): Observable<TransactionMetricsResponse> {
+    const urlParams = buildURLSearchParams(params);
     return this.httpClient.get<TransactionMetricsResponse>(
-      `${this.apiBaseUrl}/api/v1/transactions/metrics`
+      `${this.apiBaseUrl}/api/v1/transactions/metrics?${urlParams}`
     );
   }
 

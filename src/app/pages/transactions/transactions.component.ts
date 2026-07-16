@@ -4,6 +4,9 @@ import { TransactionsTableComponent } from './components/transactions-table/tran
 import { DateRange, PsDateRangePickerComponent } from '@ui/ps-date-range-picker/ps-date-range-picker.component';
 import { DashboardStore }             from '@core/store/dashboard.store';
 import { DashboardCustomRange }       from '@core/interfaces/dashboard.model';
+import { toLocalDateString } from '@shared/utils/date.util'
+import { TransactionStore } from '@core/store/transaction.store';
+
 
 @Component({
   selector: 'app-transactions',
@@ -18,6 +21,7 @@ import { DashboardCustomRange }       from '@core/interfaces/dashboard.model';
 })
 export class TransactionsComponent implements OnInit {
   private readonly dashboardStore = inject(DashboardStore);
+  private readonly transactionStore = inject(TransactionStore);
 
   activeRange = this.dashboardStore.activeRange;
 
@@ -36,12 +40,14 @@ export class TransactionsComponent implements OnInit {
     this.dashboardStore.setTimeframe(value);
   }
 
-  onRangeChange(range: DateRange | null): void {
-    if (range?.start && range?.end) {
-      this.dashboardStore.setCustomDateRange(
-        range.start.toISOString().split('T')[0],
-        range.end.toISOString().split('T')[0]
-      );
-    }
+onRangeChange(range: DateRange | null): void {
+  if (range?.start && range?.end) {
+    this.transactionStore.fetchMetrics({
+      custom_range: 'custom',
+      start_date: toLocalDateString(range.start),
+      end_date:   toLocalDateString(range.end),
+    });
   }
+}
+
 }

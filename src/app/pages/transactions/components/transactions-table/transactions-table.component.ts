@@ -17,7 +17,7 @@ interface FilterOption {
   value: string;
 }
 
-type TransactionTab = 'ALL' | 'BILLS' | 'WALLETS';
+type TransactionTab = 'ALL' | 'BILL' | 'LOAN';
 
 interface TabDef {
   label: string;
@@ -58,8 +58,8 @@ export class TransactionsTableComponent implements OnInit {
   // ── Tabs ─────────────────────────────────────────────────────────────────
   readonly tabs: TabDef[] = [
     { label: 'All',     value: 'ALL', icon: 'loan-icon'     },
-    { label: 'Bills',   value: 'BILLS', icon: 'loan-icon'   },
-    { label: 'Wallets',   value: 'WALLETS', icon: 'loan-icon'   },
+    { label: 'Bills',   value: 'BILL', icon: 'loan-icon'   },
+    { label: 'Loans',   value: 'LOAN', icon: 'loan-icon'   },
   ];
 
   activeTab = signal<TransactionTab>('ALL');

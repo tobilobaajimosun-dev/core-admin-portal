@@ -171,21 +171,21 @@ fetchTransactions(params: TransactionListParams = {}): void {
     this._retryError.set(null);
   }
 
-  fetchMetrics(): void {
-    this._metricsLoading.set(true);
-    this._metricsError.set(null);
+fetchMetrics(params: { custom_range?: string; start_date?: string; end_date?: string } = {}): void {
+  this._metricsLoading.set(true);
+  this._metricsError.set(null);
 
-    this.transactionService.getTransactionMetrics().subscribe({
-      next: (res) => {
-        this._metrics.set(res.data);
-        this._metricsLoading.set(false);
-      },
-      error: (err) => {
-        this._metricsError.set(err?.error?.message ?? 'Failed to load transaction metrics');
-        this._metricsLoading.set(false);
-      },
-    });
-  }
+  this.transactionService.getTransactionMetrics(params).subscribe({
+    next: (res) => {
+      this._metrics.set(res.data);
+      this._metricsLoading.set(false);
+    },
+    error: (err) => {
+      this._metricsError.set(err?.error?.message ?? 'Failed to load transaction metrics');
+      this._metricsLoading.set(false);
+    },
+  });
+}
 
   exportTransactions(): void {
   this._isExporting.set(true);

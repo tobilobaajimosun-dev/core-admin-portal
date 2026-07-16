@@ -20,9 +20,10 @@ export class WalletService {
   private readonly apiBaseUrl = import.meta.env['NG_APP_API_URL'] || '';
   private readonly httpClient = inject(HttpClient);
 
-  getWalletMetrics(): Observable<WalletMetricsResponse> {
+  getWalletMetrics(params: { start_date?: string; end_date?: string; }): Observable<WalletMetricsResponse> {
+    const urlParams = buildURLSearchParams(params);
     return this.httpClient.get<WalletMetricsResponse>(
-      `${this.apiBaseUrl}/api/v1/wallets/metrics`
+      `${this.apiBaseUrl}/api/v1/wallets/metrics?${urlParams}`
     );
   }
 
