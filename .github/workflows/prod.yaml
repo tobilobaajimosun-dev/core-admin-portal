@@ -31,12 +31,12 @@ jobs:
         run: |
           git submodule update --remote --recursive
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
 
 
-      - name: Setup Doppler CLI
-        uses:  dopplerhq/cli-action@v3
+      # - name: Setup Doppler CLI
+      #   uses:  dopplerhq/cli-action@v3
 
       # - name:  Retrive Envs from Doppler
       #   run: |
@@ -64,8 +64,8 @@ jobs:
         uses:  docker/build-push-action@v6
         with:
           context: .
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
           push: true
           tags: ghcr.io/princeps-finance/core-admin-portal:prod
   
