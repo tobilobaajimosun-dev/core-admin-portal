@@ -44,9 +44,9 @@ jobs:
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PROD }}
       
-      # - name:  Retrive Envs from Secrets
-      #   run: |
-      #     echo "NG_APP_API_URL=${{ secrets.NG_APP_API_URL }}" > .env
+      - name:  Retrive Envs from Secrets
+        run: |
+          echo "NG_APP_API_URL=${{ secrets.NG_APP_API_URL }}" >> .env
       #     echo "NG_APP_ENCRYPTION_KEY=${{ secrets.NG_APP_ENCRYPTION_KEY }}" >> .env
       #     echo "NG_APP_AUTH_SESSION_USER=${{ secrets.NG_APP_AUTH_SESSION_USER }}" >> .env
       #     echo "NG_APP_AUTH_SESSION_TOKEN=${{ secrets.NG_APP_AUTH_SESSION_TOKEN }}" >> .env
