@@ -25,11 +25,14 @@ export class LoanService {
     );
   }
 
-  getLoanMetrics(): Observable<LoanMetricsResponse> {
-    return this.httpClient.get<LoanMetricsResponse>(
-      `${this.apiBaseUrl}/api/v1/loan-applications/loan-metrics`
-    );
-  }
+ getLoanMetrics(
+  params: { custom_range?: string; start_date?: string; end_date?: string } = {}
+): Observable<LoanMetricsResponse> {
+  const urlParams = buildURLSearchParams(params);
+  return this.httpClient.get<LoanMetricsResponse>(
+    `${this.apiBaseUrl}/api/v1/loan-applications/loan-metrics?${urlParams}`
+  );
+}
 
   getFailedDisbursements(
     params: FailedDisbursementListParams = { page: 1, limit: 10 }

@@ -286,21 +286,21 @@ export class LoanStore {
     });
   }
 
-  fetchMetrics(): void {
-    this._metricsLoading.set(true);
-    this._metricsError.set(null);
+fetchMetrics(params: { custom_range?: string; start_date?: string; end_date?: string } = {}): void {
+  this._metricsLoading.set(true);
+  this._metricsError.set(null);
 
-    this.loanService.getLoanMetrics().subscribe({
-      next: (res) => {
-        this._metrics.set(res.data);
-        this._metricsLoading.set(false);
-      },
-      error: (err) => {
-        this._metricsError.set(err?.error?.message ?? 'Failed to load loan metrics');
-        this._metricsLoading.set(false);
-      },
-    });
-  }
+  this.loanService.getLoanMetrics(params).subscribe({
+    next: (res) => {
+      this._metrics.set(res.data);
+      this._metricsLoading.set(false);
+    },
+    error: (err) => {
+      this._metricsError.set(err?.error?.message ?? 'Failed to load loan metrics');
+      this._metricsLoading.set(false);
+    },
+  });
+}
 
   fetchFailedDisbursements(params: FailedDisbursementListParams = {}): void {
     this._failedDisbursementsLoading.set(true);
