@@ -42,7 +42,7 @@ jobs:
         run: |
           doppler secrets download --no-file --format=env > .env
         env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PROD }}
+          DOPPLER_TOKEN: ${{ secrets.PROD_DOPPLER_TOKEN }}
       
       # - name:  Retrive Envs from Secrets
       #   run: |
