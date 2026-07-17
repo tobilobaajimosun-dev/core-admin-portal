@@ -35,14 +35,14 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
 
-      - name: Setup Doppler CLI
-        uses:  dopplerhq/cli-action@v3
+      # - name: Setup Doppler CLI
+      #   uses:  dopplerhq/cli-action@v3
 
-      - name:  Retrive Envs from Doppler
-        run: |
-          doppler secrets download --no-file --format=env > .env
-        env:
-          DOPPLER_TOKEN: ${{ secrets.PROD_DOPPLER_TOKEN }}
+      # - name:  Retrive Envs from Doppler
+      #   run: |
+      #     doppler secrets download --no-file --format=env > .env
+      #   env:
+      #     DOPPLER_TOKEN: ${{ secrets.PROD_DOPPLER_TOKEN }}
       
       # - name:  Retrive Envs from Secrets
       #   run: |
