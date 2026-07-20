@@ -11,14 +11,14 @@
         </span>
         <span class="text-sm font-medium text-[#131719]">Generate Letter of Indebtedness</span>
       </div>
-      <button type="button" (click)="generateLetter('indebtedness')"
+      <button type="button" (click)="generateLetter('indebtedness')" [disabled]="letterGenerating"
         class="flex items-center gap-1.5 text-sm font-medium text-[#00B3FF] hover:opacity-80 transition-opacity cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        Generate
+        {{ letterGenerating ? 'Generating…' : 'Generate' }}
       </button>
     </div>
 
@@ -29,55 +29,55 @@
         </span>
         <span class="text-sm font-medium text-[#131719]">Generate Letter of non-indebtedness</span>
       </div>
-      <button type="button" (click)="generateLetter('non-indebtedness')"
+      <button type="button" (click)="generateLetter('non_indebtedness')" [disabled]="letterGenerating"
         class="flex items-center gap-1.5 text-sm font-medium text-[#00B3FF] hover:opacity-80 transition-opacity cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        Generate
+        {{ letterGenerating ? 'Generating…' : 'Generate' }}
       </button>
     </div>
   </div>
 
   <!-- ── Uploaded documents (driven by API) ── -->
   @for (doc of documents; track doc.link) {
-    <p class="text-sm font-medium text-[#51575B] mb-3">{{ doc.name }}</p>
-    <div class="flex items-center justify-between rounded-xl border border-[#ECF1F5] px-4 py-3 mb-6">
-      <div class="flex items-center gap-3">
-        <span class="flex items-center justify-center w-8 h-8 shrink-0">
-          <ps-svg-icon name="pdf-icon"></ps-svg-icon>
-        </span>
-        <div>
-          <p class="text-sm font-medium text-[#00B3FF] hover:underline cursor-pointer">
-            {{ doc.name }}
-          </p>
-          <p class="text-xs text-[#9CA3AF]">
-            Uploaded: {{ doc.uploadedAt | date:'MMM d, yyyy, h:mm:ss a' }} GMT
-          </p>
-        </div>
+  <p class="text-sm font-medium text-[#51575B] mb-3">{{ doc.name }}</p>
+  <div class="flex items-center justify-between rounded-xl border border-[#ECF1F5] px-4 py-3 mb-6">
+    <div class="flex items-center gap-3">
+      <span class="flex items-center justify-center w-8 h-8 shrink-0">
+        <ps-svg-icon name="pdf-icon"></ps-svg-icon>
+      </span>
+      <div>
+        <p class="text-sm font-medium text-[#00B3FF] hover:underline cursor-pointer">
+          {{ doc.name }}
+        </p>
+        <p class="text-xs text-[#9CA3AF]">
+          Uploaded: {{ doc.uploadedAt | date:'MMM d, yyyy, h:mm:ss a' }} GMT
+        </p>
       </div>
-      <button type="button" (click)="viewFile(doc.link)"
-        class="flex items-center gap-1.5 text-xs font-medium text-[#51575B] hover:text-[#131719] transition-colors cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-        </svg>
-        View
-      </button>
     </div>
+    <button type="button" (click)="viewFile(doc.link)"
+      class="flex items-center gap-1.5 text-xs font-medium text-[#51575B] hover:text-[#131719] transition-colors cursor-pointer">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+      View
+    </button>
+  </div>
   } @empty {
-    <p class="text-sm text-[#9CA3AF] mb-6">No documents uploaded.</p>
+  <p class="text-sm text-[#9CA3AF] mb-6">No documents uploaded.</p>
   }
 
   <!-- Documents approved badge -->
   @if (documentsApproved) {
-    <div class="flex items-center justify-center gap-1.5 mb-6">
-      <div class="w-2 h-2 rounded-full bg-[#22C55E]"></div>
-      <span class="text-sm font-medium text-[#22C55E]">Documents approved!</span>
-    </div>
+  <div class="flex items-center justify-center gap-1.5 mb-6">
+    <div class="w-2 h-2 rounded-full bg-[#22C55E]"></div>
+    <span class="text-sm font-medium text-[#22C55E]">Documents approved!</span>
+  </div>
   }
 
   <!-- ── Generated Letters table ── -->
@@ -85,29 +85,36 @@
     <table class="w-full border-collapse">
       <thead>
         <tr class="bg-[#F8FCFE]">
-          <th class="text-left py-3 px-4 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em]">Date Generated</th>
-          <th class="text-left py-3 px-4 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em]">Letter Type</th>
+          <th
+            class="text-left py-3 px-4 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em]">
+            Date Generated</th>
+          <th
+            class="text-left py-3 px-4 border-b border-[#ECF1F5] text-xs font-bold text-[#51575B] tracking-[-0.005em]">
+            Letter Type</th>
           <th class="py-3 px-4 border-b border-[#ECF1F5] w-12"></th>
         </tr>
       </thead>
       <tbody>
         @if (generatedLetters.length === 0) {
-          <tr>
-            <td colspan="3" class="py-12 text-center text-sm text-[#51575B]">No letters generated yet.</td>
-          </tr>
+        <tr>
+          <td colspan="3" class="py-12 text-center text-sm text-[#51575B]">No letters generated yet.</td>
+        </tr>
         }
-        @for (letter of generatedLetters; track letter.dateGenerated) {
-          <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
-            <td class="py-3 px-4 text-sm font-medium text-[#131719] whitespace-nowrap">{{ letter.dateGenerated | date:'MMMM d, yyyy' }}</td>
-            <td class="py-3 px-4 text-sm font-normal text-[#51575B]">{{ letter.letterType }}</td>
-            <td class="py-3 px-4 text-right">
-              <button type="button" (click)="downloadLetter(letter)" class="text-[#51575B] hover:text-[#131719] transition-colors cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                </svg>
-              </button>
-            </td>
-          </tr>
+        @for (letter of generatedLetters; track letter.id) {
+        <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+          <td class="py-3 px-4 text-sm font-medium text-[#131719] whitespace-nowrap">{{ letter.dateGenerated |
+            date:'MMMM d, yyyy' }}</td>
+          <td class="py-3 px-4 text-sm font-normal text-[#51575B]">{{ letter.letterType }}</td>
+          <td class="py-3 px-4 text-right">
+            <button type="button" (click)="downloadLetter(letter)"
+              class="text-[#51575B] hover:text-[#131719] transition-colors cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </button>
+          </td>
+        </tr>
         }
       </tbody>
     </table>

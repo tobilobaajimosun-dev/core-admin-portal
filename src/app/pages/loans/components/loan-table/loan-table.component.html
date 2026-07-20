@@ -2,7 +2,7 @@
 
      <!-- Filter pills -->
   <div class="flex items-center gap-2 flex-wrap">
-    @for (def of filterDefs; track def.type; let i = $index) {
+    @for (def of filterDefs(); track def.type; let i = $index) {
 
       <app-dropdown placement="bottom-start" #filterDropdown [isStatic]="true">
 

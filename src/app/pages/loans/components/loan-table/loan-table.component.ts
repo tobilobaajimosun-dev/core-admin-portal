@@ -55,8 +55,8 @@ export class LoanTableComponent implements OnInit {
   searchQuery = signal('');
   loans = computed<LoanView[]>(() => this.store.loanViews());
 
-  // ── Filter definitions ────────────────────────────────────────────────────
-  readonly filterDefs: FilterDef[] = [
+  // ── Base filter definitions (static options; product options are merged in dynamically) ──
+  readonly baseFilterDefs: FilterDef[] = [
     {
       type: 'applicationDate',
       label: 'Application Date',
@@ -101,12 +101,7 @@ export class LoanTableComponent implements OnInit {
     {
       type: 'product',
       label: 'Product',
-      options: [
-        { label: 'Credit Lite', value: 'Credit Lite' },
-        { label: 'Credit Rite', value: 'Credit Rite' },
-        { label: 'Corper Wallet', value: 'Corper Wallet' },
-        { label: 'Credit Wallet', value: 'Credit Wallet' },
-      ],
+      options: [], 
     },
     {
       type: 'amount',
@@ -120,14 +115,26 @@ export class LoanTableComponent implements OnInit {
     },
   ];
 
-  // ── Per-filter state ──────────────────────────────────────────────────────
-  // selectedValues[i] is the radio-bound value for filterDefs[i]
-  selectedValues: string[] = this.filterDefs.map(() => '');
-  // appliedValues[i] is what was last confirmed via "Apply filter"
-  appliedValues: string[] = this.filterDefs.map(() => '');
-  showCustomRange: boolean[] = this.filterDefs.map(() => false);
+  // ── Live filter definitions (product options merged in from the store) ─────
+  readonly filterDefs = computed<FilterDef[]>(() =>
+    this.baseFilterDefs.map(def =>
+      def.type === 'product'
+        ? {
+            ...def,
+            options: this.store.products().map(p => ({ label: p.title, value: p.id })),
+          }
+        : def
+    )
+  );
 
-  customRangeForms = this.filterDefs.map(() =>
+  // ── Per-filter state ──────────────────────────────────────────────────────
+  // selectedValues[i] is the radio-bound value for baseFilterDefs[i]
+  selectedValues: string[] = this.baseFilterDefs.map(() => '');
+  // appliedValues[i] is what was last confirmed via "Apply filter"
+  appliedValues: string[] = this.baseFilterDefs.map(() => '');
+  showCustomRange: boolean[] = this.baseFilterDefs.map(() => false);
+
+  customRangeForms = this.baseFilterDefs.map(() =>
     this.fb.group({ start_date: [''], end_date: [''] })
   );
 
@@ -142,9 +149,10 @@ export class LoanTableComponent implements OnInit {
 
   filterDisplayLabel(i: number): string {
     const applied = this.appliedValues[i];
-    if (!applied) return this.filterDefs[i].label;
-    const opt = this.filterDefs[i].options.find(o => o.value === applied);
-    return opt ? `${this.filterDefs[i].label}: ${opt.label}` : this.filterDefs[i].label;
+    const def = this.filterDefs()[i];
+    if (!applied) return def.label;
+    const opt = def.options.find(o => o.value === applied);
+    return opt ? `${def.label}: ${opt.label}` : def.label;
   }
 
   onRadioChange(i: number, value: string): void {
@@ -164,7 +172,7 @@ export class LoanTableComponent implements OnInit {
     this.customRangeForms.forEach((f, idx) => { if (idx !== i) f.reset(); });
     this.searchQuery.set('');
 
-    const def = this.filterDefs[i];
+    const def = this.baseFilterDefs[i];
 
     switch (def.type) {
       case 'applicationDate': {
@@ -186,9 +194,25 @@ export class LoanTableComponent implements OnInit {
         this.store.setTimeframe(value as LoanDateRange);
         return;
       }
-      case 'tenor':
-        this.store.setTenor(value === 'custom_range' ? '' : value);
+      case 'tenor':{
+          if (value === 'custom_range') {
+          const { start_date, end_date } = this.customRangeForms[i].getRawValue();
+          this.store.fetchLoans({
+            page: 1,
+            limit: this.store.currentLimit(),
+            custom_range: 'custom',
+            start_date: start_date || undefined,
+            end_date: end_date || undefined,
+          });
+          return;
+        }
+        if (!value) {
+          this.store.fetchLoans({ page: 1, limit: this.store.currentLimit() });
+          return;
+        }
+        this.store.setTenor(value as LoanDateRange);
         return;
+      }
       case 'status':
         this.store.setStatus(value ?? '');
         return;
@@ -217,9 +241,9 @@ export class LoanTableComponent implements OnInit {
   }
 
   clearAllFilters(): void {
-    this.appliedValues = this.filterDefs.map(() => '');
-    this.selectedValues = this.filterDefs.map(() => '');
-    this.showCustomRange = this.filterDefs.map(() => false);
+    this.appliedValues = this.baseFilterDefs.map(() => '');
+    this.selectedValues = this.baseFilterDefs.map(() => '');
+    this.showCustomRange = this.baseFilterDefs.map(() => false);
     this.customRangeForms.forEach(f => f.reset());
     this.searchQuery.set('');
     this.store.fetchLoans({ page: 1, limit: 10 });
@@ -237,6 +261,7 @@ export class LoanTableComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.fetchLoans({ page: 1, limit: 10 });
+    this.store.fetchLoanProducts();
     this.debouncedSearch$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(query => this.store.setSearch(query));

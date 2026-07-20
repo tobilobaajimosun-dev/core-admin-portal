@@ -14,8 +14,10 @@ import {
   RepaymentDueView,
   RepaymentDueListParams,
   LoanDetailRaw,
-  LoanDetailHeaderView
+  LoanDetailHeaderView,
+  LoanProductRaw
 } from '@core/interfaces/loan.model';
+import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 
 const STATUS_LABELS: Record<string, string> = {
   NEW: 'New',
@@ -106,7 +108,7 @@ function toLoanDetailHeaderView(raw: LoanDetailRaw): LoanDetailHeaderView {
     amountDisbursed: raw.cards.amountDisbursed,
     outstandingBalance: raw.cards.outstandingBalance,
     totalRepaid: raw.cards.totalRepaid,
-    interestRate: `${raw.cards.interest}% pa`,
+    interestRate: `${raw.cards.interest}% per day`,
     applicationDate: raw.cards.applicationDate,
     dueDate: raw.cards.dueDate,
     tenor: `${raw.cards.tenor} month${raw.cards.tenor === 1 ? '' : 's'}`,
@@ -134,7 +136,7 @@ function downloadBlob(blob: Blob, filename: string): void {
 @Injectable({ providedIn: 'root' })
 export class LoanStore {
   private readonly loanService = inject(LoanService);
-
+  private readonly toast = inject(PsToastService);
   // ── Raw state ─────────────────────────────────────────────────────────────
   private readonly _loans = signal<LoanRaw[]>([]);
   private readonly _total = signal(0);
@@ -220,11 +222,28 @@ export class LoanStore {
   readonly loanDetailLoading = computed(() => this._loanDetailLoading());
   readonly loanDetailError = computed(() => this._loanDetailError());
 
+  private readonly _letterGenerating = signal(false);
+  readonly letterGenerating = computed(() => this._letterGenerating());
+
+  private readonly _generateLetterError = signal<string | null>(null);
+  readonly generateLetterError = computed(() => this._generateLetterError());
+
+  private readonly _letterDownloading = signal(false);
+  readonly letterDownloading = computed(() => this._letterDownloading());
 
   readonly loanDetailHeaderView = computed(() => {
     const raw = this._loanDetail();
     return raw ? toLoanDetailHeaderView(raw) : null;
   });
+
+  // ── Loan products state (for filter dropdown) ───────────────────────────────
+  private readonly _products = signal<LoanProductRaw[]>([]);
+  private readonly _productsLoading = signal(false);
+  private readonly _productsError = signal<string | null>(null);
+
+  readonly products = computed(() => this._products());
+  readonly productsLoading = computed(() => this._productsLoading());
+  readonly productsError = computed(() => this._productsError());
 
   readonly loanAboutView = computed(() => this._loanDetail()?.tabs.about ?? null);
 
@@ -241,7 +260,7 @@ export class LoanStore {
       releaseDate: detail.releaseDate,
       maturityDate: detail.maturityDate,
       principal: detail.principal,
-      interestRate: `${detail.interestRate}% pa`,
+      interestRate: `${detail.interestRate}% per day`,
       monthlyRepayment: detail.monthlyRepayment,
       fees: detail.fees,
       penalty: detail.penalty,
@@ -254,11 +273,55 @@ export class LoanStore {
   readonly loanDocumentsView = computed(() => {
     const raw = this._loanDetail();
     if (!raw) return null;
-    return {
-      documents: raw.tabs.documents,
-      generatedLetters: raw.tabs.loanDocuments,
-    };
+
+    const generatedLetters = [...(raw.indebtedness_letters ?? [])]
+      .sort((a, b) => new Date(b.issued_at).getTime() - new Date(a.issued_at).getTime())
+      .map(l => ({
+        id: l.id,
+        dateGenerated: l.issued_at,
+        letterType: l.letter_type === 'indebtedness'
+          ? 'Letter of Indebtedness'
+          : 'Letter of Non-indebtedness',
+        reference: l.reference,
+      }));
+
+    return { documents: raw.tabs.documents, generatedLetters };
   });
+
+  downloadLetter(letterId: string, filename?: string): void {
+    this._letterDownloading.set(true);
+    this.loanService.getIndebtednessLetter(letterId).subscribe({
+      next: (res) => {
+        this._letterDownloading.set(false);
+        const bytes = Uint8Array.from(atob(res.data.pdf_base64), c => c.charCodeAt(0));
+        downloadBlob(new Blob([bytes], { type: 'application/pdf' }), filename ?? res.data.filename);
+      },
+      error: () => this._letterDownloading.set(false),
+    });
+  }
+
+  generateLetter(letterType: 'indebtedness' | 'non_indebtedness'): void {
+    const raw = this._loanDetail();
+    if (!raw) return;
+
+    this._letterGenerating.set(true);
+    this._generateLetterError.set(null);
+
+    this.loanService.generateIndebtednessLetter(raw.customer_id, raw.id, letterType).subscribe({
+      next: (response) => {
+        this._letterGenerating.set(false);
+        this.toast.success(response?.message ?? 'Letter generated successfully.');
+        // Refetch so indebtedness_letters (and everything derived from it) is authoritative
+        this.fetchLoanDetail(raw.id);
+      },
+      error: (err) => {
+        this._letterGenerating.set(false);
+        const message = err?.error?.message ?? 'Failed to generate letter';
+        this._generateLetterError.set(message);
+        this.toast.error(message);
+      },
+    });
+  }
 
   readonly loanScheduleView = computed(() => this._loanDetail()?.tabs.schedule ?? []);
 
@@ -286,21 +349,21 @@ export class LoanStore {
     });
   }
 
-fetchMetrics(params: { custom_range?: string; start_date?: string; end_date?: string } = {}): void {
-  this._metricsLoading.set(true);
-  this._metricsError.set(null);
+  fetchMetrics(params: { custom_range?: string; start_date?: string; end_date?: string } = {}): void {
+    this._metricsLoading.set(true);
+    this._metricsError.set(null);
 
-  this.loanService.getLoanMetrics(params).subscribe({
-    next: (res) => {
-      this._metrics.set(res.data);
-      this._metricsLoading.set(false);
-    },
-    error: (err) => {
-      this._metricsError.set(err?.error?.message ?? 'Failed to load loan metrics');
-      this._metricsLoading.set(false);
-    },
-  });
-}
+    this.loanService.getLoanMetrics(params).subscribe({
+      next: (res) => {
+        this._metrics.set(res.data);
+        this._metricsLoading.set(false);
+      },
+      error: (err) => {
+        this._metricsError.set(err?.error?.message ?? 'Failed to load loan metrics');
+        this._metricsLoading.set(false);
+      },
+    });
+  }
 
   fetchFailedDisbursements(params: FailedDisbursementListParams = {}): void {
     this._failedDisbursementsLoading.set(true);
@@ -321,23 +384,29 @@ fetchMetrics(params: { custom_range?: string; start_date?: string; end_date?: st
     });
   }
 
-fetchLoanDetail(id: string): void {
-  this._loanDetailLoading.set(true);
-  this._loanDetailError.set(null);
-  this._loanDetail.set(null);           
+  fetchLoanDetail(id: string): void {
+    this._loanDetailLoading.set(true);
+    this._loanDetailError.set(null);
+    this._loanDetail.set(null);
 
-  this.loanService.getLoanById(id).subscribe({
-    next: (res) => {
-      this._loanDetail.set(res.data);
-      this._loanDetailLoading.set(false);
-    },
-    error: (err) => {
-      this._loanDetailError.set(err?.error?.message ?? 'Failed to load loan');
-      this._loanDetailLoading.set(false);
-    },
-  });
-}
+    this.loanService.getLoanById(id).subscribe({
+      next: (res) => {
+        this._loanDetail.set(res.data);
+        this._loanDetailLoading.set(false);
+      },
+      error: (err) => {
+        this._loanDetailError.set(err?.error?.message ?? 'Failed to load loan');
+        this._loanDetailLoading.set(false);
+      },
+    });
+  }
 
+  private refetchLoanDetailSilently(id: string): void {
+    this.loanService.getLoanById(id).subscribe({
+      next: (res) => this._loanDetail.set(res.data),
+      error: (err) => this._loanDetailError.set(err?.error?.message ?? 'Failed to refresh loan'),
+    });
+  }
   exportLoans(): void {
     this._isExporting.set(true);
     this._exportError.set(null);
@@ -406,6 +475,22 @@ fetchLoanDetail(id: string): void {
     });
   }
 
+  fetchLoanProducts(): void {
+    this._productsLoading.set(true);
+    this._productsError.set(null);
+
+    this.loanService.getLoanProducts().subscribe({
+      next: (res) => {
+        this._products.set(res.data);
+        this._productsLoading.set(false);
+      },
+      error: (err) => {
+        this._productsError.set(err?.error?.message ?? 'Failed to load loan products');
+        this._productsLoading.set(false);
+      },
+    });
+  }
+
   setRepaymentsDueSearch(query: string): void {
     this.fetchRepaymentsDueToday({ page: 1, limit: this._repaymentsDueLimit(), search: query });
   }
@@ -437,9 +522,9 @@ fetchLoanDetail(id: string): void {
     this.fetchLoans({ page: 1, limit: this._limit(), tenor: tenor || undefined });
   }
 
-  setProduct(product: string): void {
-    this._product.set(product);
-    this.fetchLoans({ page: 1, limit: this._limit(), product: product || undefined });
+  setProduct(productId: string): void {
+    this._product.set(productId);
+    this.fetchLoans({ page: 1, limit: this._limit(), product_id: productId || undefined });
   }
 
   setAmountRange(minAmount: number | null, maxAmount: number | null): void {

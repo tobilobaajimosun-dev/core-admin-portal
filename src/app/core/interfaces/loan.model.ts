@@ -85,7 +85,7 @@ export interface LoanListParams {
   start_date?:   string;
   end_date?:     string;
   tenor?:        string | number;
-  product?:    string;
+  product_id?:   string;
   min_amount?: number;
   max_amount?: number;
 }
@@ -325,9 +325,27 @@ export interface LoanDetailScheduleRow {
 }
 
 export interface LoanDetailGeneratedLetter {
+  id:            string;
   dateGenerated: string;
-  letterType:    string;
-  link?:         string;
+  letterType:    string; // "Letter of Indebtedness" | "Letter of Non-indebtedness"
+  reference:     string;
+}
+
+export interface IndebtednessLetterData {
+  id:         string;
+  loan_id:    string;
+  letter_type: string;
+  issued_at:  string;
+  reference:  string;
+  filename:   string;
+  pdf_base64: string;
+}
+export interface IndebtednessLetterResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         IndebtednessLetterData;
+  responseCode: string;
 }
 
 export interface LoanDetailLogEntry {
@@ -378,6 +396,7 @@ export interface LoanDetailRaw {
   logoUrl:                       string;
   cards:                         LoanDetailCards;
   tabs:                          LoanDetailTabs;
+  indebtedness_letters: LoanIndebtednessLetter[];
 }
 
 export interface LoanDetailResponse {
@@ -408,4 +427,48 @@ export interface LoanDetailHeaderView {
   dueDate:             string;
   tenor:               string;
   status:              string;
+}
+
+export interface LoanIndebtednessLetter {
+  id:                  string;
+  letter_type:         'indebtedness' | 'non_indebtedness';
+  reference:           string;
+  filename:            string;
+  issued_at:           string;
+  is_indebted:         boolean;
+  outstanding_balance: number;
+  active_loan_count:   number;
+  created_at:          string;
+}
+
+// ─── Loan Products (for filter dropdown) ───────────────────────────────────
+
+export interface LoanProductRaw {
+  id:                  string;
+  title:               string;
+  description:         string;
+  product_tag:         string;
+  employer_type:       string;
+  period_type:         string;
+  min_tenor:           number;
+  max_tenor:           number;
+  min_loan_amount:     number;
+  max_loan_amount:     number;
+  interest_rate:       number;
+  actual_tenor_days:   number;
+  image:               string;
+  loan_product_id:     string;
+  job_option_id:       string;
+  is_active:           number;
+  selected_durations:  number[] | null;
+  createdAt:           string;
+  updatedAt:            string;
+}
+
+export interface LoanProductListResponse {
+  statusCode:   number;
+  status:       string;
+  message:      string;
+  data:         LoanProductRaw[];
+  responseCode: string;
 }

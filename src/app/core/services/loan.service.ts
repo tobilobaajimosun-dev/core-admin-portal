@@ -10,6 +10,8 @@ import {
   RepaymentDueListResponse,
   RepaymentDueListParams,
   LoanDetailResponse,
+  IndebtednessLetterResponse,
+  LoanProductListResponse,
 } from '@core/interfaces/loan.model';
 import { buildURLSearchParams } from '@pcsl-ui/utils/strings';
 
@@ -70,4 +72,28 @@ export class LoanService {
       { responseType: 'blob', observe: 'response' }
     ) as Observable<HttpResponse<Blob>>;
   }
+
+  
+getIndebtednessLetter(letterId: string): Observable<IndebtednessLetterResponse> {
+  return this.httpClient.get<IndebtednessLetterResponse>(
+    `${this.apiBaseUrl}/api/v1/loan-applications/indebtedness-letters/${letterId}`
+  );
+}
+
+generateIndebtednessLetter(
+  customerId: string,
+  loanId: string,
+  letterType: 'indebtedness' | 'non_indebtedness'
+): Observable<IndebtednessLetterResponse> {
+  const params = new URLSearchParams({ loan_id: loanId, letter_type: letterType });
+  return this.httpClient.get<IndebtednessLetterResponse>(
+    `${this.apiBaseUrl}/api/v1/customers/${customerId}/indebtedness-letter-generate?${params}`
+  );
+}
+
+getLoanProducts(): Observable<LoanProductListResponse> {
+  return this.httpClient.get<LoanProductListResponse>(
+    `${this.apiBaseUrl}/api/v1/loan-products/list-loan-products`
+  );
+}
 }
