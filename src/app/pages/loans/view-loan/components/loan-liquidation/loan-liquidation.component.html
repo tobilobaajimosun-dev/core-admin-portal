@@ -4,34 +4,41 @@
 
   <!-- ── Summary banner ── -->
 <div class="w-full rounded-xl overflow-hidden mb-6 border border-[#F0F0F0] bg-[#FBFBFB]">
-    <div class="grid grid-cols-3 divide-x divide-[#ECF1F5]">
+  <div class="flex items-center justify-center gap-8 px-6 py-4">
 
-      <div class="flex flex-col gap-1 px-6 py-4">
-        <span class="text-xs font-normal text-[#51575B]">Total Amount</span>
-        <span class="text-lg font-bold text-[#131719]">
-          ₦{{ data.totalAmount | number:'.2-2' }}
-        </span>
-      </div>
-
-      <div class="flex flex-col gap-1 px-6 py-4">
-        <span class="text-xs font-normal text-[#51575B]">Paid</span>
-        <span class="text-lg font-bold text-[#131719]">
-          ₦{{ data.paid | number:'.2-2' }}
-        </span>
-      </div>
-
-      <div class="flex flex-col gap-1 px-6 py-4">
-        <span class="text-xs font-normal text-[#51575B]">Balance</span>
-        <span class="text-lg font-bold text-[#131719]">
-          ₦{{ data.balance | number:'.2-2' }}
-        </span>
-      </div>
-
+    <div class="flex flex-col gap-1">
+      <span class="text-xs font-normal text-[#51575B]">Total Amount</span>
+      <span class="text-lg font-bold text-[#131719]">
+        ₦{{ data.totalAmount | number:'.2-2' }}
+      </span>
     </div>
-    <div class="border-t border-[#ECF1F5] px-6 py-2 text-center">
-      <span class="text-xs text-[#9CA3AF]">Last Updated: {{ data.lastUpdated }}</span>
+
+    <div class="w-px h-8 bg-[#C0C9D1]"></div>
+
+    <div class="flex flex-col gap-1">
+      <span class="text-xs font-normal text-[#51575B]">Paid</span>
+      <span class="text-lg font-bold text-[#131719]">
+        ₦{{ data.paid | number:'.2-2' }}
+      </span>
     </div>
+
+    <div class="w-px h-8 bg-[#C0C9D1]"></div>
+
+    <div class="flex flex-col gap-1">
+      <span class="text-xs font-normal text-[#51575B]">Balance</span>
+      <span class="text-lg font-bold text-[#131719]">
+        ₦{{ data.balance | number:'.2-2' }}
+      </span>
+    </div>
+
   </div>
+
+  <div class="mx-4 border-t border-[#ECF1F5]"></div>
+
+  <div class="px-6 py-2 text-center">
+    <span class="text-xs text-[#9CA3AF]">Last Updated: {{ data.lastUpdated }}</span>
+  </div>
+</div>
 
   <!-- ── Detail rows ── -->
   <div class="flex flex-col divide-y divide-[#F3F7F9]">

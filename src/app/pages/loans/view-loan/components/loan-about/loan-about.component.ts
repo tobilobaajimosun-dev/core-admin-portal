@@ -32,6 +32,17 @@ export class LoanAboutComponent implements OnInit {
     return this.bankNameByCode().get(codeOrName) ?? codeOrName;
   }
 
+    private formatDisbursementMethod(method: string): string {
+    // Pulls the code out of "Bank Transfer (Bank: 058, Acc: 0045272151)"
+    const match = method.match(/Bank:\s*([^,)]+)/);
+    if (!match) return method;
+
+    const bankCode = match[1].trim();
+    const bankName = this.resolveBankName(bankCode);
+
+    return method.replace(`Bank: ${bankCode}`, `Bank: ${bankName}`);
+  }
+
   get data() {
     const a = this.about;
     return {
@@ -39,7 +50,7 @@ export class LoanAboutComponent implements OnInit {
       totalRepayment:    a.loanDetails.totalRepayment,
       loanId:            a.loanDetails.loanId,
       borrowerId:        a.loanDetails.borrowerId,
-      disbursedVia:      a.loanDetails.disbursementMethod,
+      disbursedVia:      this.formatDisbursementMethod(a.loanDetails.disbursementMethod),
 
       repaymentBankName:  this.resolveBankName(a.repaymentDetails.bankName),
       repaymentAccNumber: a.repaymentDetails.accountNumber,

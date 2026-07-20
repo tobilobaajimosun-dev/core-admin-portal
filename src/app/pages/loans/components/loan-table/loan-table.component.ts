@@ -82,7 +82,7 @@ export class LoanTableComponent implements OnInit {
         { label: '6 months', value: '6' },
         { label: '9 months', value: '9' },
         { label: '12 months', value: '12' },
-        { label: 'Custom range', value: 'custom_range' },
+        { label: 'Custom', value: 'custom_tenor' },
       ],
     },
     {
@@ -101,7 +101,7 @@ export class LoanTableComponent implements OnInit {
     {
       type: 'product',
       label: 'Product',
-      options: [], 
+      options: [],
     },
     {
       type: 'amount',
@@ -120,9 +120,9 @@ export class LoanTableComponent implements OnInit {
     this.baseFilterDefs.map(def =>
       def.type === 'product'
         ? {
-            ...def,
-            options: this.store.products().map(p => ({ label: p.title, value: p.id })),
-          }
+          ...def,
+          options: this.store.products().map(p => ({ label: p.title, value: p.id })),
+        }
         : def
     )
   );
@@ -135,7 +135,7 @@ export class LoanTableComponent implements OnInit {
   showCustomRange: boolean[] = this.baseFilterDefs.map(() => false);
 
   customRangeForms = this.baseFilterDefs.map(() =>
-    this.fb.group({ start_date: [''], end_date: [''] })
+    this.fb.group({ start_date: [''], end_date: [''], tenor_value: [''] })
   );
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -151,14 +151,22 @@ export class LoanTableComponent implements OnInit {
     const applied = this.appliedValues[i];
     const def = this.filterDefs()[i];
     if (!applied) return def.label;
+
+    if (applied === 'custom_tenor') {
+      const tenorValue = this.customRangeForms[i].getRawValue().tenor_value;
+      return tenorValue ? `${def.label}: ${tenorValue} month(s)` : `${def.label}: Custom`;
+    }
+
     const opt = def.options.find(o => o.value === applied);
     return opt ? `${def.label}: ${opt.label}` : def.label;
   }
 
   onRadioChange(i: number, value: string): void {
     this.selectedValues[i] = value;
-    this.showCustomRange[i] = value === 'custom_range';
-    if (value !== 'custom_range') this.customRangeForms[i].reset();
+    this.showCustomRange[i] = value === 'custom_range' || value === 'custom_tenor';
+    if (value !== 'custom_range' && value !== 'custom_tenor') {
+      this.customRangeForms[i].reset();
+    }
   }
 
   applyFilter(i: number, dropdown: DropdownComponent): void {
@@ -194,16 +202,12 @@ export class LoanTableComponent implements OnInit {
         this.store.setTimeframe(value as LoanDateRange);
         return;
       }
-      case 'tenor':{
-          if (value === 'custom_range') {
-          const { start_date, end_date } = this.customRangeForms[i].getRawValue();
-          this.store.fetchLoans({
-            page: 1,
-            limit: this.store.currentLimit(),
-            custom_range: 'custom',
-            start_date: start_date || undefined,
-            end_date: end_date || undefined,
-          });
+      case 'tenor': {
+        if (value === 'custom_tenor') {
+          const { tenor_value } = this.customRangeForms[i].getRawValue();
+          if (tenor_value) {
+            this.store.setTenor(String(tenor_value) as LoanDateRange);
+          }
           return;
         }
         if (!value) {
