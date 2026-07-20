@@ -31,28 +31,28 @@ private mapStats(data: WalletMetricsData): WalletStat[] {
   return [
     {
       label:              'Total Wallets Created',
-      value:              data.total_wallets_created,
+      value:              data.wallets_created.count,
       trend:              null,
       trendUp:            true,
       tooltipDescription: 'The total number of customer wallets that have been created on the platform.',
     },
     {
       label:              'Total Active Wallets',
-      value:              data.total_active_wallet,
+      value:              data.active_wallets.count,
       trend:              null,
       trendUp:            true,
       tooltipDescription: 'The total number of customer wallets that are currently active.',
     },
     {
       label:              'Total Inactive Wallets',
-      value:              data.total_inactive_wallet,
+      value:              data.inactive_wallets.count,
       trend:              null,
       trendUp:            false,
       tooltipDescription: 'The total number of customer wallets that are currently inactive.',
     },
     {
       label:              'Total Funded Amount',
-      value:              data.total_funded_amount,
+      value:              data.funded_transactions.sum,
       trend:              null,
       trendUp:            true,
       prefix:             '₦',
@@ -60,7 +60,7 @@ private mapStats(data: WalletMetricsData): WalletStat[] {
     },
     {
       label:              'Total Debit Amount',
-      value:              data.total_debit_amount,
+      value:              data.debit_transactions.sum,
       trend:              null,
       trendUp:            true,
       prefix:             '₦',
@@ -68,7 +68,7 @@ private mapStats(data: WalletMetricsData): WalletStat[] {
     },
     {
       label:              'Total Transactions',
-      value:              data.total_transactions,
+      value:              data.total_transactions.count,
       trend:              null,
       trendUp:            true,
       tooltipDescription: 'The total number of wallet transactions recorded, including credits and debits.',

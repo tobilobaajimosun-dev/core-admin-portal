@@ -35,16 +35,25 @@ export interface WalletStat {
 
 }
 
+export interface WalletMetricValue {
+  count: number;
+  sum:   number;
+}
+
+export interface WalletMetricPeriod {
+  custom_range: string;
+  start_date:   string;
+  end_date:     string;
+}
+
 export interface WalletMetricsData {
-  total_wallets_created: number;
-  total_active_wallet:   number;
-  total_inactive_wallet: number;
-  total_funded_amount:   number;
-  total_debit_amount:    number;
-  total_transactions:    number;
-  custom_range?:         string;
-  period_start?:         string;
-  period_end?:           string;
+  period:               WalletMetricPeriod;
+  wallets_created:      WalletMetricValue;
+  active_wallets:       WalletMetricValue;
+  inactive_wallets:     WalletMetricValue;
+  funded_transactions:  WalletMetricValue;
+  debit_transactions:   WalletMetricValue;
+  total_transactions:   WalletMetricValue;
 }
 
 export interface WalletMetricsResponse {

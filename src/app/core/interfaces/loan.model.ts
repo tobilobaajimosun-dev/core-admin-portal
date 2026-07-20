@@ -105,14 +105,26 @@ export interface LoanView {
 }
 
 // ─── Loan Metrics ─────────────────────────────────────────────────────────────
+export interface LoanMetricValue {
+  count: number;
+  sum:   number;
+}
 
+export interface LoanMetricPeriod {
+  custom_range: string;
+  start_date:   string;
+  end_date:     string;
+}
 export interface LoanMetricsData {
-  total_loan_applications: number;
-  total_disbursed_loans:   number;
-  total_active_loans:      number;
-  total_outstanding_balance: number;
-  total_repaid:            number;
-  rate_of_defaulting:      number;
+  period:                     LoanMetricPeriod;
+  total_loan_applications:    LoanMetricValue;
+  total_disbursed_loans:      LoanMetricValue;
+  total_active_loans:         LoanMetricValue;
+  total_outstanding_balance:  LoanMetricValue;
+  total_repaid:               LoanMetricValue;
+  rate_of_defaulting:         LoanMetricValue;
+  failed_disbursements:       { count: number; amount: number };
+  repayment_due:              { count: number; amount: number };
 }
 
 export interface LoanMetricsResponse {
