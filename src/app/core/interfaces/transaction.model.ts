@@ -28,8 +28,8 @@ export interface TransactionRaw {
   createdAt:             string;
   customer_id:          string;
   external_customer_id: string | null;
-  customer:             TransactionCustomer;
-  transactionable:      TransactionTransactionable; 
+  customer:             TransactionCustomer | null;
+  transactionable:      TransactionTransactionable | null; 
 }
 
 export interface TransactionMeta {
@@ -84,6 +84,7 @@ export interface TransactionStat {
   trend:   number | null;
   trendUp: boolean;
   prefix?: string;
+  tooltipDescription:  string;
 }
 
 export interface TransactionWalletPayload {

@@ -261,6 +261,15 @@ export interface LoanDetailLoanDetails {
   disbursementMethod:   string;
 }
 
+export interface LoanStatCard {
+  label:              string;
+  value:              number;
+  isCurrency:         boolean;
+  suffix?:            string;
+  tooltipDescription: string;
+}
+
+
 export interface LoanDetailInterestAndFees {
   interestRate:                number;
   interestIsCharged:           string;

@@ -1,17 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoanStore } from '@core/store/loan.store';
-import { LoanMetricsData } from '@core/interfaces/loan.model';
+import { LoanMetricsData, LoanStatCard } from '@core/interfaces/loan.model';
 import { PsTooltipModule } from '@pcsl-ui/ui/ps-tooltip/ps-tooltip.module';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
-
-interface LoanStatCard {
-  label:              string;
-  value:              number;
-  isCurrency:         boolean;
-  suffix?:            string;
-  tooltipDescription: string;
-}
 
 @Component({
   selector: 'app-loan-stats',
