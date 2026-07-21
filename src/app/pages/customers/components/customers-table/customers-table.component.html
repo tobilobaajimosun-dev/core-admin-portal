@@ -1,79 +1,92 @@
 <div class="flex items-center justify-between mb-3">
 
   <!-- Filter pills -->
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-2 flex-wrap">
+    @for (def of filterDefs; track def.type; let i = $index) {
 
-    <!-- KYC Status -->
-  <app-dropdown placement="bottom-start">
-  <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-           text-xs font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
-    [class.border-[#00B3FF]]="activeKycFilter()" [class.text-[#00B3FF]]="activeKycFilter()"
-    [class.border-[#E2E8F0]]="!activeKycFilter()">
-    KYC Status
-    <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-  </button>
-  <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-           shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[180px] py-1">
-    @for (option of kycOptions; track option.value) {
-      <button type="button" (click)="onKycFilterChange(option)" class="w-full text-left px-4 py-2.5 text-sm text-[#131719]
-                 hover:bg-primary/[0.06] transition-colors cursor-pointer"
-        [class.text-[#00B3FF]]="activeKycFilter() === option.value"
-        [class.font-semibold]="activeKycFilter() === option.value">
-        {{ option.label }}
-      </button>
-    }
-  </div>
-</app-dropdown>
+    <app-dropdown placement="bottom-start" #filterDropdown [isStatic]="true">
 
-    <!-- Loan Status -->
- <app-dropdown placement="bottom-start">
-  <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-           text-xs font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
-    [class.border-[#00B3FF]]="activeLoanFilter()" [class.text-[#00B3FF]]="activeLoanFilter()"
-    [class.border-[#E2E8F0]]="!activeLoanFilter()">
-    Loan Status
-    <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-  </button>
-  <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-           shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[200px] py-1">
-    @for (option of loanOptions; track option.value) {
-      <button type="button" (click)="onLoanFilterChange(option)" class="w-full text-left px-4 py-2.5 text-sm text-[#131719]
-                 hover:bg-primary/[0.06] transition-colors cursor-pointer"
-        [class.text-[#00B3FF]]="activeLoanFilter() === option.value"
-        [class.font-semibold]="activeLoanFilter() === option.value">
-        {{ option.label }}
-      </button>
-    }
-  </div>
-</app-dropdown>
-
-    <!-- Date Registered -->
-    <app-dropdown placement="bottom-start">
-      <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-               text-xs font-medium text-[#131719] hover:bg-[#F8FCFE] transition-colors cursor-pointer"
-        [class.border-[#00B3FF]]="activeDateFilter()" [class.text-[#00B3FF]]="activeDateFilter()"
-        [class.border-[#E2E8F0]]="!activeDateFilter()">
-        Date registered
+      <!-- Pill trigger -->
+      <button dropdownHeader type="button" (click)="closeOtherDropdowns(i)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+                 text-xs font-medium transition-colors cursor-pointer" [class.border-[#00B3FF]]="isFilterActive(i)"
+        [class.text-[#00B3FF]]="isFilterActive(i)" [class.border-[#E2E8F0]]="!isFilterActive(i)"
+        [class.text-[#131719]]="!isFilterActive(i)" [class.hover:bg-[#F8FCFE]]="!isFilterActive(i)">
+        {{ filterDisplayLabel(i) }}
         <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
       </button>
-      <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-               shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[200px] py-1">
-        @for (opt of dateOptions; track opt.value) {
-          <button type="button" (click)="setDateFilter(opt)" class="w-full text-left px-4 py-2.5 text-sm text-[#131719]
-                     hover:bg-primary/[0.06] transition-colors cursor-pointer"
-            [class.text-[#00B3FF]]="activeDateFilter() === opt.label"
-            [class.font-semibold]="activeDateFilter() === opt.label">
-            {{ opt.label }}
+
+      <!-- Dropdown panel -->
+      <div dropdownMenu class="z-20 bg-white rounded-xl border border-[#E1E6ED]
+                 shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[220px]">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[#ECF1F5]">
+          <span class="text-sm font-semibold text-[#131719]">By {{ def.label }}</span>
+          <button type="button" (click)="filterDropdown.close()"
+            class="text-[#9CA3AF] hover:text-[#131719] transition-colors cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
-        }
+        </div>
+
+        <!-- Radio options -->
+        <ul class="py-1">
+          @for (opt of def.options; track opt.value; let last = $last) {
+          <li class="hover:bg-primary/[0.06] cursor-pointer has-[:checked]:bg-primary/[0.06]" [class.border-b]="!last"
+            [class.border-[#ECF1F5]]="!last">
+            <ps-radio class="px-4 py-2.5" [name]="'customerFilter_' + def.type" [(ngModel)]="selectedValues[i]"
+              (ngModelChange)="onRadioChange(i, $event)" [defaultValue]="opt.value" [label]="opt.label">
+            </ps-radio>
+          </li>
+
+          <!-- Inline custom range inputs -->
+          @if (opt.value === 'custom_range' && showCustomRange[i]) {
+          <li class="bg-primary/[0.05] border-b border-[#ECF1F5]">
+            <div class="py-3 px-4 space-y-3" [formGroup]="customRangeForms[i]">
+              <div>
+                <label class="block text-xs font-medium text-[#2B3033] mb-1">Start Date</label>
+                <input formControlName="start_date" type="date" class="w-full px-3 py-1.5 border border-[#ECF0F3] rounded-md text-xs
+                               outline-none focus:border-primary focus:ring-primary" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-[#2B3033] mb-1">End Date</label>
+                <input formControlName="end_date" type="date" class="w-full px-3 py-1.5 border border-[#ECF0F3] rounded-md text-xs
+                               outline-none focus:border-primary focus:ring-primary" />
+              </div>
+            </div>
+          </li>
+          }
+          }
+        </ul>
+
+        <!-- Footer -->
+        <div class="px-3 py-2 shadow-[0px_-1px_6px_0px_rgba(0,0,0,0.09)]">
+          @if (isFilterActive(i)) {
+          <button type="button" (click)="clearFilter(i)" class="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs
+                       font-medium text-[#51575B] border border-[#E2E8F0] hover:bg-gray-50
+                       transition-colors cursor-pointer mb-2">
+            Clear filter
+          </button>
+          }
+          <button type="button" (click)="applyFilter(i, filterDropdown)" [disabled]="!selectedValues[i]" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg
+                     text-sm font-medium transition-all duration-200
+                     bg-[#EBEBEB] text-[#ABABAB] cursor-not-allowed
+                     enabled:bg-[#00B3FF] enabled:text-white enabled:cursor-pointer
+                     enabled:hover:opacity-90">
+            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+            Apply filter
+          </button>
+        </div>
+
       </div>
     </app-dropdown>
 
+    }
   </div>
 
+  <!-- Search + Export (unchanged) -->
   <div class="flex items-center gap-3">
-
-    <!-- Search -->
     <div class="relative">
       <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor"
         viewBox="0 0 24 24">
@@ -82,48 +95,63 @@
       </svg>
       <input type="text" placeholder="Search customers" [ngModel]="searchQuery()"
         (ngModelChange)="onSearchChange($event)" class="pl-9 pr-8 py-2 rounded-lg border text-sm text-[#131719]
-               placeholder-[#9CA3AF] outline-none w-80 transition-colors"
-        [class.border-[#00B3FF]]="searchQuery()"
-        [class.ring-1]="searchQuery()"
-        [class.ring-[#00B3FF]]="searchQuery()"
+               placeholder-[#9CA3AF] outline-none w-80 transition-colors" [class.border-[#00B3FF]]="searchQuery()"
+        [class.ring-1]="searchQuery()" [class.ring-[#00B3FF]]="searchQuery()"
         [class.border-[#E2E8F0]]="!searchQuery()" />
       @if (searchQuery()) {
-        <button type="button" (click)="clearSearch()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]
-                   hover:text-[#44444B] transition-colors cursor-pointer">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+      <button type="button" (click)="clearSearch()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]
+                 hover:text-[#44444B] transition-colors cursor-pointer">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
       }
     </div>
-
-    <!-- Export -->
-   <button type="button"
-  (click)="exportCustomers()"
-  [disabled]="store.isExporting()"
-  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+    <button type="button" (click)="exportCustomers()" [disabled]="store.isExporting()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
          text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer
          disabled:opacity-60 disabled:cursor-not-allowed">
-  {{ store.isExporting() ? 'Exporting...' : 'Export' }}
-  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-  </svg>
-</button>
-
-  </div>
-</div>
-
-<!-- ── Active filter banner ── -->
-@if (hasActiveFilters()) {
-  <div class="flex items-center gap-1.5 mb-3 text-sm">
-    <span class="font-normal text-[#51575B]">{{ bannerPrefix() }}</span>
-    <span class="font-semibold text-[#131719]">{{ bannerLabel() }}</span>
-    <button type="button" (click)="clearFilters()" class="font-normal text-[#51575B] border-b border-dashed
-               hover:text-[#131719] transition-colors cursor-pointer ml-1 text-[13px]">
-      Clear filters
+      {{ store.isExporting() ? 'Exporting...' : 'Export' }}
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
     </button>
   </div>
+
+</div>
+
+<!-- Active filter / search banner -->
+@if (searchQuery()) {
+<div class="flex items-center gap-1.5 mb-3 text-sm">
+  <span class="font-normal text-[#51575B]">Displaying search result:</span>
+  <span class="font-semibold text-[#131719]">{{ searchQuery() }}</span>
+  <button type="button" (click)="clearSearch()" class="font-normal text-[#51575B] border-b border-dashed
+             hover:text-[#131719] transition-colors cursor-pointer ml-1 text-[13px]">
+    Clear search
+  </button>
+</div>
+} @else if (activeFilterChips().length > 0) {
+<div class="flex items-center gap-2 mb-3 flex-wrap text-sm">
+  <span class="font-normal text-[#51575B]">Displaying filtered result:</span>
+  @for (chip of activeFilterChips(); track chip.index) {
+  <span class="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full
+               bg-[#00B3FF]/[0.08] text-[#00B3FF] text-xs font-semibold">
+    {{ chip.label }}
+    <button type="button" (click)="clearFilter(chip.index)" class="w-4 h-4 flex items-center justify-center rounded-full
+               hover:bg-[#00B3FF]/[0.15] transition-colors cursor-pointer">
+      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </span>
+  }
+  @if (activeFilterChips().length > 1) {
+  <button type="button" (click)="clearFilters()" class="font-normal text-[#51575B] border-b border-dashed
+             hover:text-[#131719] transition-colors cursor-pointer ml-1 text-[13px]">
+    Clear all
+  </button>
+  }
+</div>
 }
 
 <!-- ── Loading skeleton ── -->
