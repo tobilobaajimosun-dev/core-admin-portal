@@ -231,6 +231,12 @@ export class LoanStore {
   private readonly _letterDownloading = signal(false);
   readonly letterDownloading = computed(() => this._letterDownloading());
 
+  // ── Repayment export state ──────────────────────────────────────────────
+  private readonly _isExportingSchedule = signal(false);
+  private readonly _exportScheduleError = signal<string | null>(null);
+  readonly isExportingSchedule = computed(() => this._isExportingSchedule());
+  readonly exportScheduleError = computed(() => this._exportScheduleError());
+
   readonly loanDetailHeaderView = computed(() => {
     const raw = this._loanDetail();
     return raw ? toLoanDetailHeaderView(raw) : null;
@@ -444,6 +450,39 @@ export class LoanStore {
     });
   }
 
+  exportRepaymentSchedule(loanApplicationId: string): void {
+    this._isExportingSchedule.set(true);
+    this._exportScheduleError.set(null);
+
+    this.loanService.getRepaymentScheduleExport(loanApplicationId).subscribe({
+      next: (response: HttpResponse<Blob>) => {
+        this._isExportingSchedule.set(false);
+        const blob = response.body as Blob;
+        const filename =
+          extractFilename(response.headers.get('content-disposition')) ??
+          `repayment_schedule_${new Date().toISOString().slice(0, 10)}.csv`;
+        downloadBlob(blob, filename);
+      },
+      error: (err: any) => {
+        this._isExportingSchedule.set(false);
+        const fallback = 'Failed to export repayment schedule.';
+
+        if (err?.error instanceof Blob) {
+          err.error.text().then((text: string) => {
+            let message = fallback;
+            try {
+              message = JSON.parse(text)?.message ?? fallback;
+            } catch {
+              /* not JSON, use fallback */
+            }
+            this._exportScheduleError.set(message);
+          });
+        } else {
+          this._exportScheduleError.set(err?.error?.message ?? fallback);
+        }
+      },
+    });
+  }
 
   setFailedDisbursementsSearch(query: string): void {
     this.fetchFailedDisbursements({ page: 1, limit: this._failedDisbursementsLimit(), search: query });

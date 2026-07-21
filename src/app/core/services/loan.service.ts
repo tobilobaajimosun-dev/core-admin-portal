@@ -73,7 +73,6 @@ export class LoanService {
     ) as Observable<HttpResponse<Blob>>;
   }
 
-  
 getIndebtednessLetter(letterId: string): Observable<IndebtednessLetterResponse> {
   return this.httpClient.get<IndebtednessLetterResponse>(
     `${this.apiBaseUrl}/api/v1/loan-applications/indebtedness-letters/${letterId}`
@@ -95,5 +94,14 @@ getLoanProducts(): Observable<LoanProductListResponse> {
   return this.httpClient.get<LoanProductListResponse>(
     `${this.apiBaseUrl}/api/v1/loan-products/list-loan-products`
   );
+}
+
+// ── Repayment schedule export ──────────────────────────────────────────────
+getRepaymentScheduleExport(loanApplicationId: string): Observable<HttpResponse<Blob>> {
+  const urlParams = new URLSearchParams({ loan_application_id: loanApplicationId });
+  return this.httpClient.get(
+    `${this.apiBaseUrl}/api/v1/repayments/export?${urlParams}`,
+    { responseType: 'blob', observe: 'response' }
+  ) as Observable<HttpResponse<Blob>>;
 }
 }

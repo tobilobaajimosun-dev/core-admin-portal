@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { LoanDetailScheduleRow } from '@core/interfaces/loan.model';
+import { LoanStore } from '@core/store/loan.store';
 
 @Component({
   selector: 'app-loan-schedule',
@@ -10,8 +11,15 @@ import { LoanDetailScheduleRow } from '@core/interfaces/loan.model';
 })
 export class LoanScheduleComponent {
   @Input({ required: true }) schedule: LoanDetailScheduleRow[] = [];
+  @Input({ required: true }) loanApplicationId!: string;
+
+  readonly store = inject(LoanStore);
 
   columns = ['Scheduled Date', 'Narration', 'Principal', 'Interest', 'Fees', 'Total Amount', 'Status'];
+
+  exportSchedule(): void {
+    this.store.exportRepaymentSchedule(this.loanApplicationId);
+  }
 
   getStatusClass(status: string): string {
     const map: Record<string, string> = {

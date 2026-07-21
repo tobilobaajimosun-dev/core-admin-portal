@@ -243,7 +243,8 @@
     <app-loan-about [about]="about" />
     }
     } @else if (activeTab() === 'schedule') {
-    <app-loan-schedule [schedule]="store.loanScheduleView()" />
+    <app-loan-schedule [schedule]="store.loanScheduleView()" 
+     [loanApplicationId]="store.loanDetail()?.id ?? ''"/>
     } @else if (activeTab() === 'liquidation') {
     @if (store.loanLiquidationView(); as liq) {
     <app-loan-liquidation [data]="liq" />
