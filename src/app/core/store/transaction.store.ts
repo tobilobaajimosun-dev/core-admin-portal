@@ -288,6 +288,11 @@ fetchReceipt(id: string): void {
     this.fetchTransactions({ page: 1, limit: this._limit(), custom_range: range });
   }
 
-  setPage(page: number):      void { this.fetchTransactions({ page, limit: this._limit() }); }
-  setPageSize(limit: number): void { this.fetchTransactions({ page: 1, limit }); }
+ setPage(page: number): void {
+  this.fetchTransactions({ ...this._lastParams(), page });
+}
+
+setPageSize(limit: number): void {
+  this.fetchTransactions({ ...this._lastParams(), page: 1, limit });
+}
 }

@@ -135,18 +135,39 @@
 
 </div>
 
-<!-- Active filter banner (unchanged) -->
-@if (hasActiveFilters()) {
+<!-- Active filter / search banner -->
+@if (searchQuery()) {
 <div class="flex items-center gap-1.5 mb-3 text-sm">
-  <span class="font-normal text-[#51575B]">{{ bannerPrefix() }}</span>
-  <span class="font-semibold text-[#131719]">{{ bannerLabel() }}</span>
-  <button type="button" (click)="clearFilters()" class="font-normal text-[#51575B] border-b border-dashed
+  <span class="font-normal text-[#51575B]">Displaying search result:</span>
+  <span class="font-semibold text-[#131719]">{{ searchQuery() }}</span>
+  <button type="button" (click)="clearSearch()" class="font-normal text-[#51575B] border-b border-dashed
              hover:text-[#131719] transition-colors cursor-pointer ml-1 text-[13px]">
-    Clear filters
+    Clear search
   </button>
 </div>
+} @else if (activeFilterChips().length > 0) {
+<div class="flex items-center gap-2 mb-3 flex-wrap text-sm">
+  <span class="font-normal text-[#51575B]">Displaying filtered result:</span>
+  @for (chip of activeFilterChips(); track chip.index) {
+  <span class="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full
+               bg-[#00B3FF]/[0.08] text-[#00B3FF] text-xs font-semibold">
+    {{ chip.label }}
+    <button type="button" (click)="clearFilter(chip.index)" class="w-4 h-4 flex items-center justify-center rounded-full
+               hover:bg-[#00B3FF]/[0.15] transition-colors cursor-pointer">
+      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </span>
+  }
+  @if (activeFilterChips().length > 1) {
+  <button type="button" (click)="clearFilters()" class="font-normal text-[#51575B] border-b border-dashed
+             hover:text-[#131719] transition-colors cursor-pointer ml-1 text-[13px]">
+    Clear all
+  </button>
+  }
+</div>
 }
-
 <!-- ── Loading skeleton ── -->
 @if (store.isLoading()) {
 <div class="w-full rounded-xl border border-[#ECF1F5] overflow-hidden">

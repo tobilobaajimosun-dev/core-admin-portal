@@ -29,5 +29,9 @@ onRangeChange(range: DateRange | null): void {
       end_date:     toLocalDateString(range.end),
     });
   }
+   else {
+      // Cleared — refetch metrics with no date filter
+      this.walletStore.fetchMetrics();
+    }
 }
 }

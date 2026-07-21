@@ -23,7 +23,6 @@ interface TabDef {
   label: string;
   value: TransactionTab;
   icon: string;
-
 }
 
 @Component({
@@ -77,6 +76,9 @@ export class TransactionsTableComponent implements OnInit {
         options: [
           { label: 'Credit', value: 'CREDIT' },
           { label: 'Debit', value: 'DEBIT' },
+          { label: 'Refund', value: 'REFUND' },
+          { label: 'Loan Request', value: 'LOAN_REQUEST' },
+          { label: 'Transfer', value: 'TRANSFER' },
         ],
       },
       {
@@ -114,9 +116,14 @@ export class TransactionsTableComponent implements OnInit {
     ];
 
   // ── Per-filter state ────────────────────────────────────────────────────
+  // appliedValues is a signal now (not a plain array) so hasActiveFilters /
+  // activeFilterChips recompute correctly whenever a filter is applied or cleared.
+  appliedValues = signal<string[]>(this.filterDefs.map(() => ''));
   selectedValues: string[] = this.filterDefs.map(() => '');
-  appliedValues: string[] = this.filterDefs.map(() => '');
   showCustomRange: boolean[] = this.filterDefs.map(() => false);
+
+  // Custom date range values, kept separately since they're not a simple option value.
+  private appliedCustomRange: { start_date?: string; end_date?: string } = {};
 
   customRangeForms = this.filterDefs.map(() =>
     this.fb.group({ start_date: [''], end_date: [''] })
@@ -126,19 +133,17 @@ export class TransactionsTableComponent implements OnInit {
   transactions = computed(() => this.store.transactions());
 
   hasActiveFilters = computed(() =>
-    !!this.searchQuery() || this.appliedValues.some(v => !!v)
+    !!this.searchQuery() || this.appliedValues().some(v => !!v)
   );
 
-  bannerLabel = computed(() => {
-    if (this.searchQuery()) return this.searchQuery();
-    const activeIdx = this.appliedValues.findIndex(v => !!v);
-    if (activeIdx === -1) return '';
-    const val = this.appliedValues[activeIdx];
-    return this.filterDefs[activeIdx].options.find(o => o.value === val)?.label ?? val;
-  });
-
-  bannerPrefix = computed(() =>
-    this.searchQuery() ? 'Displaying search result:' : 'Displaying filtered result:'
+  activeFilterChips = computed(() =>
+    this.filterDefs
+      .map((def, index) => ({ index, def, value: this.appliedValues()[index] }))
+      .filter(({ value }) => !!value)
+      .map(({ index, def, value }) => {
+        const opt = def.options.find(o => o.value === value);
+        return { index, label: opt ? `${def.label}: ${opt.label}` : def.label };
+      })
   );
 
   // ── Tab handling ─────────────────────────────────────────────────────────
@@ -146,12 +151,13 @@ export class TransactionsTableComponent implements OnInit {
     if (this.activeTab() === value) return;
     this.activeTab.set(value);
 
-    // Reset filters/search — switching context between All/Bills/Wallets/Loans
+    // Reset filters/search — switching context between All/Bills/Loans
     // means stale filters from the previous tab wouldn't make sense to keep.
-    this.appliedValues = this.filterDefs.map(() => '');
+    this.appliedValues.set(this.filterDefs.map(() => ''));
     this.selectedValues = this.filterDefs.map(() => '');
     this.showCustomRange = this.filterDefs.map(() => false);
     this.customRangeForms.forEach(f => f.reset());
+    this.appliedCustomRange = {};
     this.searchQuery.set('');
     this.currentPage.set(1);
 
@@ -160,10 +166,10 @@ export class TransactionsTableComponent implements OnInit {
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────────
-  isFilterActive(i: number): boolean { return !!this.appliedValues[i]; }
+  isFilterActive(i: number): boolean { return !!this.appliedValues()[i]; }
 
   filterDisplayLabel(i: number): string {
-    const applied = this.appliedValues[i];
+    const applied = this.appliedValues()[i];
     if (!applied) return this.filterDefs[i].label;
     const opt = this.filterDefs[i].options.find(o => o.value === applied);
     return opt ? `${this.filterDefs[i].label}: ${opt.label}` : this.filterDefs[i].label;
@@ -184,49 +190,25 @@ export class TransactionsTableComponent implements OnInit {
   applyFilter(i: number, dropdown: DropdownComponent): void {
     dropdown.close();
     const value = this.selectedValues[i];
-
-    // Enforce single active filter
-    this.appliedValues = this.appliedValues.map((_, idx) => idx === i ? value : '');
-    this.selectedValues = this.selectedValues.map((_, idx) => idx === i ? value : '');
-    this.showCustomRange = this.showCustomRange.map((_, idx) => idx === i ? this.showCustomRange[idx] : false);
-    this.customRangeForms.forEach((f, idx) => { if (idx !== i) f.reset(); });
-    this.searchQuery.set('');
-
     const def = this.filterDefs[i];
 
-    switch (def.type) {
-      case 'transactionType':
-        this.store.fetchTransactions({ page: 1, limit: this.store.currentLimit(), type: value || undefined });
-        return;
+    // Only this filter's value changes — every other already-applied filter stays active.
+    const updated = [...this.appliedValues()];
+    updated[i] = value;
+    this.appliedValues.set(updated);
 
-      case 'category':
-        this.store.fetchTransactions({ page: 1, limit: this.store.currentLimit(), category: value || undefined });
-        return;
-
-      case 'status':
-        this.store.fetchTransactions({ page: 1, limit: this.store.currentLimit(), status: value || undefined });
-        return;
-
-      case 'date': {
-        if (value === 'custom_range') {
-          const { start_date, end_date } = this.customRangeForms[i].getRawValue();
-          this.store.fetchTransactions({
-            page: 1,
-            limit: this.store.currentLimit(),
-            custom_range: 'custom',
-            start_date: start_date || undefined,
-            end_date: end_date || undefined,
-          });
-          return;
-        }
-        if (!value) {
-          this.store.fetchTransactions({ page: 1, limit: this.store.currentLimit() });
-          return;
-        }
-        this.store.setTimeframe(value as TransactionDateRange);
-        return;
+    if (def.type === 'date') {
+      if (value === 'custom_range') {
+        const { start_date, end_date } = this.customRangeForms[i].getRawValue();
+        this.appliedCustomRange = { start_date: start_date || undefined, end_date: end_date || undefined };
+      } else {
+        this.appliedCustomRange = {};
       }
     }
+
+    this.searchQuery.set('');
+    this.currentPage.set(1);
+    this.fetchWithAppliedFilters();
   }
 
   exportTransactions(): void {
@@ -234,20 +216,67 @@ export class TransactionsTableComponent implements OnInit {
   }
 
   clearFilter(i: number): void {
-    this.appliedValues[i] = '';
+    const updated = [...this.appliedValues()];
+    updated[i] = '';
+    this.appliedValues.set(updated);
+
     this.selectedValues[i] = '';
     this.showCustomRange[i] = false;
     this.customRangeForms[i].reset();
-    this.store.fetchTransactions({ page: 1, limit: this.store.currentLimit() });
+    if (this.filterDefs[i].type === 'date') {
+      this.appliedCustomRange = {};
+    }
+
+    this.currentPage.set(1);
+    this.fetchWithAppliedFilters();
   }
 
   clearFilters(): void {
-    this.appliedValues = this.filterDefs.map(() => '');
+    this.appliedValues.set(this.filterDefs.map(() => ''));
     this.selectedValues = this.filterDefs.map(() => '');
     this.showCustomRange = this.filterDefs.map(() => false);
     this.customRangeForms.forEach(f => f.reset());
+    this.appliedCustomRange = {};
     this.searchQuery.set('');
+    this.currentPage.set(1);
     this.store.fetchTransactions({ page: 1, limit: 10 });
+  }
+
+  // Builds one combined fetch call out of every currently-applied filter.
+  private fetchWithAppliedFilters(): void {
+    const params: Record<string, unknown> = {
+      page: this.currentPage(),
+      limit: this.store.currentLimit(),
+    };
+
+    this.filterDefs.forEach((def, idx) => {
+      const value = this.appliedValues()[idx];
+      if (!value) return;
+
+      switch (def.type) {
+        case 'transactionType':
+          params['type'] = value;
+          break;
+        case 'category':
+          params['category'] = value;
+          break;
+        case 'status':
+          params['status'] = value;
+          break;
+        case 'date':
+          if (value === 'custom_range') {
+            params['custom_range'] = 'custom';
+            params['start_date'] = this.appliedCustomRange.start_date;
+            params['end_date'] = this.appliedCustomRange.end_date;
+          } else {
+            // See note below on this param name.
+            params['date_range'] = value;
+          }
+          break;
+      }
+    });
+
+    this.store.fetchTransactions(params as any);
   }
 
   // ── Search ───────────────────────────────────────────────────────────────
@@ -293,7 +322,6 @@ export class TransactionsTableComponent implements OnInit {
       case 'FAILED': return 'bg-[#FFE1E2]';
       case 'REVERSED': return 'bg-[#FFF4BE]';
       case 'REFUNDED': return 'bg-[#FFF4BE]';
-
       default: return 'bg-[#F3F4F6]';
     }
   }

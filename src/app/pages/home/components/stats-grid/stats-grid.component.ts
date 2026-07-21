@@ -6,6 +6,7 @@ import { PsTooltipModule } from '@pcsl-ui/ui/ps-tooltip/ps-tooltip.module';
 import { DateRange, PsDateRangePickerComponent } from '@ui/ps-date-range-picker/ps-date-range-picker.component';
 import { DashboardStore } from '@core/store/dashboard.store';
 import { DashboardCustomRange } from '@core/interfaces/dashboard.model';
+import { toLocalDateString } from '@shared/utils/date.util';
 
 @Component({
   selector: 'app-stats-grid',
@@ -50,14 +51,17 @@ export class StatsGridComponent implements OnInit {
     this.dashboardStore.setTimeframe(value);
   }
 
-  onRangeChange(range: DateRange | null): void {
-    if (range?.start && range?.end) {
-      this.dashboardStore.setCustomDateRange(
-        range.start.toISOString().split('T')[0],
-        range.end.toISOString().split('T')[0]
-      );
-    }
+ onRangeChange(range: DateRange | null): void {
+  if (range?.start && range?.end) {
+    this.dashboardStore.setCustomDateRange(
+      toLocalDateString(range.start),
+      toLocalDateString(range.end)
+    );
+  } else {
+    // Cleared — revert to the default timeframe
+    this.dashboardStore.setTimeframe('today');
   }
+}
 
   getTooltipDescription(key: string): string {
     return this.tooltipDescriptions[key] ?? 'No additional information available.';
