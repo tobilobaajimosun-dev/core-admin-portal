@@ -82,7 +82,8 @@
               <span class="text-sm font-medium text-[#51575B]">{{ transactionId() }}</span>
               <button type="button" (click)="copytransactionId()" title="Copy"
                 class="text-[#9CA3AF] hover:text-[#00B3FF] transition-colors cursor-pointer">
-                <ps-svg-icon name="copy-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
+                <ps-svg-icon [name]="transactionIdCopied() ? 'check-icon' : 'copy-icon'"
+                  class="w-4 h-4 shrink-0"></ps-svg-icon>
               </button>
             </div>
             <span class="text-sm text-[#AAB3BA]">
@@ -213,6 +214,14 @@
               {{ customer()!.email }}
             </p>
 
+            <!-- Phone -->
+            <p class="text-sm font-normal text-[#51575B] tracking-[-0.005em] mb-1
+    flex items-center justify-center gap-1.5">
+              {{ revealPhone ? customer()!.phone : maskPhone(customer()!.phone) }}
+              <ps-svg-icon [name]="revealPhone ? 'eye-icon' : 'eye-lash-icon'"
+                class="w-4 h-4 text-[#00B3FF] cursor-pointer hover:opacity-80" (click)="revealPhone = !revealPhone">
+              </ps-svg-icon>
+            </p>
           </div>
 
           <!-- View Customer button -->

@@ -17,6 +17,7 @@ export interface TransactionCustomer {
   firstName: string;
   lastName:  string;
   email:     string;
+  phone:     string;
 }
 
 export interface TransactionRaw {
@@ -110,7 +111,7 @@ export interface TransactionTransactionable {
   provider:                      string;
   category:                      string;
   service:                       string;
-  details:                       string | null;
+  details:                       Record<string, string | number> | null;  // was: string | null
   customer_id:                   string;
   status:                        string;
   tag:                           string;

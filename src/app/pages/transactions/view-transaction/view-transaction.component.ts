@@ -9,6 +9,7 @@ import { TransactionCustomer }        from '@core/interfaces/transaction.model';
 import { CustomerService }            from '@core/services/customer.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReceiptModalComponent } from '@shared/components/modals/receipt-modal/receipt-modal.component';
+import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 
 
 interface InfoRow {
@@ -16,6 +17,37 @@ interface InfoRow {
   value:      string;
   badge?:     boolean;
   badgeClass?: string;
+}
+
+const DETAIL_LABEL_MAP: Record<string, string> = {
+  network:            'Network',
+  telephone:          'Phone Number',
+  phone:              'Phone Number',
+  phone_number:       'Phone Number',
+  payment_method:     'Payment Method',
+  meter:              'Meter Number',
+  meter_number:       'Meter Number',
+  meterNumber:        'Meter Number',
+  disco:              'Disco',
+  discoName:          'Disco',
+  units:              'Units',
+  token:              'Token',
+  smart_card_number:  'Smart Card Number',
+  smartCardNumber:    'Smart Card Number',
+  decoder_number:     'Decoder Number',
+  decoder:            'Decoder Number',
+  package:            'Package',
+  plan:               'Data Plan',
+  bundle:             'Data Bundle',
+};
+
+// Skipped because they duplicate something already shown elsewhere on the
+// page (Reference No row, Transaction Type badge).
+const SKIP_DETAIL_KEYS = new Set(['reference', 'receipt_id', 'transaction_type']);
+
+function humanizeDetailKey(key: string): string {
+  const spaced = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
+  return spaced.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 @Component({
@@ -29,6 +61,7 @@ export class ViewTransactionComponent implements OnInit {
   private readonly route           = inject(ActivatedRoute);
   private readonly customerService = inject(CustomerService);
   private readonly modalService    = inject(PsModalService);
+  private readonly toast           = inject(PsToastService);
   readonly store                   = inject(TransactionStore);
   private readonly destroyRef      = inject(DestroyRef);
 
@@ -38,6 +71,8 @@ export class ViewTransactionComponent implements OnInit {
   // Tracks whether a retry has been attempted for the currently loaded
   // transaction. Refund stays locked until this flips to true.
   hasAttemptedRetry = signal(false);
+
+  transactionIdCopied = signal(false);
 
   transaction = computed(() => this.store.selectedTransaction());
   isLoading   = computed(() => this.store.isLoadingDetail());
@@ -69,6 +104,7 @@ export class ViewTransactionComponent implements OnInit {
           firstName: c.firstName,
           lastName:  c.lastName,
           email:     c.email ?? '',
+          phone:     c.phone ?? '', 
         });
       },
       error: () => {
@@ -90,6 +126,7 @@ export class ViewTransactionComponent implements OnInit {
         // component instance across same-route navigations.
         this.customer.set(null);
         this.hasAttemptedRetry.set(false);
+        this.transactionIdCopied.set(false);
         this.store.resetRetryState();
 
         const state = history.state;
@@ -99,6 +136,18 @@ export class ViewTransactionComponent implements OnInit {
 
         this.store.fetchTransactionById(id);
       });
+  }
+
+   private detailRows(): InfoRow[] {
+    const details = this.transaction()?.transactionable?.details;
+    if (!details) return [];
+
+    return Object.entries(details)
+      .filter(([key]) => !SKIP_DETAIL_KEYS.has(key))
+      .map(([key, value]) => ({
+        label: DETAIL_LABEL_MAP[key] ?? humanizeDetailKey(key),
+        value: String(value),
+      }));
   }
 
   infoRows = computed((): InfoRow[] => {
@@ -125,6 +174,7 @@ export class ViewTransactionComponent implements OnInit {
       { label: 'Reference No',      value: transaction.reference_no                                    },
       { label: 'Wallet Reference',  value: transactionable.wallet_transaction_reference                },
       { label: 'Provider Response', value: transactionable.message ?? '—'                              },
+       ...this.detailRows(),
       { label: 'Account Number',    value: transactionable.wallet_transaction_payload?.account_number   },
       {
         label: 'Balance After',
@@ -155,9 +205,34 @@ export class ViewTransactionComponent implements OnInit {
     return '•'.repeat(Math.max(0, phone.length - 4)) + phone.slice(-4);
   }
 
-  copytransactionId(): void {
-    const ref = this.transaction()?.reference_no;
-    if (ref) navigator.clipboard.writeText(ref).catch(() => {});
+  // Shared clipboard helper (same as ViewLoanComponent) — handles non-secure
+  // HTTP contexts where navigator.clipboard is unavailable.
+  private async copyToClipboard(text: string): Promise<boolean> {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        console.error('Clipboard API failed', err);
+      }
+    }
+
+    // Fallback for non-secure contexts (e.g. http:// test environments)
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const success = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return success;
+    } catch (err) {
+      console.error('Fallback copy failed', err);
+      return false;
+    }
   }
 
   goBack(): void { this.router.navigate(['/transactions']); }
@@ -200,6 +275,20 @@ openRefundModal(): void {
     const c = this.customer();
     if (!c) return '';
     return `${c.firstName.charAt(0)}${c.lastName.charAt(0)}`.toUpperCase();
+  }
+
+async copytransactionId(): Promise<void> {
+    const ref = this.transaction()?.reference_no;
+    if (!ref) return;
+
+    const success = await this.copyToClipboard(ref);
+    if (success) {
+      this.transactionIdCopied.set(true);
+      this.toast.success('Transaction ID copied to clipboard.');
+      setTimeout(() => this.transactionIdCopied.set(false), 1500);
+    } else {
+      this.toast.error('Could not copy transaction ID.');
+    }
   }
 
   viewCustomer(): void {
