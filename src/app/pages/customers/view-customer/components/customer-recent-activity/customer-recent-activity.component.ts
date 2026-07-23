@@ -1,7 +1,7 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PsSvgIconComponent }    from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
+import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
 import { PsPaginationComponent } from '@ui/ps-pagination/ps-pagination.component';
 import { CustomerStore } from '@core/store/customer.store';
 import { CustomerActivityRaw } from '@core/interfaces/customer.model';
@@ -14,22 +14,25 @@ import { CustomerActivityRaw } from '@core/interfaces/customer.model';
 })
 export class CustomerRecentActivityComponent implements OnInit {
   private router = inject(Router);
-  private route  = inject(ActivatedRoute);
-  private store  = inject(CustomerStore);
+  private route = inject(ActivatedRoute);
+  private store = inject(CustomerStore);
 
-  columns       = ['Action', 'Module', 'IP Address', 'Date & Time', ''];
+  columns = ['Action', 'Module', 'IP Address', 'Date & Time', ''];
   filterOptions = ['Activity Module'];
 
-  // adjust this if the customerId lives on a parent route
   private customerId = this.route.snapshot.paramMap.get('id')
     ?? this.route.parent?.snapshot.paramMap.get('id')
     ?? '';
 
-  activityLogs   = this.store.customerActivity;
-  isLoading      = this.store.isLoadingActivity;
-  total          = this.store.customerActivityTotal;
-  currentLimit   = computed(() => this.store.activityListConfig().limit ?? 10);
-  currentPage    = computed(() => this.store.activityListConfig().page ?? 1);
+  activityLogs = this.store.customerActivity;
+  isLoading = this.store.isLoadingActivity;
+  error = this.store.activityError;
+  total = this.store.customerActivityTotal;
+  isExporting = this.store.isExportingActivity;
+  currentLimit = computed(() => this.store.activityListConfig().limit ?? 10);
+  currentPage = computed(() => this.store.activityListConfig().page ?? 1);
+
+  searchQuery = signal('');
 
   ngOnInit(): void {
     this.store.fetchCustomerActivity({
@@ -45,8 +48,9 @@ export class CustomerRecentActivityComponent implements OnInit {
     );
   }
 
-  onSearch(term: string): void {
-    this.store.setActivitySearch(this.customerId, term);
+  onSearchChange(value: string): void {
+    this.searchQuery.set(value);
+    this.store.setActivitySearch(this.customerId, value);
   }
 
   onModuleFilter(mod: string): void {
@@ -59,5 +63,9 @@ export class CustomerRecentActivityComponent implements OnInit {
 
   onPageSizeChange(size: number): void {
     this.store.setActivityPageSize(this.customerId, size);
+  }
+
+  exportActivity(): void {
+    this.store.exportCustomerActivity(this.customerId);
   }
 }

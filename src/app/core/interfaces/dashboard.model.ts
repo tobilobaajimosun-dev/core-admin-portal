@@ -66,12 +66,13 @@ export interface DashboardCardsResponse {
 // ─── View model ───────────────────────────────────────────────────────────────
 
 export interface DashboardStatCard {
-  key:      string;        // unique dotted path e.g. "wallets.created"
-  label:    string;
-  value:    number;
-  trend:    number | null; // % change, null = not available
-  trendUp:  boolean;
-  isAmount: boolean;       // true → format as currency
+  key: string;
+  label: string;
+  value: number;
+  trend: number | null;
+  trendUp: boolean;
+  isAmount: boolean;
+  tooltipDescription: string;
 }
 
 // ─── Query params ─────────────────────────────────────────────────────────────
@@ -99,6 +100,7 @@ export interface CardDefinition {
   key:      string;
   label:    string;
   isAmount: boolean;
+  tooltipDescription: string;
   /** Returns { value, trend } from raw DashboardCardsData, or null if field is absent */
   extract: (data: DashboardCardsData) => { value: number; trend: number | null } | null;
 }
@@ -107,18 +109,21 @@ export const CARD_DEFINITIONS: CardDefinition[] = [
   // ── User counts (flat, no trend) ──────────────────────────────────────────
   {
     key: 'total_customers', label: 'Number of Users till Date', isAmount: false,
+    tooltipDescription: 'The cumulative number of users who have registered on the platform since launch, regardless of the selected timeframe.',
     extract: (d) => d.total_customers != null
       ? { value: d.total_customers, trend: null }
       : null,
   },
   {
     key: 'monthly_active_users', label: 'Monthly Active Users', isAmount: false,
+    tooltipDescription: 'The number of unique users who performed at least one action on the platform within the last 30 days.',
     extract: (d) => d.monthly_active_users != null
       ? { value: d.monthly_active_users, trend: null }
       : null,
   },
   {
     key: 'daily_active_users', label: 'Daily Active Users', isAmount: false,
+    tooltipDescription: 'The number of unique users who performed at least one action on the platform within the last 24 hours.',
     extract: (d) => d.daily_active_users != null
       ? { value: d.daily_active_users, trend: null }
       : null,
@@ -126,18 +131,21 @@ export const CARD_DEFINITIONS: CardDefinition[] = [
   // ── Sign-ups / KYC ────────────────────────────────────────────────────────
   {
     key: 'new_sign_ups', label: 'New Sign Ups', isAmount: false,
+    tooltipDescription: 'The number of new user accounts created on the platform within the selected timeframe.',
     extract: (d) => d.new_sign_ups != null
       ? { value: d.new_sign_ups.count, trend: d.new_sign_ups.average }
       : null,
   },
   {
     key: 'completed_kyc', label: 'Completed KYC', isAmount: false,
+    tooltipDescription: 'The number of users who successfully completed identity verification (KYC) within the selected timeframe.',
     extract: (d) => d.completed_kyc != null
       ? { value: d.completed_kyc.count, trend: d.completed_kyc.average }
       : null,
   },
   {
     key: 'pending_kyc', label: 'Pending KYC', isAmount: false,
+    tooltipDescription: 'The number of users whose identity verification (KYC) is incomplete or awaiting review within the selected timeframe.',
     extract: (d) => d.pending_kyc != null
       ? { value: d.pending_kyc.count, trend: d.pending_kyc.average }
       : null,
@@ -145,18 +153,21 @@ export const CARD_DEFINITIONS: CardDefinition[] = [
   // ── Loans ─────────────────────────────────────────────────────────────────
   {
     key: 'new_loan_applications', label: 'Loan Applications', isAmount: false,
+    tooltipDescription: 'The number of new loan applications submitted by users within the selected timeframe, regardless of approval status.',
     extract: (d) => d.new_loan_applications != null
       ? { value: d.new_loan_applications.count, trend: d.new_loan_applications.average }
       : null,
   },
   {
     key: 'disbursed_loans', label: 'Loans Disbursed', isAmount: false,
+    tooltipDescription: 'The number of approved loans that were successfully disbursed to users within the selected timeframe.',
     extract: (d) => d.disbursed_loans != null
       ? { value: d.disbursed_loans.count, trend: d.disbursed_loans.average }
       : null,
   },
   {
     key: 'disbursed_loan_amount', label: 'Amount Disbursed', isAmount: true,
+    tooltipDescription: 'The total monetary value of all loans disbursed to users within the selected timeframe.',
     extract: (d) => d.disbursed_loan_amount != null
       ? { value: d.disbursed_loan_amount.amount, trend: d.disbursed_loan_amount.average }
       : null,
@@ -164,18 +175,21 @@ export const CARD_DEFINITIONS: CardDefinition[] = [
   // ── Wallets ───────────────────────────────────────────────────────────────
   {
     key: 'wallets.created', label: 'Wallets Created', isAmount: false,
+    tooltipDescription: 'The number of new wallets created by users within the selected timeframe.',
     extract: (d) => d.wallets?.created != null
       ? { value: d.wallets.created.count, trend: d.wallets.created.average }
       : null,
   },
   {
     key: 'wallets.funded', label: 'Wallets Funded', isAmount: false,
+    tooltipDescription: 'The number of wallets that received at least one funding transaction within the selected timeframe.',
     extract: (d) => d.wallets?.funded != null
       ? { value: d.wallets.funded.count, trend: d.wallets.funded.average }
       : null,
   },
   {
     key: 'wallets.amount_funded', label: 'Amount Funded', isAmount: true,
+    tooltipDescription: 'The total monetary value credited into user wallets within the selected timeframe.',
     extract: (d) => d.wallets?.funded != null
       ? { value: d.wallets.funded.amount, trend: d.wallets.funded.average }
       : null,
@@ -183,18 +197,21 @@ export const CARD_DEFINITIONS: CardDefinition[] = [
   // ── Transactions ──────────────────────────────────────────────────────────
   {
     key: 'transactions.total_amount', label: 'Total Transaction Amount', isAmount: true,
+    tooltipDescription: 'The total monetary value of all transactions processed on the platform within the selected timeframe, combining inflow and outflow.',
     extract: (d) => d.transactions?.total_amount != null
       ? { value: d.transactions.total_amount.amount, trend: d.transactions.total_amount.average }
       : null,
   },
   {
     key: 'transactions.inflow', label: 'Inflow Amount', isAmount: true,
+    tooltipDescription: 'The total monetary value of funds credited into the platform within the selected timeframe.',
     extract: (d) => d.transactions?.inflow != null
       ? { value: d.transactions.inflow.amount, trend: d.transactions.inflow.average }
       : null,
   },
   {
     key: 'transactions.outflow', label: 'Outflow Amount', isAmount: true,
+    tooltipDescription: 'The total monetary value of funds debited from the platform within the selected timeframe.',
     extract: (d) => d.transactions?.outflow != null
       ? { value: d.transactions.outflow.amount, trend: d.transactions.outflow.average }
       : null,
@@ -202,18 +219,21 @@ export const CARD_DEFINITIONS: CardDefinition[] = [
   // ── Billings / VAS ────────────────────────────────────────────────────────
   {
     key: 'billings.total_count', label: 'Number of VAS Transactions', isAmount: false,
+    tooltipDescription: 'The total number of value-added service (VAS) transactions, such as bill payments, processed within the selected timeframe.',
     extract: (d) => d.billings?.total != null
       ? { value: d.billings.total.count, trend: d.billings.total.average }
       : null,
   },
   {
     key: 'billings.total_amount', label: 'VAS Transaction Amount', isAmount: true,
+    tooltipDescription: 'The total monetary value of all value-added service (VAS) transactions processed within the selected timeframe.',
     extract: (d) => d.billings?.total != null
       ? { value: d.billings.total.amount, trend: d.billings.total.average }
       : null,
   },
   {
     key: 'billings.success_rate', label: 'VAS Success Rate', isAmount: false,
+    tooltipDescription: 'The percentage of value-added service (VAS) transactions that completed successfully within the selected timeframe.',
     extract: (d) => d.billings?.success_rate != null
       ? { value: d.billings.success_rate.count, trend: d.billings.success_rate.average }
       : null,

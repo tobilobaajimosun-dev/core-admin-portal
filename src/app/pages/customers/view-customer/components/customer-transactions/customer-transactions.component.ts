@@ -13,13 +13,14 @@ import { CustomerStore } from '@core/store/customer.store';
 })
 export class CustomerTransactionsComponent implements OnInit {
   customerId = input.required<string>();
-
-  private readonly store = inject(CustomerStore);
+  
+private readonly store = inject(CustomerStore);
 
   readonly transactions = this.store.customerTransactions;
   readonly total        = this.store.customerTransactionsTotal;
   readonly isLoading    = this.store.isLoadingTransactions;
   readonly error        = this.store.transactionsError;
+  readonly isExporting   = this.store.isExportingTransactions;
 
   columns = ['Reference', 'Amount', 'Type', 'Detail', 'Status', 'Date'];
 
@@ -37,6 +38,9 @@ export class CustomerTransactionsComponent implements OnInit {
   hasActiveFilters = computed(() =>
     !!this.activeStatus() || !!this.activeType() || !!this.activeDateRange() || !!this.searchQuery()
   );
+    readonly currentLimit = computed(() => this.store.transactionListConfig().limit ?? 10);
+
+currentPage = signal(1)
 
   ngOnInit(): void {
     this.store.fetchCustomerTransactions({
@@ -71,6 +75,10 @@ export class CustomerTransactionsComponent implements OnInit {
       customerId: this.customerId(),
       params: { page: 1, limit: 10 },
     });
+  }
+
+    exportTransactions(): void {
+    this.store.exportCustomerTransactions(this.customerId());
   }
 
   onPageChange(page: number): void {

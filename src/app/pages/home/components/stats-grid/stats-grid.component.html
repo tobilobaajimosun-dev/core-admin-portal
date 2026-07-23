@@ -11,19 +11,14 @@
         <div class="flex items-center gap-1">
 
           @for (tab of timeframeTabs; track tab.value) {
-          <button
-            type="button"
-            (click)="onTimeframeChange(tab.value)"
+          <button type="button" (click)="onTimeframeChange(tab.value)"
             class="px-4 py-1.5 text-xs font-semibold transition-all whitespace-nowrap rounded-full cursor-pointer"
-            [class.text-[#00B3FF]]="activeRange() === tab.value"
-            [class.text-[#727C84]]="activeRange() !== tab.value">
+            [class.text-[#00B3FF]]="activeRange() === tab.value" [class.text-[#727C84]]="activeRange() !== tab.value">
             {{ tab.label }}
           </button>
           }
 
-          <ps-date-range-picker
-            placeholder="Custom"
-            (rangeChange)="onRangeChange($event)">
+          <ps-date-range-picker placeholder="Custom" (rangeChange)="onRangeChange($event)">
           </ps-date-range-picker>
 
         </div>
@@ -72,10 +67,10 @@
               <ps-svg-icon class="size-3.5" name="info-icon"></ps-svg-icon>
             </button>
             <ng-template #statTooltip>
-              <div class="space-y-3 bg-white rounded-xl py-5 px-3 border border-[#EFEFEF] tooltip-shadow w-[220px]">
+              <div class="space-y-3 bg-white rounded-xl py-5 px-3 border border-[#EFEFEF] tooltip-shadow w-[270px]">
                 <p class="text-sm text-primary font-semibold">{{ stat.label }}</p>
                 <p class="text-sm font-normal text-[#44444B] leading-relaxed">
-                  {{ getTooltipDescription(stat.key) }}
+                  {{ stat.tooltipDescription }}
                 </p>
               </div>
             </ng-template>
@@ -88,19 +83,16 @@
 
             <span class="font-bold text-[#131719] text-[32px] leading-none">
               @if (stat.isAmount) {
-                ₦{{ stat.value | number: '1.0-0' }}
+              ₦{{ stat.value | number: '1.0-0' }}
               } @else {
-                {{ stat.value | number }}
+              {{ stat.value | number }}
               }
             </span>
 
             @if (stat.trend !== null) {
-            <div
-              class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold"
-              [class.bg-[#ECFDF5]]="stat.trendUp"
-              [class.text-[#12B76A]]="stat.trendUp"
-              [class.bg-[#FFF1F2]]="!stat.trendUp"
-              [class.text-[#F04438]]="!stat.trendUp">
+            <div class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              [class.bg-[#ECFDF5]]="stat.trendUp" [class.text-[#12B76A]]="stat.trendUp"
+              [class.bg-[#FFF1F2]]="!stat.trendUp" [class.text-[#F04438]]="!stat.trendUp">
               <span class="flex items-center justify-center w-3.5 h-3.5 rounded">
                 <ps-svg-icon name="analytics-icon" class="w-4 h-4 shrink-0"></ps-svg-icon>
               </span>

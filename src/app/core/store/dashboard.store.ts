@@ -95,25 +95,26 @@ export const DashboardStore = signalStore(
 
     activeRange: computed(() => store.listConfig().custom_range ?? 'today'),
 
-    stats: computed<DashboardStatCard[]>(() => {
-      const data = store.cardsData() as DashboardCardsData;
+   stats: computed<DashboardStatCard[]>(() => {
+  const data = store.cardsData() as DashboardCardsData;
 
-      return CARD_DEFINITIONS
-        .map((def): DashboardStatCard | null => {
-          const extracted = def.extract(data);
-          if (extracted == null) return null;
+  return CARD_DEFINITIONS
+    .map((def): DashboardStatCard | null => {
+      const extracted = def.extract(data);
+      if (extracted == null) return null;
 
-          return {
-            key:      def.key,
-            label:    def.label,
-            value:    extracted.value,
-            trend:    extracted.trend,
-            trendUp:  (extracted.trend ?? 0) >= 0,
-            isAmount: def.isAmount,
-          };
-        })
-        .filter((card): card is DashboardStatCard => card !== null);
-    }),
+      return {
+        key:                 def.key,
+        label:               def.label,
+        value:               extracted.value,
+        trend:               extracted.trend,
+        trendUp:             (extracted.trend ?? 0) >= 0,
+        isAmount:            def.isAmount,
+        tooltipDescription:  def.tooltipDescription,
+      };
+    })
+    .filter((card): card is DashboardStatCard => card !== null);
+}),
 
     /** Product rows for the performance banner table. */
     productPerformance: computed<DailyPerformanceProduct[]>(() => {

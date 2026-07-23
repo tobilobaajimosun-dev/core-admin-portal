@@ -65,6 +65,17 @@ export class CustomerService {
   );
 }
 
+exportCustomerLoans(
+  customerId: string,
+  params: Omit<CustomerLoanListParams, 'page' | 'limit'> = {}
+): Observable<HttpResponse<Blob>> {
+  const urlParams = buildURLSearchParams({ ...params, export: true });
+  return this.httpClient.get(
+    `${this.apiBaseUrl}/api/v1/customers/view-customer-loan-application/${customerId}?${urlParams}`,
+    { responseType: 'blob', observe: 'response' }
+  );
+}
+
 getCustomerTransactions(
   customerId: string,
   params: CustomerTransactionListParams = {}
@@ -72,6 +83,17 @@ getCustomerTransactions(
   const urlParams = buildURLSearchParams(params);
   return this.httpClient.get<CustomerTransactionListResponse>(
     `${this.apiBaseUrl}/api/v1/customers/view-customer-transactions/${customerId}?${urlParams}`
+  );
+}
+
+exportCustomerTransactions(
+  customerId: string,
+  params: CustomerTransactionListParams = {}
+): Observable<HttpResponse<Blob>> {
+  const urlParams = buildURLSearchParams(params);
+  return this.httpClient.get(
+    `${this.apiBaseUrl}/api/v1/customers/view-customer-transactions/${customerId}?${urlParams}`,
+    { responseType: 'blob', observe: 'response' }
   );
 }
 
@@ -101,6 +123,17 @@ getCustomerRecentActivity(
   const urlParams = buildURLSearchParams(params);
   return this.httpClient.get<CustomerActivityListResponse>(
     `${this.apiBaseUrl}/api/v1/customers/recent-activity/${customerId}?${urlParams}`
+  );
+}
+
+exportCustomerActivity(
+  customerId: string,
+  params: CustomerActivityListParams = {}
+): Observable<HttpResponse<Blob>> {
+  const urlParams = buildURLSearchParams(params);
+  return this.httpClient.get(
+    `${this.apiBaseUrl}/api/v1/customers/recent-activity/${customerId}?${urlParams}`,
+    { responseType: 'blob', observe: 'response' }
   );
 }
 

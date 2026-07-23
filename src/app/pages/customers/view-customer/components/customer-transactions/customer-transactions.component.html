@@ -2,276 +2,239 @@
 
   <!-- ── Loading state ── -->
   @if (isLoading()) {
-    <div class="w-full rounded-xl border border-[#ECF1F5] overflow-hidden">
+  <div class="w-full rounded-xl border border-[#ECF1F5] overflow-hidden">
 
-      <!-- Skeleton thead -->
-      <div class="bg-[#F8FCFE] flex items-center border-b border-[#ECF1F5] px-4 py-3 gap-4">
-        @for (col of columns; track $index) {
-          <div class="h-3 rounded-full bg-gray-200 animate-pulse"
-            [class.w-24]="$index === 0"
-            [class.w-20]="$index === 1"
-            [class.w-16]="$index === 2"
-            [class.w-28]="$index === 3"
-            [class.w-16]="$index === 4"
-            [class.w-16]="$index === 5">
-          </div>
-        }
+    <!-- Skeleton thead -->
+    <div class="bg-[#F8FCFE] flex items-center border-b border-[#ECF1F5] px-4 py-3 gap-4">
+      @for (col of columns; track $index) {
+      <div class="h-3 rounded-full bg-gray-200 animate-pulse" [class.w-24]="$index === 0" [class.w-20]="$index === 1"
+        [class.w-16]="$index === 2" [class.w-28]="$index === 3" [class.w-16]="$index === 4" [class.w-16]="$index === 5">
       </div>
-
-      <!-- Skeleton rows -->
-      @for (row of skeletonRows; track $index) {
-        <div class="flex items-center gap-4 px-4 py-4 border-b border-[#ECF1F5] last:border-0"
-          [class.bg-white]="$even"
-          [class.bg-[#F8FCFE]]="$odd">
-
-          <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-          <div class="h-2.5 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-          <div class="h-6 w-16 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-          <div class="h-2.5 w-28 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-          <div class="h-6 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-          <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-
-        </div>
       }
     </div>
+
+    <!-- Skeleton rows -->
+    @for (row of skeletonRows; track $index) {
+    <div class="flex items-center gap-4 px-4 py-4 border-b border-[#ECF1F5] last:border-0" [class.bg-white]="$even"
+      [class.bg-[#F8FCFE]]="$odd">
+
+      <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+      <div class="h-2.5 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+      <div class="h-6 w-16 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+      <div class="h-2.5 w-28 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+      <div class="h-6 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+      <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+
+    </div>
+    }
+  </div>
   }
 
   <!-- ── Error state ── -->
   @if (error() && !isLoading()) {
-    <div class="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-      {{ error() }}
-    </div>
+  <div class="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+    {{ error() }}
+  </div>
   }
 
   <!-- ── Content ── -->
   @if (!isLoading() && !error()) {
 
-    <!-- ── Toolbar ── -->
-    <div class="flex items-center justify-between mb-4">
+  <!-- ── Toolbar ── -->
+  <div class="flex items-center justify-between mb-4">
 
-      <!-- Filter dropdowns -->
-      <div class="flex items-center gap-2">
+    <!-- Filter dropdowns -->
+    <div class="flex items-center gap-2">
 
-        <!-- Status -->
-        <app-dropdown placement="bottom-start">
-          <button dropdownHeader type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+      <!-- Status -->
+      <app-dropdown placement="bottom-start">
+        <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
               text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
-            [class.border-[#00B3FF]]="activeStatus()"
-            [class.text-[#00B3FF]]="activeStatus()"
-            [class.border-[#E2E8F0]]="!activeStatus()"
-            [class.text-[#131719]]="!activeStatus()">
-            Status
-            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-          </button>
-          <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
+          [class.border-[#00B3FF]]="activeStatus()" [class.text-[#00B3FF]]="activeStatus()"
+          [class.border-[#E2E8F0]]="!activeStatus()" [class.text-[#131719]]="!activeStatus()">
+          Status
+          <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+        </button>
+        <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
             shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[160px] py-1">
-            @for (opt of statusOptions; track opt) {
-              <button type="button" (click)="onStatusChange(opt)"
-                class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
-                  transition-colors cursor-pointer"
-                [class.text-[#00B3FF]]="activeStatus() === opt"
-                [class.font-semibold]="activeStatus() === opt"
-                [class.text-[#131719]]="activeStatus() !== opt">
-                {{ opt }}
-              </button>
-            }
-          </div>
-        </app-dropdown>
-
-        <!-- Type -->
-        <app-dropdown placement="bottom-start">
-          <button dropdownHeader type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-              text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
-            [class.border-[#00B3FF]]="activeType()"
-            [class.text-[#00B3FF]]="activeType()"
-            [class.border-[#E2E8F0]]="!activeType()"
-            [class.text-[#131719]]="!activeType()">
-            Type
-            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+          @for (opt of statusOptions; track opt) {
+          <button type="button" (click)="onStatusChange(opt)" class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
+                  transition-colors cursor-pointer" [class.text-[#00B3FF]]="activeStatus() === opt"
+            [class.font-semibold]="activeStatus() === opt" [class.text-[#131719]]="activeStatus() !== opt">
+            {{ opt }}
           </button>
-          <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-            shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[160px] py-1">
-            @for (opt of typeOptions; track opt) {
-              <button type="button" (click)="onTypeChange(opt)"
-                class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
-                  transition-colors cursor-pointer"
-                [class.text-[#00B3FF]]="activeType() === opt"
-                [class.font-semibold]="activeType() === opt"
-                [class.text-[#131719]]="activeType() !== opt">
-                {{ opt }}
-              </button>
-            }
-          </div>
-        </app-dropdown>
-
-        <!-- Date Range -->
-        <app-dropdown placement="bottom-start">
-          <button dropdownHeader type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-              text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
-            [class.border-[#00B3FF]]="activeDateRange()"
-            [class.text-[#00B3FF]]="activeDateRange()"
-            [class.border-[#E2E8F0]]="!activeDateRange()"
-            [class.text-[#131719]]="!activeDateRange()">
-            Date Range
-            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-          </button>
-          <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-            shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[180px] py-1">
-            @for (opt of dateOptions; track opt) {
-              <button type="button" (click)="activeDateRange.set(activeDateRange() === opt ? '' : opt)"
-                class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
-                  transition-colors cursor-pointer"
-                [class.text-[#00B3FF]]="activeDateRange() === opt"
-                [class.font-semibold]="activeDateRange() === opt"
-                [class.text-[#131719]]="activeDateRange() !== opt">
-                {{ opt }}
-              </button>
-            }
-          </div>
-        </app-dropdown>
-
-      </div>
-
-      <!-- Search + Export -->
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-          <input
-            type="text"
-            placeholder="Search transactions"
-            [value]="searchQuery()"
-            (input)="onSearchChange($any($event.target).value)"
-            class="pl-9 pr-4 py-2 rounded-lg border text-sm text-[#131719]
-              placeholder-[#9CA3AF] outline-none w-52 transition-colors"
-            [class.border-[#00B3FF]]="searchQuery()"
-            [class.ring-1]="searchQuery()"
-            [class.ring-[#00B3FF]]="searchQuery()"
-            [class.border-[#E2E8F0]]="!searchQuery()"/>
+          }
         </div>
-        <button type="button"
-          class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
-            text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
-          Export
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-          </svg>
+      </app-dropdown>
+
+      <!-- Type -->
+      <app-dropdown placement="bottom-start">
+        <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+              text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
+          [class.border-[#00B3FF]]="activeType()" [class.text-[#00B3FF]]="activeType()"
+          [class.border-[#E2E8F0]]="!activeType()" [class.text-[#131719]]="!activeType()">
+          Type
+          <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
         </button>
-      </div>
+        <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
+            shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[160px] py-1">
+          @for (opt of typeOptions; track opt) {
+          <button type="button" (click)="onTypeChange(opt)" class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
+                  transition-colors cursor-pointer" [class.text-[#00B3FF]]="activeType() === opt"
+            [class.font-semibold]="activeType() === opt" [class.text-[#131719]]="activeType() !== opt">
+            {{ opt }}
+          </button>
+          }
+        </div>
+      </app-dropdown>
+
+      <!-- Date Range -->
+      <app-dropdown placement="bottom-start">
+        <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+              text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
+          [class.border-[#00B3FF]]="activeDateRange()" [class.text-[#00B3FF]]="activeDateRange()"
+          [class.border-[#E2E8F0]]="!activeDateRange()" [class.text-[#131719]]="!activeDateRange()">
+          Date Range
+          <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+        </button>
+        <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
+            shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[180px] py-1">
+          @for (opt of dateOptions; track opt) {
+          <button type="button" (click)="activeDateRange.set(activeDateRange() === opt ? '' : opt)" class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
+                  transition-colors cursor-pointer" [class.text-[#00B3FF]]="activeDateRange() === opt"
+            [class.font-semibold]="activeDateRange() === opt" [class.text-[#131719]]="activeDateRange() !== opt">
+            {{ opt }}
+          </button>
+          }
+        </div>
+      </app-dropdown>
 
     </div>
 
-    <!-- ── Active filter banner ── -->
-    @if (hasActiveFilters()) {
-      <div class="flex items-center gap-1.5 mb-3 text-sm">
-        <span class="font-normal text-[#51575B]">Displaying filtered result:</span>
-        <span class="font-semibold text-[#131719]">
-          {{ activeStatus() || activeType() || activeDateRange() || searchQuery() }}
-        </span>
-        <button type="button" (click)="clearFilters()"
-          class="font-normal text-[#51575B] border-b border-dashed
+    <!-- Search + Export -->
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" placeholder="Search transactions" [value]="searchQuery()"
+          (input)="onSearchChange($any($event.target).value)" class="pl-9 pr-4 py-2 rounded-lg border text-sm text-[#131719]
+              placeholder-[#9CA3AF] outline-none  w-64 transition-colors" [class.border-[#00B3FF]]="searchQuery()"
+          [class.ring-1]="searchQuery()" [class.ring-[#00B3FF]]="searchQuery()"
+          [class.border-[#E2E8F0]]="!searchQuery()" />
+      </div>
+      <button type="button" (click)="exportTransactions()" [disabled]="isExporting()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+        text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer
+        disabled:opacity-60 disabled:cursor-not-allowed">
+        {{ isExporting() ? 'Exporting…' : 'Export' }}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Active filter banner ── -->
+  @if (hasActiveFilters()) {
+  <div class="flex items-center gap-1.5 mb-3 text-sm">
+    <span class="font-normal text-[#51575B]">Displaying filtered result:</span>
+    <span class="font-semibold text-[#131719]">
+      {{ activeStatus() || activeType() || activeDateRange() || searchQuery() }}
+    </span>
+    <button type="button" (click)="clearFilters()" class="font-normal text-[#51575B] border-b border-dashed
             hover:text-[#131719] transition-colors cursor-pointer ml-1 text-[13px]">
-          Clear filters
-        </button>
-      </div>
-    }
+      Clear filters
+    </button>
+  </div>
+  }
 
-    <!-- ── Table ── -->
-    <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]">
-      <table class="w-full border-collapse">
-        <thead>
-          <tr class="bg-[#F8FCFE]">
-            @for (column of columns; track column) {
-              <th class="text-left py-3 px-4 border-b border-[#ECF1F5]
+  <!-- ── Table ── -->
+  <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]">
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="bg-[#F8FCFE]">
+          @for (column of columns; track column) {
+          <th class="text-left py-3 px-4 border-b border-[#ECF1F5]
                 text-xs font-bold text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
-                {{ column }}
-              </th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-
-          @if (transactions().length === 0) {
-            <tr>
-              <td [attr.colspan]="columns.length"
-                class="py-16 text-center text-sm text-[#51575B]">
-                No transactions found.
-              </td>
-            </tr>
+            {{ column }}
+          </th>
           }
+        </tr>
+      </thead>
+      <tbody>
 
-          @for (transaction of transactions(); track transaction.id) {
-            <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+        @if (transactions().length === 0) {
+        <tr>
+          <td [attr.colspan]="columns.length" class="py-16 text-center text-sm text-[#51575B]">
+            No transactions found.
+          </td>
+        </tr>
+        }
 
-              <!-- Reference -->
-              <td class="py-3 px-4">
-                <span class="text-sm font-medium text-[#00B3FF] tracking-[-0.005em]
+        @for (transaction of transactions(); track transaction.id) {
+        <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+
+          <!-- Reference -->
+          <td class="py-3 px-4">
+            <span class="text-sm font-medium text-[#00B3FF] tracking-[-0.005em]
                   hover:underline whitespace-nowrap">
-                  {{ transaction.reference_no }}
-                </span>
-              </td>
+              {{ transaction.reference_no }}
+            </span>
+          </td>
 
-              <!-- Amount -->
-              <td class="py-3 px-4 text-sm font-medium tracking-[-0.005em] whitespace-nowrap"
-                [ngClass]="getTypeClass(transaction.type)">
-                {{ transaction.type === 'DEBIT' ? '-' : '+' }}₦{{ transaction.amount | number:'.2-2' }}
-              </td>
+          <!-- Amount -->
+          <td class="py-3 px-4 text-sm font-medium tracking-[-0.005em] whitespace-nowrap"
+            [ngClass]="getTypeClass(transaction.type)">
+            {{ transaction.type === 'DEBIT' ? '-' : '+' }}₦{{ transaction.amount | number:'.2-2' }}
+          </td>
 
-              <!-- Type / Category -->
-              <td class="py-3 px-4">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
+          <!-- Type / Category -->
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
                   bg-[#EEF5F9] text-[#131719] whitespace-nowrap">
-                  {{ transaction.transactionable_type | uppercase }}
-                </span>
-              </td>
+              {{ transaction.transactionable_type | uppercase }}
+            </span>
+          </td>
 
-              <!-- Detail -->
-              <td class="py-3 px-4 text-sm font-normal text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
-                @if (transaction.transactionable && transaction.transactionable_type === 'bill') {
-                  {{ $any(transaction.transactionable).provider }} · {{ $any(transaction.transactionable).category }}
-                } @else if (transaction.transactionable && transaction.transactionable_type === 'loan') {
-                  {{ $any(transaction.transactionable).product?.title ?? 'Loan' }}
-                } @else {
-                  —
-                }
-              </td>
+          <!-- Detail -->
+          <td class="py-3 px-4 text-sm font-normal text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
+            @if (transaction.transactionable && transaction.transactionable_type === 'bill') {
+            {{ $any(transaction.transactionable).provider }} · {{ $any(transaction.transactionable).category }}
+            } @else if (transaction.transactionable && transaction.transactionable_type === 'loan') {
+            {{ $any(transaction.transactionable).product?.title ?? 'Loan' }}
+            } @else {
+            —
+            }
+          </td>
 
-              <!-- Status -->
-              <td class="py-3 px-4">
-                <span
-                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
-                  [ngClass]="getStatusClass(transaction.status)">
-                  {{ transaction.status }}
-                </span>
-              </td>
+          <!-- Status -->
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
+              [ngClass]="getStatusClass(transaction.status)">
+              {{ transaction.status }}
+            </span>
+          </td>
 
-              <!-- Date -->
-              <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-                {{ transaction.createdAt | date:'MMM dd, yyyy' }}
-              </td>
+          <!-- Date -->
+          <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+            {{ transaction.createdAt | date:'MMM dd, yyyy' }}
+          </td>
 
-            </tr>
-          }
+        </tr>
+        }
 
-        </tbody>
-      </table>
-    </div>
+      </tbody>
+    </table>
+  </div>
 
-    <!-- ── Pagination ── -->
-    <ps-pagination
-      [totalItems]="total()"
-      [itemPerPage]="10"
-      (pageChanged)="onPageChange($event)"
-      (pageSizeChanged)="onPageSizeChange($event)">
-    </ps-pagination>
-
+  <!-- ── Pagination ── -->
+  <ps-pagination [totalItems]="total()" [itemPerPage]="currentLimit()" [(currentPage)]="currentPage"
+    (pageChanged)="onPageChange($event)" (pageSizeChanged)="onPageSizeChange($event)">
+  </ps-pagination>
   }
 
 </div>

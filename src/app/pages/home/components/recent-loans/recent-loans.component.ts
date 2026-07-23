@@ -32,7 +32,7 @@ export class RecentLoansComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.dashboardStore.fetchRecentLoans({ page: 1, limit: 10 });
+    this.dashboardStore.fetchRecentLoans({ page: 1, limit: 5 });
   }
 
   // ── Status helpers ────────────────────────────────────────────────────────
@@ -73,6 +73,6 @@ getStatusBg(status: string): string {
     }
     
  viewAll(): void {
-    this.router.navigate(['/transactions']);
+    this.router.navigate(['/loans']);
   }
 }

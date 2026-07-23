@@ -254,6 +254,8 @@ export interface CustomerLoanListParams {
   status?:     string;
   start_date?: string;
   end_date?:   string;
+  export?:     boolean;
+
 }
 
 // ─── Customer Transactions ────────────────────────────────────────────────────
@@ -339,6 +341,8 @@ export interface CustomerTransactionListParams {
   status?:     string;
   start_date?: string;
   end_date?:   string;
+  export?:     boolean;
+
 }
 
 // ─── Customer Metrics ─────────────────────────────────────────────────────────
@@ -486,6 +490,7 @@ export interface CustomerActivityListParams {
   module?:     string;
   start_date?: string;
   end_date?:   string;
+  export?:     boolean;
 }
 
 // ─── Update Customer ──────────────────────────────────────────────────────────
@@ -536,4 +541,29 @@ export interface CustomerNeedsActionResolutionResponse {
   message:      string;
   data:         Record<string, never>; 
   responseCode: string;
+}
+
+// ─── Auth User ─────────────────────────────────────────────────────────────
+
+export interface CustomerAuthUser {
+  user_id:         string;
+  username:        string;
+  email:           string;
+  phone:           string;
+  status:          string;
+  email_verified:  boolean;
+  phone_verified:  boolean;
+  is_suspended:    boolean;
+  reason:          string | null;
+  device_id:       string | null;
+  device_name:     string | null;
+  created_at:      string;
+  updated_at:      string;
+}
+
+export interface CustomerDetailData {
+  customer:    CustomerRaw;
+  loan_count:  CustomerLoanCount;
+  active_loan: CustomerLoanCount;
+  auth_user:   CustomerAuthUser;
 }

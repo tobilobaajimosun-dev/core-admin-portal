@@ -37,12 +37,6 @@ export class StatsGridComponent implements OnInit {
     { label: 'This Month', value: 'this_month'  },
   ];
 
-  private readonly tooltipDescriptions: Record<string, string> = {
-    total_users:        'The total number of users registered on the platform within the selected timeframe.',
-    active_users:        'Users who performed at least one action on the platform within the selected timeframe.',
-    new_signups:        'The number of new user accounts created within the selected timeframe.',
-  };
-
   ngOnInit(): void {
     this.dashboardStore.fetchDashboardCards(this.dashboardStore.listConfig());
   }
@@ -51,19 +45,14 @@ export class StatsGridComponent implements OnInit {
     this.dashboardStore.setTimeframe(value);
   }
 
- onRangeChange(range: DateRange | null): void {
-  if (range?.start && range?.end) {
-    this.dashboardStore.setCustomDateRange(
-      toLocalDateString(range.start),
-      toLocalDateString(range.end)
-    );
-  } else {
-    // Cleared — revert to the default timeframe
-    this.dashboardStore.setTimeframe('today');
-  }
-}
-
-  getTooltipDescription(key: string): string {
-    return this.tooltipDescriptions[key] ?? 'No additional information available.';
+  onRangeChange(range: DateRange | null): void {
+    if (range?.start && range?.end) {
+      this.dashboardStore.setCustomDateRange(
+        toLocalDateString(range.start),
+        toLocalDateString(range.end)
+      );
+    } else {
+      this.dashboardStore.setTimeframe('today');
+    }
   }
 }

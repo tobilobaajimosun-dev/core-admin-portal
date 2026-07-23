@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe }         from '@angular/common';
 import { Router, ActivatedRoute }                      from '@angular/router';
 import { PsSvgIconComponent }                from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
+import { PsTooltipModule }                   from '@pcsl-ui/ui/ps-tooltip/ps-tooltip.module';
 import { CustomerProfileComponent }          from './components/customer-profile/customer-profile.component';
 import { CustomerLoansComponent }            from './components/customer-loans/customer-loans.component';
 import { CustomerTransactionsComponent }     from './components/customer-transactions/customer-transactions.component';
@@ -29,6 +30,7 @@ interface Tab {
     DatePipe,
     DecimalPipe,
     PsSvgIconComponent,
+    PsTooltipModule,
     CustomerProfileComponent,
     CustomerWalletComponent,
     CustomerLoansComponent,
@@ -65,6 +67,7 @@ export class ViewCustomerComponent implements OnInit {
 
     const customer = detail.customer;
     const wallet = customer.customer_wallets;
+    const financialSummaryBalance = this.store.financialSummary()?.wallet_detail?.current_balance;
 
     return {
       id:              customer.id,
@@ -75,25 +78,28 @@ export class ViewCustomerComponent implements OnInit {
       avatarUrl:       customer.profile_image ?? '',
       joinedAt:        customer.createdAt,
       lastActiveAt:    customer.updatedAt,
-      walletBalance:   wallet?.available_balance ?? 0,
+      // Use the same "Current Balance" figure shown in the Financial Summary tab,
+      // falling back to the raw wallet balance if the summary hasn't loaded yet.
+      walletBalance:   financialSummaryBalance ?? wallet?.available_balance ?? 0,
       loanCount:       Number(detail.loan_count.total),
       activeLoanCount: Number(detail.active_loan.total),
     };
   });
 
-  // Whether the customer is currently suspended. Drives the button label/icon
-  // and is passed into the modal so it can show the right copy either way.
-  isSuspended = computed(() => this.store.selectedCustomer()?.customer.is_suspended ?? false);
+isSuspended = computed(() => this.store.selectedCustomer()?.auth_user?.is_suspended ?? false);
 
-ngOnInit(): void {
-  const id = this.route.snapshot.paramMap.get('id');
-  if (id) this.store.fetchCustomerById(id);
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.store.fetchCustomerById(id);
+      this.store.fetchFinancialSummary(id);
+    }
 
-  const tab = this.route.snapshot.queryParamMap.get('tab') as CustomerTab | null;
-  if (tab && this.tabs.some(t => t.value === tab)) {
-    this.activeTab.set(tab);
+    const tab = this.route.snapshot.queryParamMap.get('tab') as CustomerTab | null;
+    if (tab && this.tabs.some(t => t.value === tab)) {
+      this.activeTab.set(tab);
+    }
   }
-}
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   getInitials(): string {
@@ -123,38 +129,36 @@ ngOnInit(): void {
     });
   }
 
-openEditCustomerModal(): void {
-  const customer = this.customer();
-  if (!customer) return;
-  this.modalService.open(EditCustomerModalComponent, {
-    data: {
-      firstName:   customer.firstName,
-      lastName:    customer.lastName,
-      email:       customer.email,
-      phoneNumber: customer.phone,
-      gender:      this.store.selectedCustomer()?.customer.gender ?? '',
-      workType:    '',
-      workplace:   '', 
-      onSave: (updated: { firstName: string; lastName: string; gender: string; workType: string; workplace: string }) => {
-        this.store.updateCustomer({
-          customerId: customer.id,
-          payload: {
-            firstName: updated.firstName,
-            lastName:  updated.lastName,
-            gender:    updated.gender,
-            workType:  updated.workType,
-            workplace: updated.workplace,
-          },
-        });
+  openEditCustomerModal(): void {
+    const customer = this.customer();
+    if (!customer) return;
+    this.modalService.open(EditCustomerModalComponent, {
+      data: {
+        firstName:   customer.firstName,
+        lastName:    customer.lastName,
+        email:       customer.email,
+        phoneNumber: customer.phone,
+        gender:      this.store.selectedCustomer()?.customer.gender ?? '',
+        workType:    '',
+        workplace:   '',
+        onSave: (updated: { firstName: string; lastName: string; gender: string; workType: string; workplace: string }) => {
+          this.store.updateCustomer({
+            customerId: customer.id,
+            payload: {
+              firstName: updated.firstName,
+              lastName:  updated.lastName,
+              gender:    updated.gender,
+              workType:  updated.workType,
+              workplace: updated.workplace,
+            },
+          });
+        },
       },
-    },
-    maxWidth:   '560px',
-    isCentered: true,
-  });
-}
+      maxWidth:   '560px',
+      isCentered: true,
+    });
+  }
 
-  // Opens the suspend/unsuspend modal. The modal itself decides its copy and
-  // reason list based on `isSuspended` — this just wires it to the store.
   toggleSuspension(): void {
     const customer = this.customer();
     if (!customer) return;
@@ -171,7 +175,7 @@ openEditCustomerModal(): void {
   }
 
   maskPhone(phone: string): string {
-  if (!phone || phone === '—') return '—';
-  return '•'.repeat(Math.max(0, phone.length - 4)) + phone.slice(-4);
-}
+    if (!phone || phone === '—') return '—';
+    return '•'.repeat(Math.max(0, phone.length - 4)) + phone.slice(-4);
+  }
 }

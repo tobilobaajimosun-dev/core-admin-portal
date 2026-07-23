@@ -1,296 +1,258 @@
 <div class="w-full">
 
   @if (isLoading()) {
-    <div class="w-full rounded-xl border border-[#ECF1F5] overflow-hidden">
+  <div class="w-full rounded-xl border border-[#ECF1F5] overflow-hidden">
 
-      <!-- Skeleton thead -->
-      <div class="bg-[#F8FCFE] flex items-center border-b border-[#ECF1F5] px-4 py-3 gap-4">
-        @for (col of columns; track $index) {
-          <div class="h-3 rounded-full bg-gray-200 animate-pulse"
-            [class.w-28]="$index === 0"
-            [class.w-32]="$index === 1"
-            [class.w-20]="$index === 2"
-            [class.w-24]="$index === 3"
-            [class.w-28]="$index === 4"
-            [class.w-16]="$index === 5"
-            [class.w-20]="$index === 6">
-          </div>
-        }
+    <!-- Skeleton thead -->
+    <div class="bg-[#F8FCFE] flex items-center border-b border-[#ECF1F5] px-4 py-3 gap-4">
+      @for (col of columns; track $index) {
+      <div class="h-3 rounded-full bg-gray-200 animate-pulse" [class.w-28]="$index === 0" [class.w-32]="$index === 1"
+        [class.w-20]="$index === 2" [class.w-24]="$index === 3" [class.w-28]="$index === 4" [class.w-16]="$index === 5"
+        [class.w-20]="$index === 6">
       </div>
-
-      <!-- Skeleton rows -->
-      @for (row of skeletonRows; track $index) {
-        <div class="flex items-center gap-4 px-4 py-4 border-b border-[#ECF1F5] last:border-0"
-          [class.bg-white]="$even"
-          [class.bg-[#F8FCFE]]="$odd">
-
-          <!-- Loan ID -->
-          <div class="h-2.5 w-28 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-
-          <!-- Amount & Tenor (two lines) -->
-          <div class="flex flex-col gap-1.5 w-32 flex-shrink-0">
-            <div class="h-2.5 w-full rounded-full bg-gray-200 animate-pulse"></div>
-            <div class="h-2 w-4/5 rounded-full bg-gray-200 animate-pulse"></div>
-          </div>
-
-          <!-- Loan Status (badge-shaped) -->
-          <div class="h-6 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-
-          <!-- Disbursement Date -->
-          <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-
-          <!-- Next Payment Due Date -->
-          <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-
-          <!-- Repaid -->
-          <div class="h-2.5 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-
-          <!-- Product (badge-shaped) -->
-          <div class="h-6 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
-
-        </div>
       }
     </div>
+
+    <!-- Skeleton rows -->
+    @for (row of skeletonRows; track $index) {
+    <div class="flex items-center gap-4 px-4 py-4 border-b border-[#ECF1F5] last:border-0" [class.bg-white]="$even"
+      [class.bg-[#F8FCFE]]="$odd">
+
+      <!-- Loan ID -->
+      <div class="h-2.5 w-28 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+
+      <!-- Amount & Tenor (two lines) -->
+      <div class="flex flex-col gap-1.5 w-32 flex-shrink-0">
+        <div class="h-2.5 w-full rounded-full bg-gray-200 animate-pulse"></div>
+        <div class="h-2 w-4/5 rounded-full bg-gray-200 animate-pulse"></div>
+      </div>
+
+      <!-- Loan Status (badge-shaped) -->
+      <div class="h-6 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+
+      <!-- Disbursement Date -->
+      <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+
+      <!-- Next Payment Due Date -->
+      <div class="h-2.5 w-24 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+
+      <!-- Repaid -->
+      <div class="h-2.5 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+
+      <!-- Product (badge-shaped) -->
+      <div class="h-6 w-20 rounded-full bg-gray-200 animate-pulse flex-shrink-0"></div>
+
+    </div>
+    }
+  </div>
   }
 
   <!-- ── Error state ── -->
   @if (error() && !isLoading()) {
-    <div class="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-      {{ error() }}
-    </div>
+  <div class="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+    {{ error() }}
+  </div>
   }
 
   <!-- ── Content ── -->
   @if (!isLoading() && !error()) {
 
-    <!-- ── Toolbar ── -->
-    <div class="flex items-center justify-between mb-4">
+  <!-- ── Toolbar ── -->
+  <div class="flex items-center justify-between mb-4">
 
-      <!-- Filter dropdowns -->
-      <div class="flex items-center gap-2">
+    <!-- Filter dropdowns -->
+    <div class="flex items-center gap-2">
 
-        <!-- Loan Status -->
-        <app-dropdown placement="bottom-start">
-          <button dropdownHeader type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+      <!-- Loan Status -->
+      <app-dropdown placement="bottom-start">
+        <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
               text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
-            [class.border-[#00B3FF]]="activeLoanStatus()"
-            [class.text-[#00B3FF]]="activeLoanStatus()"
-            [class.border-[#E2E8F0]]="!activeLoanStatus()"
-            [class.text-[#131719]]="!activeLoanStatus()">
-            Loan Status
-            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-          </button>
-          <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
+          [class.border-[#00B3FF]]="activeLoanStatus()" [class.text-[#00B3FF]]="activeLoanStatus()"
+          [class.border-[#E2E8F0]]="!activeLoanStatus()" [class.text-[#131719]]="!activeLoanStatus()">
+          Loan Status
+          <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+        </button>
+        <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
             shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[160px] py-1">
-            @for (opt of loanStatusOptions; track opt) {
-              <button type="button" (click)="onLoanStatusChange(opt)"
-                class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
-                  transition-colors cursor-pointer"
-                [class.text-[#00B3FF]]="activeLoanStatus() === opt"
-                [class.font-semibold]="activeLoanStatus() === opt"
-                [class.text-[#131719]]="activeLoanStatus() !== opt">
-                {{ opt }}
-              </button>
-            }
-          </div>
-        </app-dropdown>
-
-        <!-- Tenor -->
-        <app-dropdown placement="bottom-start">
-          <button dropdownHeader type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-              text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
-            [class.border-[#00B3FF]]="activeTenor()"
-            [class.text-[#00B3FF]]="activeTenor()"
-            [class.border-[#E2E8F0]]="!activeTenor()"
-            [class.text-[#131719]]="!activeTenor()">
-            Tenor
-            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+          @for (opt of loanStatusOptions; track opt) {
+          <button type="button" (click)="onLoanStatusChange(opt)" class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
+                  transition-colors cursor-pointer" [class.text-[#00B3FF]]="activeLoanStatus() === opt"
+            [class.font-semibold]="activeLoanStatus() === opt" [class.text-[#131719]]="activeLoanStatus() !== opt">
+            {{ opt }}
           </button>
-          <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-            shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[160px] py-1">
-            @for (opt of tenorOptions; track opt) {
-              <button type="button" (click)="activeTenor.set(activeTenor() === opt ? '' : opt)"
-                class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
-                  transition-colors cursor-pointer"
-                [class.text-[#00B3FF]]="activeTenor() === opt"
-                [class.font-semibold]="activeTenor() === opt"
-                [class.text-[#131719]]="activeTenor() !== opt">
-                {{ opt }}
-              </button>
-            }
-          </div>
-        </app-dropdown>
-
-        <!-- Disbursement Date -->
-        <app-dropdown placement="bottom-start">
-          <button dropdownHeader type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
-              text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
-            [class.border-[#00B3FF]]="activeDisbDate()"
-            [class.text-[#00B3FF]]="activeDisbDate()"
-            [class.border-[#E2E8F0]]="!activeDisbDate()"
-            [class.text-[#131719]]="!activeDisbDate()">
-            Disbursement Date
-            <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
-          </button>
-          <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
-            shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[180px] py-1">
-            @for (opt of disbDateOptions; track opt) {
-              <button type="button" (click)="activeDisbDate.set(activeDisbDate() === opt ? '' : opt)"
-                class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
-                  transition-colors cursor-pointer"
-                [class.text-[#00B3FF]]="activeDisbDate() === opt"
-                [class.font-semibold]="activeDisbDate() === opt"
-                [class.text-[#131719]]="activeDisbDate() !== opt">
-                {{ opt }}
-              </button>
-            }
-          </div>
-        </app-dropdown>
-
-      </div>
-
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-          <input
-            type="text"
-            placeholder="Search using loan ID"
-            [value]="searchQuery()"
-            (input)="onSearchChange($any($event.target).value)"
-            class="pl-9 pr-4 py-2 rounded-lg border text-sm text-[#131719]
-              placeholder-[#9CA3AF] outline-none w-52 transition-colors"
-            [class.border-[#00B3FF]]="searchQuery()"
-            [class.ring-1]="searchQuery()"
-            [class.ring-[#00B3FF]]="searchQuery()"
-            [class.border-[#E2E8F0]]="!searchQuery()"/>
+          }
         </div>
-        <button type="button"
-          class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
-            text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
-          Export
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-          </svg>
+      </app-dropdown>
+
+      <!-- Tenor -->
+      <app-dropdown placement="bottom-start">
+        <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+              text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
+          [class.border-[#00B3FF]]="activeTenor()" [class.text-[#00B3FF]]="activeTenor()"
+          [class.border-[#E2E8F0]]="!activeTenor()" [class.text-[#131719]]="!activeTenor()">
+          Tenor
+          <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
         </button>
-      </div>
+        <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
+            shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[160px] py-1">
+          @for (opt of tenorOptions; track opt) {
+          <button type="button" (click)="activeTenor.set(activeTenor() === opt ? '' : opt)" class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
+                  transition-colors cursor-pointer" [class.text-[#00B3FF]]="activeTenor() === opt"
+            [class.font-semibold]="activeTenor() === opt" [class.text-[#131719]]="activeTenor() !== opt">
+            {{ opt }}
+          </button>
+          }
+        </div>
+      </app-dropdown>
+
+      <!-- Disbursement Date -->
+      <app-dropdown placement="bottom-start">
+        <button dropdownHeader type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white
+              text-xs font-medium hover:bg-[#F8FCFE] transition-colors cursor-pointer whitespace-nowrap"
+          [class.border-[#00B3FF]]="activeDisbDate()" [class.text-[#00B3FF]]="activeDisbDate()"
+          [class.border-[#E2E8F0]]="!activeDisbDate()" [class.text-[#131719]]="!activeDisbDate()">
+          Disbursement Date
+          <ps-svg-icon name="filter-icon" class="w-3.5 h-3.5 shrink-0"></ps-svg-icon>
+        </button>
+        <div dropdownMenu class="z-10 bg-white rounded-xl border border-[#E1E6ED]
+            shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[180px] py-1">
+          @for (opt of disbDateOptions; track opt) {
+          <button type="button" (click)="activeDisbDate.set(activeDisbDate() === opt ? '' : opt)" class="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/[0.06]
+                  transition-colors cursor-pointer" [class.text-[#00B3FF]]="activeDisbDate() === opt"
+            [class.font-semibold]="activeDisbDate() === opt" [class.text-[#131719]]="activeDisbDate() !== opt">
+            {{ opt }}
+          </button>
+          }
+        </div>
+      </app-dropdown>
 
     </div>
 
-    <!-- ── Active filter banner ── -->
-    @if (hasActiveFilters()) {
-      <div class="flex items-center gap-1.5 mb-3 text-sm">
-        <span class="font-normal text-[#51575B]">Displaying filtered result:</span>
-        <span class="font-semibold text-[#131719]">
-          {{ activeLoanStatus() || activeTenor() || activeDisbDate() || searchQuery() }}
-        </span>
-        <button type="button" (click)="clearFilters()"
-          class="font-normal text-[#51575B] border-b border-dashed
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" placeholder="Search using loan ID" [value]="searchQuery()"
+          (input)="onSearchChange($any($event.target).value)" class="pl-9 pr-4 py-2 rounded-lg border text-sm text-[#131719]
+              placeholder-[#9CA3AF] outline-none w-64 transition-colors" [class.border-[#00B3FF]]="searchQuery()"
+          [class.ring-1]="searchQuery()" [class.ring-[#00B3FF]]="searchQuery()"
+          [class.border-[#E2E8F0]]="!searchQuery()" />
+      </div>
+      <button type="button" (click)="exportLoans()" [disabled]="isExporting()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00B3FF] text-white
+    text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer
+    disabled:opacity-60 disabled:cursor-not-allowed">
+        {{ isExporting() ? 'Exporting…' : 'Export' }}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Active filter banner ── -->
+  @if (hasActiveFilters()) {
+  <div class="flex items-center gap-1.5 mb-3 text-sm">
+    <span class="font-normal text-[#51575B]">Displaying filtered result:</span>
+    <span class="font-semibold text-[#131719]">
+      {{ activeLoanStatus() || activeTenor() || activeDisbDate() || searchQuery() }}
+    </span>
+    <button type="button" (click)="clearFilters()" class="font-normal text-[#51575B] border-b border-dashed
             hover:text-[#131719] transition-colors cursor-pointer ml-1 text-[13px]">
-          Clear filters
-        </button>
-      </div>
-    }
+      Clear filters
+    </button>
+  </div>
+  }
 
-    <!-- ── Table ── -->
-    <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]">
-      <table class="w-full border-collapse">
-        <thead>
-          <tr class="bg-[#F8FCFE]">
-            @for (col of columns; track col) {
-              <th class="text-left py-3 px-4 border-b border-[#ECF1F5]
+  <!-- ── Table ── -->
+  <div class="w-full overflow-x-auto rounded-xl border border-[#ECF1F5]">
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="bg-[#F8FCFE]">
+          @for (col of columns; track col) {
+          <th class="text-left py-3 px-4 border-b border-[#ECF1F5]
                 text-xs font-bold text-[#51575B] tracking-[-0.005em] whitespace-nowrap">
-                {{ col }}
-              </th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-
-          @if (loans().length === 0) {
-            <tr>
-              <td [attr.colspan]="columns.length"
-                class="py-16 text-center text-sm text-[#51575B]">
-                No loans found.
-              </td>
-            </tr>
+            {{ col }}
+          </th>
           }
+        </tr>
+      </thead>
+      <tbody>
 
-          @for (loan of loans(); track loan.id) {
-            <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+        @if (loans().length === 0) {
+        <tr>
+          <td [attr.colspan]="columns.length" class="py-16 text-center text-sm text-[#51575B]">
+            No loans found.
+          </td>
+        </tr>
+        }
 
-              <!-- Loan ID -->
-              <td class="py-3 px-4">
-                <span class="text-sm font-medium text-[#00B3FF] tracking-[-0.005em]
+        @for (loan of loans(); track loan.id) {
+        <tr class="border-b border-[#ECF1F5] last:border-0 hover:bg-[#F8FCFE] transition-colors">
+
+          <!-- Loan ID -->
+          <td class="py-3 px-4">
+            <span class="text-sm font-medium text-[#00B3FF] tracking-[-0.005em]
                   hover:underline whitespace-nowrap">
-                  {{ loan.unique_loan_id }}
-                </span>
-              </td>
+              {{ loan.unique_loan_id }}
+            </span>
+          </td>
 
-              <!-- Amount & Tenor -->
-              <td class="py-3 px-4">
-                <p class="text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-                  ₦{{ loan.loan_amount | number:'.2-2' }}
-                </p>
-                <p class="text-xs font-normal text-[#51575B]">
-                  For {{ loan.loan_duration }} month{{ loan.loan_duration === 1 ? '' : 's' }}
-                </p>
-              </td>
+          <!-- Amount & Tenor -->
+          <td class="py-3 px-4">
+            <p class="text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+              ₦{{ loan.loan_amount | number:'.2-2' }}
+            </p>
+            <p class="text-xs font-normal text-[#51575B]">
+              For {{ loan.loan_duration }} month{{ loan.loan_duration === 1 ? '' : 's' }}
+            </p>
+          </td>
 
-              <!-- Loan Status -->
-              <td class="py-3 px-4">
-                <span
-                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
-                  [ngClass]="getStatusClass(loan.status)">
-                  {{ loan.status }}
-                </span>
-              </td>
+          <!-- Loan Status -->
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
+              [ngClass]="getStatusClass(loan.status)">
+              {{ loan.status }}
+            </span>
+          </td>
 
-              <!-- Disbursement Date -->
-              <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-                {{ loan.start_date ? (loan.start_date | date:'MMM dd, yyyy') : '—' }}
-              </td>
+          <!-- Disbursement Date -->
+          <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+            {{ loan.start_date ? (loan.start_date | date:'MMM dd, yyyy') : '—' }}
+          </td>
 
-              <!-- Next Payment Due Date -->
-              <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-                {{ loan.end_date ? (loan.end_date | date:'MMM dd, yyyy') : '—' }}
-              </td>
+          <!-- Next Payment Due Date -->
+          <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+            {{ loan.end_date ? (loan.end_date | date:'MMM dd, yyyy') : '—' }}
+          </td>
 
-              <!-- Repaid -->
-              <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
-                ₦{{ loan.repayment_amount | number:'.2-2' }}
-              </td>
+          <!-- Repaid -->
+          <td class="py-3 px-4 text-sm font-medium text-[#131719] tracking-[-0.005em] whitespace-nowrap">
+            ₦{{ loan.repayment_amount | number:'.2-2' }}
+          </td>
 
-              <!-- Product -->
-              <td class="py-3 px-4">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
+          <!-- Product -->
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
                   bg-[#EEF5F9] text-[#131719] whitespace-nowrap">
-                  {{ loan.product.title }}
-                </span>
-              </td>
+              {{ loan.product.title }}
+            </span>
+          </td>
 
-            </tr>
-          }
+        </tr>
+        }
 
-        </tbody>
-      </table>
-    </div>
+      </tbody>
+    </table>
+  </div>
 
-    <!-- ── Pagination ── -->
-    <ps-pagination
-      [totalItems]="total()"
-      [itemPerPage]="10"
-      (pageChanged)="onPageChange($event)"
-      (pageSizeChanged)="onPageSizeChange($event)">
-    </ps-pagination>
-
+  <ps-pagination [totalItems]="total()" [(currentPage)]="currentPage" (pageChanged)="onPageChange($event)"
+    (pageSizeChanged)="onPageSizeChange($event)">
+  </ps-pagination>
   }
 
 </div>

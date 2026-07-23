@@ -20,7 +20,7 @@ import {
   CustomerLoanRaw,
   CustomerTransactionRaw,
   CustomerTransactionListParams,
-  CustomerActivityRaw, 
+  CustomerActivityRaw,
   CustomerActivityListParams,
   CustomerUpdatePayload,
 
@@ -60,15 +60,24 @@ type CustomerState = {
   isSuspending: boolean;
   suspendError: string | null;
 
-  customerActivity:              CustomerActivityRaw[];
-  customerActivityTotal:         number;
-  customerActivityTotalPages:    number;
-  activityListConfig:            CustomerActivityListParams;
-  isLoadingActivity:             boolean;
-  activityError:                 string | null;
+  customerActivity: CustomerActivityRaw[];
+  customerActivityTotal: number;
+  customerActivityTotalPages: number;
+  activityListConfig: CustomerActivityListParams;
+  isLoadingActivity: boolean;
+  activityError: string | null;
 
   isExporting: boolean;
   exportError: string | null;
+
+  isExportingLoans: boolean;
+  exportLoansError: string | null;
+
+  isExportingTransactions: boolean;
+  exportTransactionsError: string | null;
+
+  isExportingActivity: boolean;
+  exportActivityError: string | null;
 
   isUpdatingCustomer: boolean;
   updateCustomerError: string | null;
@@ -115,6 +124,15 @@ const initialCustomerState: CustomerState = {
 
   isExporting: false,
   exportError: null,
+
+  isExportingLoans: false,
+  exportLoansError: null,
+
+  isExportingTransactions: false,
+  exportTransactionsError: null,
+
+  isExportingActivity: false,
+  exportActivityError: null,
 
   isUpdatingCustomer: false,
   updateCustomerError: null,
@@ -168,7 +186,6 @@ export const CustomerStore = signalStore(
 
     const fetchCustomerById = rxMethod<string>(
       pipe(
-        distinctUntilChanged(),
         tap(() => patchState(store, { isLoadingDetail: true, detailError: null })),
         switchMap((id) =>
           customerService.getCustomerById(id).pipe(
@@ -280,49 +297,134 @@ export const CustomerStore = signalStore(
     );
 
     const updateCustomer = rxMethod<{ customerId: string; payload: CustomerUpdatePayload }>(
-  pipe(
-    tap(() => patchState(store, { isUpdatingCustomer: true, updateCustomerError: null })),
-    switchMap(({ customerId, payload }) =>
-      customerService.updateCustomer(customerId, payload).pipe(
-        tapResponse({
-          next: () => {
-            const current = store.selectedCustomer();
-            patchState(store, {
-              isUpdatingCustomer: false,
-              selectedCustomer: current
-                ? { ...current, customer: { ...current.customer, ...payload } }
-                : current,
-              customers: store.customers().map((c) =>
-                c.id === customerId ? { ...c, ...payload } : c
-              ),
-            });
-          },
-          error: (err: any) => {
-            patchState(store, {
-              updateCustomerError: err?.error?.message ?? 'Failed to update customer.',
-              isUpdatingCustomer: false,
-            });
-          },
-        })
+      pipe(
+        tap(() => patchState(store, { isUpdatingCustomer: true, updateCustomerError: null })),
+        switchMap(({ customerId, payload }) =>
+          customerService.updateCustomer(customerId, payload).pipe(
+            tapResponse({
+              next: () => {
+                const current = store.selectedCustomer();
+                patchState(store, {
+                  isUpdatingCustomer: false,
+                  selectedCustomer: current
+                    ? { ...current, customer: { ...current.customer, ...payload } }
+                    : current,
+                  customers: store.customers().map((c) =>
+                    c.id === customerId ? { ...c, ...payload } : c
+                  ),
+                });
+              },
+              error: (err: any) => {
+                patchState(store, {
+                  updateCustomerError: err?.error?.message ?? 'Failed to update customer.',
+                  isUpdatingCustomer: false,
+                });
+              },
+            })
+          )
+        )
       )
-    )
-  )
-);
+    );
 
     const exportCustomers = (params?: CustomerListParams) => {
-  patchState(store, { isExporting: true, exportError: null });
+      patchState(store, { isExporting: true, exportError: null });
 
-  customerService.exportCustomers(params ?? store.listConfig()).subscribe({
+      customerService.exportCustomers(params ?? store.listConfig()).subscribe({
+        next: (response) => {
+          const blob = response.body;
+          if (!blob) {
+            patchState(store, { isExporting: false, exportError: 'Export failed: empty response.' });
+            return;
+          }
+
+          const disposition = response.headers.get('content-disposition');
+          const match = disposition?.match(/filename="?([^"]+)"?/);
+          const filename = match?.[1] ?? `customers_export_${Date.now()}.csv`;
+
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+
+          patchState(store, { isExporting: false });
+        },
+        error: (err: any) => {
+          patchState(store, {
+            isExporting: false,
+            exportError: err?.error?.message ?? 'Failed to export customers.',
+          });
+        },
+      });
+    };
+
+    /**
+     * Exports the customer's loan list as a CSV, using the currently active
+     * loan filters (search/status/date range) unless overrides are passed in.
+     * Pagination is intentionally dropped — export always returns the full
+     * filtered set, not just the current page.
+     */
+    const exportCustomerLoans = (customerId: string, params?: CustomerLoanListParams) => {
+      patchState(store, { isExportingLoans: true, exportLoansError: null });
+
+      const { page, limit, ...filters } = params ?? store.loanListConfig();
+
+      customerService.exportCustomerLoans(customerId, { ...filters, export: true }).subscribe({
+        next: (response) => {
+          const blob = response.body;
+          if (!blob) {
+            patchState(store, { isExportingLoans: false, exportLoansError: 'Export failed: empty response.' });
+            return;
+          }
+
+          const disposition = response.headers.get('content-disposition');
+          const match = disposition?.match(/filename="?([^"]+)"?/);
+          const filename = match?.[1] ?? `customer_loans_export_${Date.now()}.csv`;
+
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+
+          patchState(store, { isExportingLoans: false });
+        },
+        error: (err: any) => {
+          patchState(store, {
+            isExportingLoans: false,
+            exportLoansError: err?.error?.message ?? 'Failed to export loans.',
+          });
+        },
+      });
+    };
+
+    /**
+ * Exports the customer's activity log as a CSV, using currently active
+ * filters (search/module/date range) unless overrides are passed.
+ * Pagination is dropped — export returns the full filtered set.
+ */
+const exportCustomerActivity = (customerId: string, params?: CustomerActivityListParams) => {
+  patchState(store, { isExportingActivity: true, exportActivityError: null });
+
+  const { page, limit, ...filters } = params ?? store.activityListConfig();
+
+  customerService.exportCustomerActivity(customerId, { ...filters, export: true }).subscribe({
     next: (response) => {
       const blob = response.body;
       if (!blob) {
-        patchState(store, { isExporting: false, exportError: 'Export failed: empty response.' });
+        patchState(store, { isExportingActivity: false, exportActivityError: 'Export failed: empty response.' });
         return;
       }
 
       const disposition = response.headers.get('content-disposition');
       const match = disposition?.match(/filename="?([^"]+)"?/);
-      const filename = match?.[1] ?? `customers_export_${Date.now()}.csv`;
+      const filename = match?.[1] ?? `customer_activity_export_${Date.now()}.csv`;
 
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -333,21 +435,54 @@ export const CustomerStore = signalStore(
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      patchState(store, { isExporting: false });
+      patchState(store, { isExportingActivity: false });
     },
     error: (err: any) => {
       patchState(store, {
-        isExporting: false,
-        exportError: err?.error?.message ?? 'Failed to export customers.',
+        isExportingActivity: false,
+        exportActivityError: err?.error?.message ?? 'Failed to export activity.',
       });
     },
   });
 };
 
-    // Toggles suspension on/off. Unlike the old delete-based flow, this never
-    // removes the customer from state — it just flips `is_suspended` in place
-    // on both the selected customer and the list, so the UI (badge/button)
-    // updates instantly without a refetch or navigation.
+    const exportCustomerTransactions = (customerId: string, params?: CustomerTransactionListParams) => {
+  patchState(store, { isExportingTransactions: true, exportTransactionsError: null });
+
+  const { page, limit, ...filters } = params ?? store.transactionListConfig();
+
+  customerService.exportCustomerTransactions(customerId, { ...filters, export: true }).subscribe({
+    next: (response) => {
+      const blob = response.body;
+      if (!blob) {
+        patchState(store, { isExportingTransactions: false, exportTransactionsError: 'Export failed: empty response.' });
+        return;
+      }
+
+      const disposition = response.headers.get('content-disposition');
+      const match = disposition?.match(/filename="?([^"]+)"?/);
+      const filename = match?.[1] ?? `customer_transactions_export_${Date.now()}.csv`;
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      patchState(store, { isExportingTransactions: false });
+    },
+    error: (err: any) => {
+      patchState(store, {
+        isExportingTransactions: false,
+        exportTransactionsError: err?.error?.message ?? 'Failed to export transactions.',
+      });
+    },
+  });
+};
+
     const toggleCustomerSuspension = (
       customerId: string,
       reason: string,
@@ -359,17 +494,19 @@ export const CustomerStore = signalStore(
       customerService.toggleCustomerSuspension(customerId, { reason }).subscribe({
         next: (res) => {
           const { is_suspended } = res.data;
-          const current = store.selectedCustomer();
 
           patchState(store, {
             isSuspending: false,
-            selectedCustomer: current
-              ? { ...current, customer: { ...current.customer, is_suspended } }
-              : current,
+            // Best-effort optimistic update for the list view, if it carries this field.
             customers: store.customers().map((c) =>
               c.id === customerId ? { ...c, is_suspended } : c
             ),
           });
+
+          // The button relies on `auth_user.is_suspended`, which only comes back
+          // from the full customer-detail endpoint — re-fetch it so the banner
+          // reflects the true post-toggle state rather than a manual patch.
+          fetchCustomerById(customerId);
 
           onSuccess?.(is_suspended);
         },
@@ -381,50 +518,50 @@ export const CustomerStore = signalStore(
       });
     };
 
-const performNeedsActionResolution = (
-  customerId: string,
-  onSuccess?: (message: string) => void,
-  onError?: (message: string) => void
-) => {
-  customerService.performNeedsActionResolution(customerId).subscribe({
-    next: (res) => onSuccess?.(res.message),
-    error: (err: any) => {
-      const message = err?.error?.message ?? 'Failed to complete action.';
-      onError?.(message);
-    },
-  });
-};
+    const performNeedsActionResolution = (
+      customerId: string,
+      onSuccess?: (message: string) => void,
+      onError?: (message: string) => void
+    ) => {
+      customerService.performNeedsActionResolution(customerId).subscribe({
+        next: (res) => onSuccess?.(res.message),
+        error: (err: any) => {
+          const message = err?.error?.message ?? 'Failed to complete action.';
+          onError?.(message);
+        },
+      });
+    };
 
-const fetchCustomerActivity = rxMethod<{ customerId: string; params: CustomerActivityListParams }>(
-  pipe(
-    distinctUntilChanged(),
-    tap(({ params }) =>
-      patchState(store, {
-        isLoadingActivity: true,
-        activityError: null,
-        activityListConfig: params,
-      })
-    ),
-    switchMap(({ customerId, params }) =>
-      customerService.getCustomerRecentActivity(customerId, params).pipe(
-        tapResponse({
-          next: (res) =>
-            patchState(store, {
-              customerActivity: res.data.data,
-              customerActivityTotal: res.data.meta.total,
-              customerActivityTotalPages: res.data.meta.totalPages,
-              isLoadingActivity: false,
-            }),
-          error: (err: any) =>
-            patchState(store, {
-              activityError: err?.error?.message ?? 'Failed to load activity.',
-              isLoadingActivity: false,
-            }),
-        })
+    const fetchCustomerActivity = rxMethod<{ customerId: string; params: CustomerActivityListParams }>(
+      pipe(
+        distinctUntilChanged(),
+        tap(({ params }) =>
+          patchState(store, {
+            isLoadingActivity: true,
+            activityError: null,
+            activityListConfig: params,
+          })
+        ),
+        switchMap(({ customerId, params }) =>
+          customerService.getCustomerRecentActivity(customerId, params).pipe(
+            tapResponse({
+              next: (res) =>
+                patchState(store, {
+                  customerActivity: res.data.data,
+                  customerActivityTotal: res.data.meta.total,
+                  customerActivityTotalPages: res.data.meta.totalPages,
+                  isLoadingActivity: false,
+                }),
+              error: (err: any) =>
+                patchState(store, {
+                  activityError: err?.error?.message ?? 'Failed to load activity.',
+                  isLoadingActivity: false,
+                }),
+            })
+          )
+        )
       )
-    )
-  )
-);
+    );
     const patchSelectedCustomer = (patch: Partial<CustomerRaw>) => {
       const current = store.selectedCustomer();
       if (!current) return;
@@ -521,58 +658,61 @@ const fetchCustomerActivity = rxMethod<{ customerId: string; params: CustomerAct
     };
     const clearError = () => patchState(store, { error: null });
 
-    
-const setActivityPage = (customerId: string, page: number) => {
-  fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), page } });
-};
 
-const setActivityPageSize = (customerId: string, limit: number) => {
-  fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), limit, page: 1 } });
-};
+    const setActivityPage = (customerId: string, page: number) => {
+      fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), page } });
+    };
 
-const setActivitySearch = (customerId: string, search: string) => {
-  fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), search: search || undefined, page: 1 } });
-};
+    const setActivityPageSize = (customerId: string, limit: number) => {
+      fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), limit, page: 1 } });
+    };
 
-const setActivityModuleFilter = (customerId: string, module: string) => {
-  fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), module: module || undefined, page: 1 } });
-};
+    const setActivitySearch = (customerId: string, search: string) => {
+      fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), search: search || undefined, page: 1 } });
+    };
 
-return {
-  fetchCustomers,
-  fetchCustomerById,
-  fetchFinancialSummary,
-  patchSelectedCustomer,
-  setPage,
-  setPageSize,
-  setSearch,
-  setKycFilter,
-  setLoanFilter,
-  setTimeframe,
-  setCustomDateRange,
-  clearError,
-  fetchCustomerLoans,
-  setLoanPage,
-  setLoanPageSize,
-  setLoanSearch,
-  setLoanStatusFilter,
-  setLoanDateRange,
-  fetchCustomerTransactions,
-  setTransactionPage,
-  setTransactionPageSize,
-  setTransactionSearch,
-  setTransactionStatusFilter,
-  setTransactionTypeFilter,
-  setTransactionDateRange,
-  toggleCustomerSuspension,
-  fetchCustomerActivity,
-  setActivityPage,
-  setActivityPageSize,
-  setActivitySearch,
-  setActivityModuleFilter,
-  exportCustomers,
-  updateCustomer,
-  performNeedsActionResolution,
-};
-})
+    const setActivityModuleFilter = (customerId: string, module: string) => {
+      fetchCustomerActivity({ customerId, params: { ...store.activityListConfig(), module: module || undefined, page: 1 } });
+    };
+
+    return {
+      fetchCustomers,
+      fetchCustomerById,
+      fetchFinancialSummary,
+      patchSelectedCustomer,
+      setPage,
+      setPageSize,
+      setSearch,
+      setKycFilter,
+      setLoanFilter,
+      setTimeframe,
+      setCustomDateRange,
+      clearError,
+      fetchCustomerLoans,
+      setLoanPage,
+      setLoanPageSize,
+      setLoanSearch,
+      setLoanStatusFilter,
+      setLoanDateRange,
+      exportCustomerLoans,
+      fetchCustomerTransactions,
+      setTransactionPage,
+      setTransactionPageSize,
+      setTransactionSearch,
+      setTransactionStatusFilter,
+      setTransactionTypeFilter,
+      setTransactionDateRange,
+      exportCustomerTransactions,
+      toggleCustomerSuspension,
+      fetchCustomerActivity,
+      setActivityPage,
+      setActivityPageSize,
+      setActivitySearch,
+      setActivityModuleFilter,
+      exportCustomerActivity,
+      exportCustomers,
+      updateCustomer,
+      performNeedsActionResolution,
+    };
+  })
 );

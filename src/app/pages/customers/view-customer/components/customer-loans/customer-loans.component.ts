@@ -22,6 +22,7 @@ export class CustomerLoansComponent implements OnInit {
   readonly totalPages = this.store.customerLoansTotalPages;
   readonly isLoading  = this.store.isLoadingLoans;
   readonly error      = this.store.loansError;
+  readonly isExporting   = this.store.isExportingLoans;
 
   columns = ['Loan ID', 'Amount & Tenor', 'Loan Status', 'Disbursement Date', 'Next Payment Due Date', 'Repaid', 'Product'];
 
@@ -39,6 +40,9 @@ export class CustomerLoansComponent implements OnInit {
   hasActiveFilters = computed(() =>
     !!this.activeLoanStatus() || !!this.activeTenor() || !!this.activeDisbDate() || !!this.searchQuery()
   );
+readonly currentLimit = computed(() => this.store.loanListConfig().limit ?? 10);
+
+currentPage = signal(1);
 
   ngOnInit(): void {
     this.store.fetchCustomerLoans({ customerId: this.customerId(), params: { page: 1, limit: 10 } });
@@ -55,21 +59,28 @@ export class CustomerLoansComponent implements OnInit {
     this.store.setLoanStatusFilter(this.customerId(), next);
   }
 
-  clearFilters(): void {
-    this.activeLoanStatus.set('');
-    this.activeTenor.set('');
-    this.activeDisbDate.set('');
-    this.searchQuery.set('');
-    this.store.fetchCustomerLoans({ customerId: this.customerId(), params: { page: 1, limit: 10 } });
+ clearFilters(): void {
+  this.activeLoanStatus.set('');
+  this.activeTenor.set('');
+  this.activeDisbDate.set('');
+  this.searchQuery.set('');
+  this.currentPage.set(1);
+  this.store.fetchCustomerLoans({ customerId: this.customerId(), params: { page: 1, limit: 10 } });
+}
+
+  exportLoans(): void {
+    this.store.exportCustomerLoans(this.customerId());
   }
 
-  onPageChange(page: number): void {
-    this.store.setLoanPage(this.customerId(), page);
-  }
+onPageChange(page: number): void {
+  this.currentPage.set(page);
+  this.store.setLoanPage(this.customerId(), page);
+}
 
-  onPageSizeChange(size: number): void {
-    this.store.setLoanPageSize(this.customerId(), size);
-  }
+onPageSizeChange(size: number): void {
+  this.currentPage.set(1);
+  this.store.setLoanPageSize(this.customerId(), size);
+}
 
   getStatusClass(s: string): string {
     const map: Record<string, string> = {

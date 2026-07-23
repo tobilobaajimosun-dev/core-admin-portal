@@ -25,7 +25,7 @@ export class TransactionHistoryComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.dashboardStore.fetchTransactions({ page: 1, limit: 10 });
+    this.dashboardStore.fetchTransactions({ page: 1, limit: 5 });
   }
 
   // ── Status helpers ─────────────────────────────────
