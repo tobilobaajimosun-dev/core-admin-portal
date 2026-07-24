@@ -10,7 +10,7 @@ import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.componen
 import { PsRadioComponent } from '@pcsl-ui/ui/ps-radio/ps-radio.component';
 import { DropdownComponent } from '@shared/components/dropdown/dropdown.component';
 import { WalletStore } from '@core/store/wallet.store';
-import { WalletRaw, WalletDateRange } from '@core/interfaces/wallet.model';
+import { WalletRaw } from '@core/interfaces/wallet.model';
 
 interface FilterOption {
   label: string;
@@ -73,9 +73,15 @@ export class WalletsTableComponent implements OnInit {
   ];
 
   // ── Per-filter state ────────────────────────────────────────────────────
+  // appliedValues is a signal so hasActiveFilters / activeFilterChips recompute
+  // correctly whenever a filter is applied or cleared, and so that multiple
+  // filters can be active at the same time (each pill applies independently).
+  appliedValues = signal<string[]>(this.filterDefs.map(() => ''));
   selectedValues: string[] = this.filterDefs.map(() => '');
-  appliedValues: string[] = this.filterDefs.map(() => '');
   showCustomRange: boolean[] = this.filterDefs.map(() => false);
+
+  // Custom date range values, kept separately since they're not a simple option value.
+  private appliedCustomRange: { start_date?: string; end_date?: string } = {};
 
   customRangeForms = this.filterDefs.map(() =>
     this.fb.group({ start_date: [''], end_date: [''] })
@@ -85,26 +91,24 @@ export class WalletsTableComponent implements OnInit {
   wallets = computed(() => this.store.wallets());
 
   hasActiveFilters = computed(() =>
-    !!this.searchQuery() || this.appliedValues.some(v => !!v)
+    !!this.searchQuery() || this.appliedValues().some(v => !!v)
   );
 
-  bannerLabel = computed(() => {
-    if (this.searchQuery()) return this.searchQuery();
-    const activeIdx = this.appliedValues.findIndex(v => !!v);
-    if (activeIdx === -1) return '';
-    const val = this.appliedValues[activeIdx];
-    return this.filterDefs[activeIdx].options.find(o => o.value === val)?.label ?? val;
-  });
-
-  bannerPrefix = computed(() =>
-    this.searchQuery() ? 'Displaying search result:' : 'Displaying filtered result:'
+  activeFilterChips = computed(() =>
+    this.filterDefs
+      .map((def, index) => ({ index, def, value: this.appliedValues()[index] }))
+      .filter(({ value }) => !!value)
+      .map(({ index, def, value }) => {
+        const opt = def.options.find(o => o.value === value);
+        return { index, label: opt ? `${def.label}: ${opt.label}` : def.label };
+      })
   );
 
   // ── Helpers ─────────────────────────────────────────────────────────────
-  isFilterActive(i: number): boolean { return !!this.appliedValues[i]; }
+  isFilterActive(i: number): boolean { return !!this.appliedValues()[i]; }
 
   filterDisplayLabel(i: number): string {
-    const applied = this.appliedValues[i];
+    const applied = this.appliedValues()[i];
     if (!applied) return this.filterDefs[i].label;
     const opt = this.filterDefs[i].options.find(o => o.value === applied);
     return opt ? `${this.filterDefs[i].label}: ${opt.label}` : this.filterDefs[i].label;
@@ -125,67 +129,112 @@ export class WalletsTableComponent implements OnInit {
   applyFilter(i: number, dropdown: DropdownComponent): void {
     dropdown.close();
     const value = this.selectedValues[i];
-
-    // Enforce single active filter
-    this.appliedValues = this.appliedValues.map((_, idx) => idx === i ? value : '');
-    this.selectedValues = this.selectedValues.map((_, idx) => idx === i ? value : '');
-    this.showCustomRange = this.showCustomRange.map((_, idx) => idx === i ? this.showCustomRange[idx] : false);
-    this.customRangeForms.forEach((f, idx) => { if (idx !== i) f.reset(); });
-    this.searchQuery.set('');
-
     const def = this.filterDefs[i];
 
-    switch (def.type) {
-      case 'status':
-        this.store.fetchWallets({ page: 1, limit: this.store.currentLimit(), status: value || undefined });
-        return;
+    // Only this filter's value changes — every other already-applied filter stays active.
+    const updated = [...this.appliedValues()];
+    updated[i] = value;
+    this.appliedValues.set(updated);
 
-      case 'date': {
-        if (value === 'custom_range') {
-          const { start_date, end_date } = this.customRangeForms[i].getRawValue();
-          this.store.fetchWallets({
-            page: 1,
-            limit: this.store.currentLimit(),
-            custom_range: 'custom',
-            start_date: start_date || undefined,
-            end_date: end_date || undefined,
-          });
-          return;
-        }
-        if (!value) {
-          this.store.fetchWallets({ page: 1, limit: this.store.currentLimit() });
-          return;
-        }
-        this.store.setTimeframe(value as WalletDateRange);
-        return;
+    if (def.type === 'date') {
+      if (value === 'custom_range') {
+        const { start_date, end_date } = this.customRangeForms[i].getRawValue();
+        this.appliedCustomRange = { start_date: start_date || undefined, end_date: end_date || undefined };
+      } else {
+        this.appliedCustomRange = {};
       }
     }
+
+    this.searchQuery.set('');
+    this.currentPage.set(1);
+    this.fetchWithAppliedFilters();
   }
 
   exportWallets(): void {
-    this.store.exportWallets({
+    const params: Record<string, unknown> = {
       page: this.store.currentPage(),
       limit: this.store.currentLimit(),
       search: this.searchQuery() || undefined,
-      status: this.appliedValues[0] || undefined,
+    };
+
+    this.filterDefs.forEach((def, idx) => {
+      const value = this.appliedValues()[idx];
+      if (!value) return;
+
+      switch (def.type) {
+        case 'status':
+          params['status'] = value;
+          break;
+        case 'date':
+          if (value === 'custom_range') {
+            params['custom_range'] = 'custom';
+            params['start_date'] = this.appliedCustomRange.start_date;
+            params['end_date'] = this.appliedCustomRange.end_date;
+          } else {
+            params['date_range'] = value;
+          }
+          break;
+      }
     });
+
+    this.store.exportWallets(params as any);
   }
 
   clearFilter(i: number): void {
-    this.appliedValues[i] = '';
+    const updated = [...this.appliedValues()];
+    updated[i] = '';
+    this.appliedValues.set(updated);
+
     this.selectedValues[i] = '';
     this.showCustomRange[i] = false;
     this.customRangeForms[i].reset();
-    this.store.fetchWallets({ page: 1, limit: this.store.currentLimit() });
+    if (this.filterDefs[i].type === 'date') {
+      this.appliedCustomRange = {};
+    }
+
+    this.currentPage.set(1);
+    this.fetchWithAppliedFilters();
   }
 
   clearFilters(): void {
-    this.appliedValues = this.filterDefs.map(() => '');
+    this.appliedValues.set(this.filterDefs.map(() => ''));
     this.selectedValues = this.filterDefs.map(() => '');
     this.showCustomRange = this.filterDefs.map(() => false);
     this.customRangeForms.forEach(f => f.reset());
+    this.appliedCustomRange = {};
     this.searchQuery.set('');
+    this.currentPage.set(1);
     this.store.fetchWallets({ page: 1, limit: 10 });
+  }
+
+  // Builds one combined fetch call out of every currently-applied filter.
+  private fetchWithAppliedFilters(): void {
+    const params: Record<string, unknown> = {
+      page: this.currentPage(),
+      limit: this.store.currentLimit(),
+    };
+
+    this.filterDefs.forEach((def, idx) => {
+      const value = this.appliedValues()[idx];
+      if (!value) return;
+
+      switch (def.type) {
+        case 'status':
+          params['status'] = value;
+          break;
+        case 'date':
+          if (value === 'custom_range') {
+            params['custom_range'] = 'custom';
+            params['start_date'] = this.appliedCustomRange.start_date;
+            params['end_date'] = this.appliedCustomRange.end_date;
+          } else {
+            params['date_range'] = value;
+          }
+          break;
+      }
+    });
+
+    this.store.fetchWallets(params as any);
   }
 
   // ── Search ───────────────────────────────────────────────────────────────
@@ -239,7 +288,6 @@ export class WalletsTableComponent implements OnInit {
     if (amount === undefined || amount === null) return '—';
     return `₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
   }
-
 
   getWalletId(wallet: WalletRaw): string {
     return wallet.public_id ?? wallet.account_number ?? wallet.id;

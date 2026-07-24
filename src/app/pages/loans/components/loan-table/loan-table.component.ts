@@ -13,7 +13,7 @@ import { PsPaginationComponent } from '@ui/ps-pagination/ps-pagination.component
 import { PsRadioComponent } from '@pcsl-ui/ui/ps-radio/ps-radio.component';
 import { DropdownComponent } from '@shared/components/dropdown/dropdown.component';
 import { LoanStore } from '@core/store/loan.store';
-import { LoanDateRange, LoanView } from '@core/interfaces/loan.model';
+import { LoanView } from '@core/interfaces/loan.model';
 
 interface FilterOption {
   label: string;
@@ -130,31 +130,53 @@ export class LoanTableComponent implements OnInit {
   // ── Per-filter state ──────────────────────────────────────────────────────
   // selectedValues[i] is the radio-bound value for baseFilterDefs[i]
   selectedValues: string[] = this.baseFilterDefs.map(() => '');
-  // appliedValues[i] is what was last confirmed via "Apply filter"
-  appliedValues: string[] = this.baseFilterDefs.map(() => '');
+  // appliedValues is a signal so hasActiveFilters / activeFilterChips recompute
+  // correctly, and so multiple filters can be active at once (each pill applies
+  // independently rather than clobbering the others).
+  appliedValues = signal<string[]>(this.baseFilterDefs.map(() => ''));
   showCustomRange: boolean[] = this.baseFilterDefs.map(() => false);
 
   customRangeForms = this.baseFilterDefs.map(() =>
     this.fb.group({ start_date: [''], end_date: [''], tenor_value: [''] })
   );
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  get activeFilterIndex(): number {
-    return this.appliedValues.findIndex(v => !!v);
-  }
+  // Values that aren't simple option values (custom date range, custom tenor).
+  private appliedCustomRange: { start_date?: string; end_date?: string } = {};
+  private appliedCustomTenor: string | undefined;
 
+  // ── Computed ────────────────────────────────────────────────────────────
+  hasActiveFilters = computed(() =>
+    !!this.searchQuery() || this.appliedValues().some(v => !!v)
+  );
+
+  activeFilterChips = computed(() =>
+    this.filterDefs()
+      .map((def, index) => ({ index, def, value: this.appliedValues()[index] }))
+      .filter(({ value }) => !!value)
+      .map(({ index, def, value }) => {
+        if (value === 'custom_tenor') {
+          const label = this.appliedCustomTenor
+            ? `${def.label}: ${this.appliedCustomTenor} month(s)`
+            : `${def.label}: Custom`;
+          return { index, label };
+        }
+        const opt = def.options.find(o => o.value === value);
+        return { index, label: opt ? `${def.label}: ${opt.label}` : def.label };
+      })
+  );
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
   isFilterActive(i: number): boolean {
-    return !!this.appliedValues[i];
+    return !!this.appliedValues()[i];
   }
 
   filterDisplayLabel(i: number): string {
-    const applied = this.appliedValues[i];
+    const applied = this.appliedValues()[i];
     const def = this.filterDefs()[i];
     if (!applied) return def.label;
 
     if (applied === 'custom_tenor') {
-      const tenorValue = this.customRangeForms[i].getRawValue().tenor_value;
-      return tenorValue ? `${def.label}: ${tenorValue} month(s)` : `${def.label}: Custom`;
+      return this.appliedCustomTenor ? `${def.label}: ${this.appliedCustomTenor} month(s)` : `${def.label}: Custom`;
     }
 
     const opt = def.options.find(o => o.value === applied);
@@ -172,64 +194,34 @@ export class LoanTableComponent implements OnInit {
   applyFilter(i: number, dropdown: DropdownComponent): void {
     dropdown.close();
     const value = this.selectedValues[i];
-
-    // Enforce single active filter — clear all others
-    this.appliedValues = this.appliedValues.map((_, idx) => idx === i ? value : '');
-    this.selectedValues = this.selectedValues.map((_, idx) => idx === i ? value : '');
-    this.showCustomRange = this.showCustomRange.map((_, idx) => idx === i ? this.showCustomRange[idx] : false);
-    this.customRangeForms.forEach((f, idx) => { if (idx !== i) f.reset(); });
-    this.searchQuery.set('');
-
     const def = this.baseFilterDefs[i];
 
-    switch (def.type) {
-      case 'applicationDate': {
-        if (value === 'custom_range') {
-          const { start_date, end_date } = this.customRangeForms[i].getRawValue();
-          this.store.fetchLoans({
-            page: 1,
-            limit: this.store.currentLimit(),
-            custom_range: 'custom',
-            start_date: start_date || undefined,
-            end_date: end_date || undefined,
-          });
-          return;
-        }
-        if (!value) {
-          this.store.fetchLoans({ page: 1, limit: this.store.currentLimit() });
-          return;
-        }
-        this.store.setTimeframe(value as LoanDateRange);
-        return;
-      }
-      case 'tenor': {
-        if (value === 'custom_tenor') {
-          const { tenor_value } = this.customRangeForms[i].getRawValue();
-          if (tenor_value) {
-            this.store.setTenor(String(tenor_value) as LoanDateRange);
-          }
-          return;
-        }
-        if (!value) {
-          this.store.fetchLoans({ page: 1, limit: this.store.currentLimit() });
-          return;
-        }
-        this.store.setTenor(value as LoanDateRange);
-        return;
-      }
-      case 'status':
-        this.store.setStatus(value ?? '');
-        return;
-      case 'product':
-        this.store.setProduct(value ?? '');
-        return;
-      case 'amount': {
-        if (!value) { this.store.setAmountRange(null, null); return; }
-        const [min, max] = value.split('_').map(Number);
-        this.store.setAmountRange(min, max);
-        return;
+    // Only this filter's value changes — every other already-applied filter stays active.
+    const updated = [...this.appliedValues()];
+    updated[i] = value;
+    this.appliedValues.set(updated);
+
+    if (def.type === 'applicationDate') {
+      if (value === 'custom_range') {
+        const { start_date, end_date } = this.customRangeForms[i].getRawValue();
+        this.appliedCustomRange = { start_date: start_date || undefined, end_date: end_date || undefined };
+      } else {
+        this.appliedCustomRange = {};
       }
     }
+
+    if (def.type === 'tenor') {
+      if (value === 'custom_tenor') {
+        const { tenor_value } = this.customRangeForms[i].getRawValue();
+        this.appliedCustomTenor = tenor_value ? String(tenor_value) : undefined;
+      } else {
+        this.appliedCustomTenor = undefined;
+      }
+    }
+
+    this.searchQuery.set('');
+    this.currentPage.set(1);
+    this.fetchWithAppliedFilters();
   }
 
   exportLoans(): void {
@@ -237,19 +229,30 @@ export class LoanTableComponent implements OnInit {
   }
 
   clearFilter(i: number): void {
-    this.appliedValues[i] = '';
+    const updated = [...this.appliedValues()];
+    updated[i] = '';
+    this.appliedValues.set(updated);
+
     this.selectedValues[i] = '';
     this.showCustomRange[i] = false;
     this.customRangeForms[i].reset();
-    this.store.fetchLoans({ page: 1, limit: this.store.currentLimit() });
+
+    if (this.baseFilterDefs[i].type === 'applicationDate') this.appliedCustomRange = {};
+    if (this.baseFilterDefs[i].type === 'tenor') this.appliedCustomTenor = undefined;
+
+    this.currentPage.set(1);
+    this.fetchWithAppliedFilters();
   }
 
   clearAllFilters(): void {
-    this.appliedValues = this.baseFilterDefs.map(() => '');
+    this.appliedValues.set(this.baseFilterDefs.map(() => ''));
     this.selectedValues = this.baseFilterDefs.map(() => '');
     this.showCustomRange = this.baseFilterDefs.map(() => false);
     this.customRangeForms.forEach(f => f.reset());
+    this.appliedCustomRange = {};
+    this.appliedCustomTenor = undefined;
     this.searchQuery.set('');
+    this.currentPage.set(1);
     this.store.fetchLoans({ page: 1, limit: 10 });
   }
 
@@ -258,6 +261,53 @@ export class LoanTableComponent implements OnInit {
       if (i !== currentIndex) dropdown.close();
     });
   }
+
+  // Builds one combined fetch call out of every currently-applied filter.
+  private fetchWithAppliedFilters(): void {
+    const params: Record<string, unknown> = {
+      page: this.currentPage(),
+      limit: this.store.currentLimit(),
+    };
+
+    this.baseFilterDefs.forEach((def, idx) => {
+      const value = this.appliedValues()[idx];
+      if (!value) return;
+
+      switch (def.type) {
+        case 'applicationDate':
+          if (value === 'custom_range') {
+            params['custom_range'] = 'custom';
+            params['start_date'] = this.appliedCustomRange.start_date;
+            params['end_date'] = this.appliedCustomRange.end_date;
+          } else {
+            params['date_range'] = value;
+          }
+          break;
+        case 'tenor':
+          if (value === 'custom_tenor') {
+            if (this.appliedCustomTenor) params['tenor'] = this.appliedCustomTenor;
+          } else {
+            params['tenor'] = value;
+          }
+          break;
+        case 'status':
+          params['status'] = value;
+          break;
+        case 'product':
+          params['product'] = value;
+          break;
+        case 'amount': {
+          const [min, max] = value.split('_').map(Number);
+          params['min_amount'] = min;
+          params['max_amount'] = max;
+          break;
+        }
+      }
+    });
+
+    this.store.fetchLoans(params as any);
+  }
+
   // ── Search ────────────────────────────────────────────────────────────────
   private readonly debouncedSearch$ = toObservable(this.searchQuery).pipe(
     skip(1), debounceTime(400), distinctUntilChanged(),
