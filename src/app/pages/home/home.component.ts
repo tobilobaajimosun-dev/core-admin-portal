@@ -9,7 +9,7 @@ import { RecentCustomersComponent } from '@pages/home/components/recent-customer
   selector: 'app-home',
   standalone: true,
   imports: [
-    // PerformanceBannerComponent,
+    PerformanceBannerComponent,
     StatsGridComponent,
     RecentLoansComponent,
     TransactionHistoryComponent,
