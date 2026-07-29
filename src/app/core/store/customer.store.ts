@@ -8,7 +8,7 @@ import {
   withState,
 } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { distinctUntilChanged, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, distinctUntilChanged, pipe, switchMap, tap } from 'rxjs';
 import { CustomerService } from '@core/services/customer.service';
 import {
   CustomerCustomRange,
@@ -81,6 +81,10 @@ type CustomerState = {
 
   isUpdatingCustomer: boolean;
   updateCustomerError: string | null;
+
+  customerSearchResults: CustomerRaw[];
+  isSearchingCustomers: boolean;
+  customerSearchError: string | null;
 };
 
 const initialCustomerState: CustomerState = {
@@ -136,6 +140,10 @@ const initialCustomerState: CustomerState = {
 
   isUpdatingCustomer: false,
   updateCustomerError: null,
+
+  customerSearchResults: [],
+  isSearchingCustomers: false,
+  customerSearchError: null,
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -361,6 +369,33 @@ export const CustomerStore = signalStore(
       });
     };
 
+    const searchCustomers = rxMethod<string>(
+      pipe(
+        distinctUntilChanged(),
+        switchMap((query) => {
+          if (!query.trim()) {
+            patchState(store, { customerSearchResults: [], isSearchingCustomers: false, customerSearchError: null });
+            return EMPTY;
+          }
+          patchState(store, { isSearchingCustomers: true, customerSearchError: null });
+          return customerService.getCustomers({ page: 1, limit: 10, search: query }).pipe(
+            tapResponse({
+              next: (res) =>
+                patchState(store, { customerSearchResults: res.data.data, isSearchingCustomers: false }),
+              error: (err: any) =>
+                patchState(store, {
+                  customerSearchError: err?.error?.message ?? 'Failed to search customers.',
+                  isSearchingCustomers: false,
+                }),
+            })
+          );
+        })
+      )
+    );
+
+    const clearCustomerSearch = () =>
+      patchState(store, { customerSearchResults: [], isSearchingCustomers: false, customerSearchError: null });
+
     /**
      * Exports the customer's loan list as a CSV, using the currently active
      * loan filters (search/status/date range) unless overrides are passed in.
@@ -409,79 +444,79 @@ export const CustomerStore = signalStore(
  * filters (search/module/date range) unless overrides are passed.
  * Pagination is dropped — export returns the full filtered set.
  */
-const exportCustomerActivity = (customerId: string, params?: CustomerActivityListParams) => {
-  patchState(store, { isExportingActivity: true, exportActivityError: null });
+    const exportCustomerActivity = (customerId: string, params?: CustomerActivityListParams) => {
+      patchState(store, { isExportingActivity: true, exportActivityError: null });
 
-  const { page, limit, ...filters } = params ?? store.activityListConfig();
+      const { page, limit, ...filters } = params ?? store.activityListConfig();
 
-  customerService.exportCustomerActivity(customerId, { ...filters, export: true }).subscribe({
-    next: (response) => {
-      const blob = response.body;
-      if (!blob) {
-        patchState(store, { isExportingActivity: false, exportActivityError: 'Export failed: empty response.' });
-        return;
-      }
+      customerService.exportCustomerActivity(customerId, { ...filters, export: true }).subscribe({
+        next: (response) => {
+          const blob = response.body;
+          if (!blob) {
+            patchState(store, { isExportingActivity: false, exportActivityError: 'Export failed: empty response.' });
+            return;
+          }
 
-      const disposition = response.headers.get('content-disposition');
-      const match = disposition?.match(/filename="?([^"]+)"?/);
-      const filename = match?.[1] ?? `customer_activity_export_${Date.now()}.csv`;
+          const disposition = response.headers.get('content-disposition');
+          const match = disposition?.match(/filename="?([^"]+)"?/);
+          const filename = match?.[1] ?? `customer_activity_export_${Date.now()}.csv`;
 
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
 
-      patchState(store, { isExportingActivity: false });
-    },
-    error: (err: any) => {
-      patchState(store, {
-        isExportingActivity: false,
-        exportActivityError: err?.error?.message ?? 'Failed to export activity.',
+          patchState(store, { isExportingActivity: false });
+        },
+        error: (err: any) => {
+          patchState(store, {
+            isExportingActivity: false,
+            exportActivityError: err?.error?.message ?? 'Failed to export activity.',
+          });
+        },
       });
-    },
-  });
-};
+    };
 
     const exportCustomerTransactions = (customerId: string, params?: CustomerTransactionListParams) => {
-  patchState(store, { isExportingTransactions: true, exportTransactionsError: null });
+      patchState(store, { isExportingTransactions: true, exportTransactionsError: null });
 
-  const { page, limit, ...filters } = params ?? store.transactionListConfig();
+      const { page, limit, ...filters } = params ?? store.transactionListConfig();
 
-  customerService.exportCustomerTransactions(customerId, { ...filters, export: true }).subscribe({
-    next: (response) => {
-      const blob = response.body;
-      if (!blob) {
-        patchState(store, { isExportingTransactions: false, exportTransactionsError: 'Export failed: empty response.' });
-        return;
-      }
+      customerService.exportCustomerTransactions(customerId, { ...filters, export: true }).subscribe({
+        next: (response) => {
+          const blob = response.body;
+          if (!blob) {
+            patchState(store, { isExportingTransactions: false, exportTransactionsError: 'Export failed: empty response.' });
+            return;
+          }
 
-      const disposition = response.headers.get('content-disposition');
-      const match = disposition?.match(/filename="?([^"]+)"?/);
-      const filename = match?.[1] ?? `customer_transactions_export_${Date.now()}.csv`;
+          const disposition = response.headers.get('content-disposition');
+          const match = disposition?.match(/filename="?([^"]+)"?/);
+          const filename = match?.[1] ?? `customer_transactions_export_${Date.now()}.csv`;
 
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
 
-      patchState(store, { isExportingTransactions: false });
-    },
-    error: (err: any) => {
-      patchState(store, {
-        isExportingTransactions: false,
-        exportTransactionsError: err?.error?.message ?? 'Failed to export transactions.',
+          patchState(store, { isExportingTransactions: false });
+        },
+        error: (err: any) => {
+          patchState(store, {
+            isExportingTransactions: false,
+            exportTransactionsError: err?.error?.message ?? 'Failed to export transactions.',
+          });
+        },
       });
-    },
-  });
-};
+    };
 
     const toggleCustomerSuspension = (
       customerId: string,
@@ -713,6 +748,8 @@ const exportCustomerActivity = (customerId: string, params?: CustomerActivityLis
       exportCustomers,
       updateCustomer,
       performNeedsActionResolution,
+      searchCustomers,        
+      clearCustomerSearch,
     };
   })
 );

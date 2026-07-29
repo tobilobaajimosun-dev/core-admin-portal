@@ -11,7 +11,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { distinctUntilChanged, pipe, switchMap, tap } from 'rxjs';
 import { NotificationService } from '@core/services/notification.service';
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
-import { Observable } from 'rxjs'; 
+import { Observable } from 'rxjs';
 import {
   NotificationDailyBreakdown,
   NotificationHistoryItemRaw,
@@ -23,7 +23,7 @@ import {
   NotificationTemplateParams,
   NotificationTemplateUpsertPayload,
   NotificationSendResponse,
-  NotificationSendPayload 
+  NotificationSendPayload
 
 } from '@core/interfaces/notification.model';
 
@@ -52,12 +52,16 @@ type NotificationState = {
 
   isSavingTemplate: boolean;
   saveTemplateError: string | null;
-  
+
   isSendingNotification: boolean;
   sendNotificationError: string | null;
 
   isExportingHistory: boolean;
   exportHistoryError: string | null;
+
+  templateOptions: NotificationTemplateRaw[];
+  isLoadingTemplateOptions: boolean;
+  templateOptionsError: string | null;
 };
 
 const initialNotificationState: NotificationState = {
@@ -84,11 +88,15 @@ const initialNotificationState: NotificationState = {
   isSavingTemplate: false,
   saveTemplateError: null,
 
- isSendingNotification: false,
- sendNotificationError: null,
+  isSendingNotification: false,
+  sendNotificationError: null,
 
- isExportingHistory: false,
- exportHistoryError: null,
+  isExportingHistory: false,
+  exportHistoryError: null,
+
+  templateOptions: [],
+  isLoadingTemplateOptions: false,
+  templateOptionsError: null,
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -172,10 +180,10 @@ export const NotificationStore = signalStore(
 
     dailyBreakdown: computed(() => store.metrics()?.dailyBreakdown ?? []),
 
-    historyCurrentPage:  computed(() => store.historyListConfig().page ?? 1),
+    historyCurrentPage: computed(() => store.historyListConfig().page ?? 1),
     historyCurrentLimit: computed(() => store.historyListConfig().limit ?? 10),
 
-    templateCurrentPage:  computed(() => store.templateListConfig().page ?? 1),
+    templateCurrentPage: computed(() => store.templateListConfig().page ?? 1),
     templateCurrentLimit: computed(() => store.templateListConfig().limit ?? 10),
 
     // Trend vs. the previous active day, per field. Null when there's no
@@ -299,91 +307,117 @@ export const NotificationStore = signalStore(
       )
     );
 
-const createTemplate = (payload: NotificationTemplateUpsertPayload) => {
-  patchState(store, { isSavingTemplate: true, saveTemplateError: null });
+    const fetchTemplateOptions = rxMethod<{ channel: string }>(
+      pipe(
+        distinctUntilChanged((a, b) => a.channel === b.channel),
+        tap(() => patchState(store, { isLoadingTemplateOptions: true, templateOptionsError: null })),
+        switchMap(({ channel }) =>
+          notificationService.getTemplates({ channel, limit: 100, sortField: 'slug', sortOrder: 'ASC' }).pipe(
+            tapResponse({
+              next: (response) => {
+                patchState(store, {
+                  // Only offer active templates for sending.
+                  templateOptions: response.data.items.filter((t) => t.active),
+                  isLoadingTemplateOptions: false,
+                });
+              },
+              error: (err: any) => {
+                patchState(store, {
+                  templateOptionsError: err?.error?.message ?? 'Failed to load templates.',
+                  isLoadingTemplateOptions: false,
+                });
+              },
+            })
+          )
+        )
+      )
+    );
 
-  return notificationService.createTemplate(payload).pipe(
-    tapResponse({
-      next: (response) => {
-        patchState(store, { isSavingTemplate: false });
-        // Spread into a new object so distinctUntilChanged doesn't
-        // treat this as a duplicate of the last fetch and skip it.
-        fetchTemplates({ ...store.templateListConfig() });
-        toast.success(response.message ?? 'Template saved successfully.');
-      },
-      error: (err: any) => {
-        const message = err?.error?.message ?? 'Failed to save template.';
-        patchState(store, {
-          isSavingTemplate: false,
-          saveTemplateError: message,
-        });
-        toast.error(message);
-      },
-    })
-  );
-};
+    const createTemplate = (payload: NotificationTemplateUpsertPayload) => {
+      patchState(store, { isSavingTemplate: true, saveTemplateError: null });
 
-const sendNotification = (payload: NotificationSendPayload): Observable<NotificationSendResponse> => {
-  patchState(store, { isSendingNotification: true, sendNotificationError: null });
-
-  return notificationService.sendNotification(payload).pipe(
-    tapResponse({
-      next: (response) => {
-        patchState(store, { isSendingNotification: false });
-        toast.success(response.message ?? 'Notification sent successfully.');
-      },
-      error: (err: any) => {
-        const message = err?.error?.message ?? 'Failed to send notification.';
-        patchState(store, { isSendingNotification: false, sendNotificationError: message });
-        toast.error(message);
-      },
-    })
-  );
-};
-
-const exportHistory = () => {
-  patchState(store, { isExportingHistory: true, exportHistoryError: null });
-
-  // Export whatever the table is currently filtered/searched to —
-  // page/limit aren't relevant here since export is the full result set.
-  const { page, limit, ...filters } = store.historyListConfig();
-
-  return notificationService.exportHistory(filters).pipe(
-    tapResponse({
-      next: (response) => {
-        patchState(store, { isExportingHistory: false });
-        const blob = response.body as Blob;
-        const filename =
-          extractFilename(response.headers.get('content-disposition')) ??
-          `notification_history_${new Date().toISOString().slice(0, 10)}.csv`;
-        downloadBlob(blob, filename);
-      },
-      error: (err: any) => {
-        patchState(store, { isExportingHistory: false });
-        const fallback = 'Failed to export notification history.';
-
-        if (err?.error instanceof Blob) {
-          // Blob responseType means error bodies come back as a Blob too —
-          // read it to see if the server sent a JSON error message.
-          err.error.text().then((text: string) => {
-            let message = fallback;
-            try {
-              message = JSON.parse(text)?.message ?? fallback;
-            } catch {
-              /* not JSON, use fallback */
-            }
-            patchState(store, { exportHistoryError: message });
+      return notificationService.createTemplate(payload).pipe(
+        tapResponse({
+          next: (response) => {
+            patchState(store, { isSavingTemplate: false });
+            // Spread into a new object so distinctUntilChanged doesn't
+            // treat this as a duplicate of the last fetch and skip it.
+            fetchTemplates({ ...store.templateListConfig() });
+            toast.success(response.message ?? 'Template saved successfully.');
+          },
+          error: (err: any) => {
+            const message = err?.error?.message ?? 'Failed to save template.';
+            patchState(store, {
+              isSavingTemplate: false,
+              saveTemplateError: message,
+            });
             toast.error(message);
-          });
-        } else {
-          const message = err?.error?.message ?? fallback;
-          patchState(store, { exportHistoryError: message });
-          toast.error(message);
-        }
-      },
-    })
-  );
-};
+          },
+        })
+      );
+    };
+
+    const sendNotification = (payload: NotificationSendPayload): Observable<NotificationSendResponse> => {
+      patchState(store, { isSendingNotification: true, sendNotificationError: null });
+
+      return notificationService.sendNotification(payload).pipe(
+        tapResponse({
+          next: (response) => {
+            patchState(store, { isSendingNotification: false });
+            toast.success(response.message ?? 'Notification sent successfully.');
+          },
+          error: (err: any) => {
+            const message = err?.error?.message ?? 'Failed to send notification.';
+            patchState(store, { isSendingNotification: false, sendNotificationError: message });
+            toast.error(message);
+          },
+        })
+      );
+    };
+
+    const exportHistory = () => {
+      patchState(store, { isExportingHistory: true, exportHistoryError: null });
+
+      // Export whatever the table is currently filtered/searched to —
+      // page/limit aren't relevant here since export is the full result set.
+      const { page, limit, ...filters } = store.historyListConfig();
+
+      return notificationService.exportHistory(filters).pipe(
+        tapResponse({
+          next: (response) => {
+            patchState(store, { isExportingHistory: false });
+            const blob = response.body as Blob;
+            const filename =
+              extractFilename(response.headers.get('content-disposition')) ??
+              `notification_history_${new Date().toISOString().slice(0, 10)}.csv`;
+            downloadBlob(blob, filename);
+          },
+          error: (err: any) => {
+            patchState(store, { isExportingHistory: false });
+            const fallback = 'Failed to export notification history.';
+
+            if (err?.error instanceof Blob) {
+              // Blob responseType means error bodies come back as a Blob too —
+              // read it to see if the server sent a JSON error message.
+              err.error.text().then((text: string) => {
+                let message = fallback;
+                try {
+                  message = JSON.parse(text)?.message ?? fallback;
+                } catch {
+                  /* not JSON, use fallback */
+                }
+                patchState(store, { exportHistoryError: message });
+                toast.error(message);
+              });
+            } else {
+              const message = err?.error?.message ?? fallback;
+              patchState(store, { exportHistoryError: message });
+              toast.error(message);
+            }
+          },
+        })
+      );
+    };
     const setDateRange = (startDate: string, endDate: string) => {
       fetchMetrics({ ...store.metricsParams(), startDate, endDate });
     };
@@ -406,7 +440,7 @@ const exportHistory = () => {
 
     const clearError = () => patchState(store, { error: null });
 
-     const setHistoryPage = (page: number) => {
+    const setHistoryPage = (page: number) => {
       fetchHistory({ ...store.historyListConfig(), page });
     };
 
@@ -418,7 +452,7 @@ const exportHistory = () => {
       fetchHistory({ ...store.historyListConfig(), search: search || undefined, page: 1 });
     };
 
-   const setHistoryTypeFilter = (type: string) => {
+    const setHistoryTypeFilter = (type: string) => {
       fetchHistory({
         page: 1,
         limit: store.historyCurrentLimit(),
@@ -471,7 +505,7 @@ const exportHistory = () => {
       fetchTemplates({ ...store.templateListConfig(), search: search || undefined, page: 1 });
     };
 
-     const setTemplateChannelFilter = (channel: string) => {
+    const setTemplateChannelFilter = (channel: string) => {
       fetchTemplates({
         page: 1,
         limit: store.templateCurrentLimit(),
@@ -524,6 +558,7 @@ const exportHistory = () => {
       clearTemplateFilters,
       createTemplate,
       sendNotification,
+      fetchTemplateOptions,
       exportHistory
     };
   })

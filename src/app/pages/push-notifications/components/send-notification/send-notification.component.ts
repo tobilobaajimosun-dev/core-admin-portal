@@ -1,28 +1,29 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 import { PsSelectModule } from '@pcsl-ui/ui/ps-select/ps-select.module';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
 import { NotificationStore } from '@core/store/notification.store';
 import { NotificationSendPayload } from '@core/interfaces/notification.model';
+import { CustomerStore } from '@core/store/customer.store';
+import { CustomerRaw } from '@core/interfaces/customer.model';
 
 export type RecipientTab = 'all' | 'segment' | 'specific';
-export type ChannelType = 'email' | 'push';
+export type ChannelType = 'email' | 'in-app';
 export type ScheduleType = 'now' | 'later';
 
-export interface EmploymentType {
-  label: string; value: string;
+export interface SelectedCustomer {
+  id: string;
+  name: string;
 }
 
-const TEMPLATES: Record<string, { title: string; message: string }> = {
-  'Loan Repayment Reminder': {
-    title: 'Your loan is overdue!',
-    message: `Dear {{customer_name}},\n\nHi! Your loan of {{loan_amount}} is overdue.\n\nKindly add funds to your wallet ({{loan_id}}) within 24 hours to complete repayment.\n\nThank you for choosing Core.`,
-  },
-  'Loan Approved': {
-    title: 'Your loan has been approved!',
-    message: `Dear {{customer_name}},\n\nCongratulations! Your loan application of {{loan_amount}} has been approved.\n\nFunds will be disbursed to your wallet ({{loan_id}}) within 24 hours.\n\nThank you for choosing Core.`,
-  },
+// TODO: confirm this mapping against the API — assuming the 'in-app' form
+// channel corresponds to 'push' templates.
+const CHANNEL_TO_TEMPLATE_CHANNEL: Record<ChannelType, string> = {
+  'email': 'email',
+  'in-app': 'push',
 };
 
 const AVAILABLE_VARIABLES = [
@@ -44,21 +45,28 @@ const AVAILABLE_VARIABLES = [
 })
 export class SendNotificationComponent {
   private readonly store = inject(NotificationStore);
+  private readonly customerStore = inject(CustomerStore);
 
   readonly isSending = this.store.isSendingNotification;
 
-  // Reference to the textarea, used to read/restore cursor selection when
-  // applying formatting from the toolbar.
   private readonly messageTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('messageTextarea');
 
   recipientTab = signal<RecipientTab>('all');
-  channel = signal<ChannelType>('push');
+  channel = signal<ChannelType>('in-app');
   schedule = signal<ScheduleType>('now');
 
-  // Message builder
-  selectedTemplate = signal('');
+  // Message builder — selectedTemplateId keys on template.id (slugs repeat
+  // across channels), the actual object is derived from the store.
+  selectedTemplateId = signal('');
   notificationTitle = signal('');
   notificationMessage = signal('');
+
+  readonly templateOptions = this.store.templateOptions;
+  readonly isLoadingTemplateOptions = this.store.isLoadingTemplateOptions;
+
+  readonly selectedTemplateObj = computed(() =>
+    this.templateOptions().find(t => t.id === this.selectedTemplateId()) ?? null
+  );
 
   // Segment filters
   employmentType = signal('');
@@ -71,43 +79,41 @@ export class SendNotificationComponent {
   lastLoginDate = signal('');
 
   // Specific customers
-  // NOTE: holds display names for now. Swap to { id, name } objects once a
-  // real customer search endpoint/store is wired in — the API needs
-  // customer_ids, not names.
   customerSearch = signal('');
-  selectedCustomers = signal<string[]>([]);
+  selectedCustomers = signal<SelectedCustomer[]>([]);
+  readonly isSearchingCustomers = this.customerStore.isSearchingCustomers;
+  readonly customerSearchResults = computed<CustomerRaw[]>(() => {
+    const selectedIds = new Set(this.selectedCustomers().map(c => c.id));
+    return this.customerStore.customerSearchResults().filter(c => !selectedIds.has(c.id));
+  });
 
   // Schedule later
   scheduledDate = signal('');
   scheduledTime = signal('');
 
-  readonly templateOptions = ['', 'Loan Repayment Reminder', 'Loan Approved'];
-
   readonly employmentTypeOptions = [
-  { value: '', label: 'All Employment Types' },
-  { value: 'employed', label: 'Employed' },
-  { value: 'self_employed', label: 'Self-Employed' },
-  { value: 'unemployed', label: 'Unemployed' },
-];
+    { value: '', label: 'All Employment Types' },
+    { value: 'employed', label: 'Employed' },
+    { value: 'self_employed', label: 'Self-Employed' },
+    { value: 'unemployed', label: 'Unemployed' },
+  ];
 
-readonly loanStatusOptions = [
-  { value: '', label: 'All Loan' },
-  { value: 'active', label: 'Active' },
-  { value: 'overdue', label: 'Overdue' },
-  { value: 'completed', label: 'Completed' },
-];
+  readonly loanStatusOptions = [
+    { value: '', label: 'All Loan' },
+    { value: 'active', label: 'Active' },
+    { value: 'overdue', label: 'Overdue' },
+    { value: 'completed', label: 'Completed' },
+  ];
 
-readonly kycStatusOptions = [
-  { value: '', label: 'All Status' },
-  { value: 'verified', label: 'Verified' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'rejected', label: 'Rejected' },
-];
+  readonly kycStatusOptions = [
+    { value: '', label: 'All Status' },
+    { value: 'verified', label: 'Verified' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'rejected', label: 'Rejected' },
+  ];
 
   readonly availableVariables = AVAILABLE_VARIABLES;
 
-  // Email has no character cap (it's rendered as HTML); other channels
-  // (e.g. in-app/push) stay capped at 500 chars.
   readonly isEmailChannel = computed(() => this.channel() === 'email');
   readonly messageMaxLength = computed<number | null>(() => (this.isEmailChannel() ? null : 500));
 
@@ -119,7 +125,7 @@ readonly kycStatusOptions = [
 
   readonly channelOptions: { value: ChannelType; label: string; sub: string }[] = [
     { value: 'email',  label: 'Email',  sub: 'Sent to customer inbox'   },
-    { value: 'push', label: 'In-App', sub: 'Appears inside the app'   },
+    { value: 'in-app', label: 'In-App', sub: 'Appears inside the app'   },
   ];
 
   readonly estimatedRecipients = computed(() => {
@@ -135,11 +141,28 @@ readonly kycStatusOptions = [
     return true;
   });
 
-  onTemplateChange(val: string): void {
-    this.selectedTemplate.set(val);
-    if (val && TEMPLATES[val]) {
-      this.notificationTitle.set(TEMPLATES[val].title);
-      this.notificationMessage.set(TEMPLATES[val].message);
+  constructor() {
+    toObservable(this.customerSearch)
+      .pipe(skip(1), debounceTime(400), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((query) => this.customerStore.searchCustomers(query.trim()));
+
+    // Reload template options whenever the delivery channel changes, and
+    // clear any selection that no longer applies to the new channel.
+    effect(() => {
+      const templateChannel = CHANNEL_TO_TEMPLATE_CHANNEL[this.channel()];
+      this.store.fetchTemplateOptions({ channel: templateChannel });
+      this.selectedTemplateId.set('');
+      this.notificationTitle.set('');
+      this.notificationMessage.set('');
+    });
+  }
+
+  onTemplateChange(id: string): void {
+    this.selectedTemplateId.set(id);
+    const template = this.templateOptions().find(t => t.id === id);
+    if (template) {
+      this.notificationTitle.set(template.subject ?? '');
+      this.notificationMessage.set(template.body);
     } else {
       this.notificationTitle.set('');
       this.notificationMessage.set('');
@@ -154,32 +177,22 @@ readonly kycStatusOptions = [
     });
   }
 
-  /** Wraps the current textarea selection in an HTML tag (e.g. <strong>...</strong>). */
-  applyBold(): void {
-    this.wrapSelection('<strong>', '</strong>');
-  }
+  applyBold(): void { this.wrapSelection('<strong>', '</strong>'); }
+  applyItalic(): void { this.wrapSelection('<em>', '</em>'); }
 
-  applyItalic(): void {
-    this.wrapSelection('<em>', '</em>');
-  }
-
-  /** Toggles an <h1>...</h1> wrapper around the line the cursor is in. */
   applyHeader(): void {
     const el = this.messageTextarea()?.nativeElement;
     if (!el) return;
-
     const value = this.notificationMessage();
     const cursor = el.selectionStart;
     const lineStart = value.lastIndexOf('\n', cursor - 1) + 1;
     const lineEndIdx = value.indexOf('\n', cursor);
     const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
     const line = value.slice(lineStart, lineEnd);
-
     const isHeader = line.startsWith('<h1>') && line.endsWith('</h1>');
     const newLine = isHeader ? line.slice(4, -5) : `<h1>${line}</h1>`;
     const newValue = value.slice(0, lineStart) + newLine + value.slice(lineEnd);
     const offset = isHeader ? -4 : 4;
-
     this.notificationMessage.set(newValue);
     this.restoreSelection(el, cursor + offset, cursor + offset);
   }
@@ -187,43 +200,21 @@ readonly kycStatusOptions = [
   private wrapSelection(openTag: string, closeTag: string): void {
     const el = this.messageTextarea()?.nativeElement;
     if (!el) return;
-
     const value = this.notificationMessage();
     const start = el.selectionStart;
     const end = el.selectionEnd;
     const selected = value.slice(start, end) || 'text';
-
     const newValue = value.slice(0, start) + openTag + selected + closeTag + value.slice(end);
     this.notificationMessage.set(newValue);
     this.restoreSelection(el, start + openTag.length, start + openTag.length + selected.length);
   }
 
-  /** Restores focus/selection on the textarea after the DOM updates with the new value. */
   private restoreSelection(el: HTMLTextAreaElement, start: number, end: number): void {
-    setTimeout(() => {
-      el.focus();
-      el.setSelectionRange(start, end);
-    });
+    setTimeout(() => { el.focus(); el.setSelectionRange(start, end); });
   }
 
-  // Tags that already render as their own block/paragraph in email clients —
-  // lines starting with one of these are left as-is rather than re-wrapped.
-  private readonly BLOCK_TAG_PATTERN = /^<(h[1-6]|p|div|ul|ol|li|blockquote|table)[\s>]/i;
+  private readonly BLOCK_TAG_PATTERN = /^<(h[1-6]|p|div|ul|ol|li|blockquote|table|html|body)[\s>]/i;
 
-  /**
-   * Prepares the message for HTML email delivery. The textarea already
-   * contains real HTML tags (from the toolbar, or typed directly by the
-   * sender). Each line is treated as its own block: lines that already start
-   * with a block-level tag (<h1>, <p>, etc.) are left alone; everything else
-   * — plain text or a line wrapped only in inline tags like <strong>/<em> —
-   * gets wrapped in <p>...</p> so it renders as a proper paragraph with
-   * normal spacing instead of running everything together.
-   *
-   * NOTE: this intentionally does NOT escape the input. Anyone using this
-   * form can inject arbitrary HTML/script into the outgoing email — that's
-   * the point (rich formatting), but it means this field must stay
-   * restricted to trusted admin users.
-   */
   private toHtmlMessage(message: string): string {
     return message
       .split('\n')
@@ -233,8 +224,15 @@ readonly kycStatusOptions = [
       .join('\n');
   }
 
-  removeCustomer(name: string): void {
-    this.selectedCustomers.update(list => list.filter(c => c !== name));
+  selectCustomer(customer: CustomerRaw): void {
+    const name = `${customer.firstName} ${customer.lastName}`.trim();
+    this.selectedCustomers.update(list => [...list, { id: customer.id, name }]);
+    this.customerSearch.set('');
+    this.customerStore.clearCustomerSearch();
+  }
+
+  removeCustomer(id: string): void {
+    this.selectedCustomers.update(list => list.filter(c => c.id !== id));
   }
 
   clearAllCustomers(): void {
@@ -252,8 +250,9 @@ readonly kycStatusOptions = [
       isHtml: isEmail,
     };
 
-    if (this.selectedTemplate()) {
-      payload.templateSlug = this.selectedTemplate();
+    const template = this.selectedTemplateObj();
+    if (template) {
+      payload.templateSlug = template.slug;
     }
 
     if (this.recipientTab() === 'segment') {
@@ -270,9 +269,7 @@ readonly kycStatusOptions = [
     }
 
     if (this.recipientTab() === 'specific') {
-      // TODO: selectedCustomers() currently holds display names, not IDs —
-      // wire a real customer picker in before this goes live.
-      payload.customer_ids = this.selectedCustomers();
+      payload.customer_ids = this.selectedCustomers().map(c => c.id);
     }
 
     if (this.schedule() === 'later' && this.scheduledDate() && this.scheduledTime()) {
@@ -284,18 +281,17 @@ readonly kycStatusOptions = [
 
   onSend(): void {
     if (!this.canSend()) return;
-
     this.store.sendNotification(this.buildPayload()).subscribe({
       next: () => this.resetForm(),
-      error: () => {}, 
+      error: () => {},
     });
   }
 
   private resetForm(): void {
     this.recipientTab.set('all');
-    this.channel.set('push');
+    this.channel.set('in-app');
     this.schedule.set('now');
-    this.selectedTemplate.set('');
+    this.selectedTemplateId.set('');
     this.notificationTitle.set('');
     this.notificationMessage.set('');
     this.employmentType.set('');
@@ -308,6 +304,7 @@ readonly kycStatusOptions = [
     this.lastLoginDate.set('');
     this.selectedCustomers.set([]);
     this.customerSearch.set('');
+    this.customerStore.clearCustomerSearch();
     this.scheduledDate.set('');
     this.scheduledTime.set('');
   }
