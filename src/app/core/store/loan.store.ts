@@ -38,10 +38,10 @@ function toLoanView(raw: LoanRaw): LoanView {
     customerName: `${raw.customer.firstName} ${raw.customer.lastName}`,
     customerEmail: raw.customer.email,
     initials: `${(raw.customer.firstName ?? ' ').charAt(0)}${(raw.customer.lastName ?? ' ').charAt(0)}`.toUpperCase(),
-    loanId: raw.unique_loan_id,
+    loanId: raw?.unique_loan_id ?? '—',
     amount: `₦${raw.loan_amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`,
     tenor: `For ${raw.loan_duration} month${raw.loan_duration === 1 ? '' : 's'}`,
-    product: raw.product.title,
+    product: raw.product?.title ?? '—',
     status: STATUS_LABELS[raw.status] ?? raw.status,
   };
 }

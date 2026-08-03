@@ -37,7 +37,7 @@ export class DashboardService {
   ): Observable<RecentLoansResponse> {
     const urlParams = buildURLSearchParams(params);
     return this.httpClient.get<RecentLoansResponse>(
-      `${this.apiBaseUrl}/api/v1/customers/recent-loan-application?${urlParams}`
+      `${this.apiBaseUrl}/api/v1/dashboard/admin-dashboard/recent-loan-application?${urlParams}`
     );
   }
 
@@ -46,7 +46,7 @@ export class DashboardService {
   ): Observable<TransactionsResponse> {
     const urlParams = buildURLSearchParams(params);
     return this.httpClient.get<TransactionsResponse>(
-      `${this.apiBaseUrl}/api/v1/customers/list-transaction-histories?${urlParams}`
+      `${this.apiBaseUrl}/api/v1/dashboard/admin-dashboard/list-transactions-history?${urlParams}`
     );
   }
 }

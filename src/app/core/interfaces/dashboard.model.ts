@@ -312,7 +312,7 @@ export interface RecentLoan {
   createdAt:        string;
   updatedAt:        string;
   customer:         LoanCustomer;
-  product:          LoanProduct;
+  product:          LoanProduct | null;
 }
 
 export interface RecentLoansMeta {
