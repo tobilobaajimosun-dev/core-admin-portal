@@ -45,6 +45,16 @@ export interface CreateAdminPayload {
   permissionIds: string[];
 }
 
+export interface UpdateAdminPayload {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  profile_image?: string | null;
+  roleId?: string;
+  permissionIds?: string[];
+}
+
 export interface AdminResponse {
   statusCode: number;
   status: string;

@@ -237,6 +237,14 @@ export const AuthStore = signalStore(
         )
       );
 
+      const updateUser = (partial: Partial<LoggedInUser>) => {
+        const current = store.user();
+        if (!current) return;
+        const updated = { ...current, ...partial };
+        patchState(store, { user: updated });
+        storage.setUser?.(updated); // keep localStorage in sync, if the storage service supports it
+      };
+
       return {
         hasPermission,
         login,
@@ -244,7 +252,8 @@ export const AuthStore = signalStore(
         updateReturnUrl,
         updateAccessToken,
         refreshAccessToken,
-        changePassword
+        changePassword,
+        updateUser
       };
     }
   ),

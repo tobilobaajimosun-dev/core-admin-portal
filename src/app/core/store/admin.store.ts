@@ -21,6 +21,7 @@ import {
   AdminListParams,
   AdminPagination,
   CreateAdminPayload,
+  UpdateAdminPayload,
 } from '@core/interfaces/admin.model';
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 
@@ -178,7 +179,7 @@ const createAdmin = rxMethod<CreateAdminPayload>(
   )
 );
 
-const updateAdmin = rxMethod<{ id: string; payload: Partial<CreateAdminPayload> }>(
+const updateAdmin = rxMethod<{ id: string; payload: UpdateAdminPayload }>(
   pipe(
     tap(() => patchState(store, { isSubmitting: true, error: null })),
     switchMap(({ id, payload }) =>

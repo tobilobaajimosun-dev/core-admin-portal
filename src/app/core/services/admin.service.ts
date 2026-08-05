@@ -6,6 +6,7 @@ import {
   AdminListResponse,
   AdminResponse,
   CreateAdminPayload,
+  UpdateAdminPayload,
 } from '@core/interfaces/admin.model';
 import { buildURLSearchParams } from '@pcsl-ui/utils/strings';
 
@@ -33,13 +34,13 @@ getAllAdmins(params: AdminListParams = {}): Observable<AdminListResponse> {
       `${this.apiBaseUrl}/api/v1/admins/${id}`
     );
   }
-
-  updateAdmin(id: string, payload: Partial<CreateAdminPayload>): Observable<AdminResponse> {
-    return this.httpClient.put<AdminResponse>(
-      `${this.apiBaseUrl}/api/v1/admins/${id}`,
-      payload
-    );
-  }
+  
+  updateAdmin(id: string, payload: UpdateAdminPayload): Observable<AdminResponse> {
+  return this.httpClient.put<AdminResponse>(
+    `${this.apiBaseUrl}/api/v1/admins/${id}`,
+    payload
+  );
+}
 
   deleteAdmin(id: string): Observable<void> {
     return this.httpClient.delete<void>(

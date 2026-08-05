@@ -44,6 +44,8 @@ export class PsSidebarComponent implements AfterViewInit {
     return allMenus;
   });
 
+  userAvatar = computed(() => this.authStore.user()?.profile_image || null);
+
   getUserInitials(): string {
     const user = this.authStore.user();
     if (!user) return 'U';
@@ -63,6 +65,10 @@ export class PsSidebarComponent implements AfterViewInit {
   //   if (!user) return '';
   //   return user.profile?.role?.name || 'Administrator';
   // }
+
+  goToProfileSettings(): void {
+    this.router.navigate(['/settings']); // adjust to your actual settings route
+  }
 
   closeSidebar() {
     this.closeSidebarEvent.emit();
