@@ -19,6 +19,21 @@ export const LOAN_STATUSES: LoanStatus[] = [
   'REJECTED',
 ];
 
+/**
+ * Valid next statuses per current status. PAID_OFF, DEFAULTED and REJECTED are
+ * terminal — an admin should not be able to move a loan out of them from here.
+ */
+export const LOAN_STATUS_TRANSITIONS: Record<LoanStatus, LoanStatus[]> = {
+  APPROVED: ['PENDING_DISBURSEMENT', 'REJECTED'],
+  PENDING_DISBURSEMENT: ['DISBURSED', 'REJECTED'],
+  DISBURSED: ['ACTIVE'],
+  ACTIVE: ['OVERDUE', 'PAID_OFF', 'DEFAULTED'],
+  OVERDUE: ['ACTIVE', 'PAID_OFF', 'DEFAULTED'],
+  PAID_OFF: [],
+  DEFAULTED: [],
+  REJECTED: [],
+};
+
 export interface Loan {
   id: string;
   loanReference: string;

@@ -1,4 +1,10 @@
-<app-page-header title="Loans" subtitle="All loans sold through vendor checkouts." />
+<app-page-header title="Loans" subtitle="All loans sold through vendor checkouts.">
+  <div actions>
+    <button class="pa-btn pa-btn--white pa-btn--sm" type="button" [disabled]="loans().length === 0" (click)="exportCsv()">
+      Export CSV
+    </button>
+  </div>
+</app-page-header>
 
 <div class="pa-toolbar">
   <div class="pa-search">
@@ -18,6 +24,16 @@
       </button>
     }
   </div>
+  <div class="pa-field-row loans-date-range">
+    <div class="pa-field">
+      <label class="pa-field__label" for="loans-from-date">From</label>
+      <input id="loans-from-date" class="pa-input" type="date" [formControl]="fromDateControl" [max]="toDateControl.value || null" />
+    </div>
+    <div class="pa-field">
+      <label class="pa-field__label" for="loans-to-date">To</label>
+      <input id="loans-to-date" class="pa-input" type="date" [formControl]="toDateControl" [min]="fromDateControl.value || null" />
+    </div>
+  </div>
 </div>
 
 <div class="pa-gtable-wrap">
@@ -36,6 +52,8 @@
       @for (r of [1, 2, 3, 4, 5]; track r) {
         <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
       }
+    } @else if (error()) {
+      <app-error-state message="Couldn't load loans. Check your connection and try again." (retry)="retry()" />
     } @else if (loans().length === 0) {
       <div class="pa-gtable__empty">
         <p class="pa-empty__title">No loans found</p>

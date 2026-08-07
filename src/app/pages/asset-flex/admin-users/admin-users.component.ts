@@ -16,6 +16,7 @@ import { formatLabel } from '../shared/utils/format';
 import { applyServerErrors } from '../shared/utils/apply-server-errors';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 
 const STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED', 'INACTIVE'];
 
@@ -28,6 +29,7 @@ const STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED', 'INACTIVE'];
     StatusBadgeComponent,
     PageHeaderComponent,
     ModalShellComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss',
@@ -49,6 +51,7 @@ export class AdminUsersComponent {
   protected readonly users = signal<AdminUser[]>([]);
   protected readonly roles = signal<Role[]>([]);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
   protected readonly saving = signal(false);
   protected readonly editingId = signal<string | null>(null);
   protected readonly deactivating = signal<AdminUser | null>(null);
@@ -178,19 +181,27 @@ export class AdminUsersComponent {
         this.deactivating.set(null);
         this.load();
       },
-      error: () => this.saving.set(false),
+      error: () => {
+        this.saving.set(false);
+        this.toast.error('Could not deactivate this admin user. Please try again.');
+      },
     });
+  }
+
+  protected retry(): void {
+    this.load();
   }
 
   private load(): void {
     this.loading.set(true);
+    this.error.set(false);
     this.service.list().subscribe({
       next: (res) => {
         this.users.set(res.data ?? []);
         this.loading.set(false);
       },
       error: () => {
-        this.users.set([]);
+        this.error.set(true);
         this.loading.set(false);
       },
     });

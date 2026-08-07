@@ -1,5 +1,7 @@
 @if (loading()) {
   <div class="detail-loading">Loading vendor…</div>
+} @else if (loadError()) {
+  <app-error-state message="Couldn't load this vendor. Check your connection and try again." (retry)="retry()" />
 } @else if (!vendor()) {
   <div class="detail-loading">Vendor not found.</div>
 } @else {
@@ -127,11 +129,13 @@
             class="dialog-reason"
             rows="3"
             aria-label="Rejection reason"
+            [attr.aria-invalid]="rejectReason.touched && rejectReason.invalid ? true : null"
+            [attr.aria-describedby]="rejectReason.touched && rejectReason.invalid ? 'reject-reason-error' : null"
             placeholder="e.g. CAC certificate is illegible, please resubmit a clearer scan."
             [formControl]="rejectReason"
           ></textarea>
           @if (rejectReason.touched && rejectReason.invalid) {
-            <p class="dialog-error">Please enter a reason (at least 5 characters).</p>
+            <p class="dialog-error" id="reject-reason-error">Please enter a reason (at least 5 characters).</p>
           }
         }
       }

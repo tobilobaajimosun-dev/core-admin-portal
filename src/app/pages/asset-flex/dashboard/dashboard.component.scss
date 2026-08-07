@@ -39,6 +39,23 @@
   padding: 12px;
 }
 
+.stat--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--dur-fast, 130ms) ease, background var(--dur-fast, 130ms) ease;
+}
+
+.stat--link:hover {
+  border-color: var(--color-primary-hex);
+  background: #fff;
+}
+
+.stat--link:focus-visible {
+  outline: 2px solid var(--color-primary-hex);
+  outline-offset: 2px;
+}
+
 .stat__label-row {
   display: flex;
   align-items: center;

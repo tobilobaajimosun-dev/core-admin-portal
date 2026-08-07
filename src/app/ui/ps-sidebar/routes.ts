@@ -62,7 +62,7 @@ export const SIDEBAR_ROUTES = [
   {
     name: 'Asset Flex Dashboard',
     route: '/asset-flex/dashboard',
-    icon: 'home-icon',
+    icon: 'analytics-icon',
     children: [],
   },
   {
@@ -74,13 +74,13 @@ export const SIDEBAR_ROUTES = [
   {
     name: 'Asset Flex Customers',
     route: '/asset-flex/customers',
-    icon: 'customers-icon',
+    icon: 'user-verify-icon',
     children: [],
   },
   {
     name: 'Asset Flex Loans',
     route: '/asset-flex/loans',
-    icon: 'loan-icon',
+    icon: 'cash-icon',
     children: [],
   },
   {
@@ -116,13 +116,13 @@ export const SIDEBAR_ROUTES = [
   {
     name: 'Asset Flex Admin Users',
     route: '/asset-flex/admin-users',
-    icon: 'admin-users-icon',
+    icon: 'add-user-icon',
     children: [],
   },
   {
     name: 'Asset Flex Settings',
     route: '/asset-flex/settings',
-    icon: 'settings-icon',
+    icon: 'edit-icon',
     children: [],
   },
 ];

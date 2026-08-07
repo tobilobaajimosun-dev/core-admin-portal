@@ -60,6 +60,6 @@ export class ModalShellComponent implements OnInit {
   }
 
   protected close(): void {
-    this.closed.emit();
+    if (this.dismissable()) this.closed.emit();
   }
 }

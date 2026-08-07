@@ -1,6 +1,7 @@
 @use "tailwindcss";
 @source "../pcsl-ui/**/*.{html,ts,scss}";
 // @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta:wght@300;400;500;600;700&display=swap");@import "@angular/cdk/overlay-prebuilt.css";
+@import "./app/pages/asset-flex/asset-flex-design-system.scss";
 
 /* ─────────────────────────────────────────
    THEME — Tailwind v4 custom tokens

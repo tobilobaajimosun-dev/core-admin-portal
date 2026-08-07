@@ -10,6 +10,9 @@ import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-s
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
+import { minTrimmedLength } from '../shared/utils/validators';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 
 const FILTERS = ['', 'PENDING', 'DUE', 'SETTLED', 'FAILED'];
 
@@ -23,6 +26,7 @@ const FILTERS = ['', 'PENDING', 'DUE', 'SETTLED', 'FAILED'];
     ModalShellComponent,
     StatusBadgeComponent,
     NairaPipe,
+    ErrorStateComponent,
   ],
   templateUrl: './settlements.component.html',
   styleUrl: './settlements.component.scss',
@@ -37,14 +41,16 @@ export class SettlementsComponent {
 
   protected readonly settlements = signal<Settlement[]>([]);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
   protected readonly activeStatus = signal('');
+  private loadGeneration = 0;
   protected readonly selected = signal<Set<string>>(new Set());
   protected readonly acting = signal(false);
   protected readonly dialog = signal<'mark' | 'cutoff' | null>(null);
 
   protected readonly batchRef = new FormControl('', {
     nonNullable: true,
-    validators: [Validators.required, Validators.minLength(3)],
+    validators: [Validators.required, minTrimmedLength(3)],
   });
 
   protected readonly selectedCount = computed(() => this.selected().size);
@@ -103,13 +109,16 @@ export class SettlementsComponent {
     }
     this.acting.set(true);
     this.service
-      .markSettled({ settlement_ids: [...this.selected()], batch_payout_reference: this.batchRef.value })
+      .markSettled({ settlement_ids: [...this.selected()], batch_payout_reference: this.batchRef.value.trim() })
       .subscribe({
         next: (res) => {
           this.toast.success(`${res.data?.settledCount ?? 0} settlement(s) marked settled.`);
           this.finishAction();
         },
-        error: () => this.acting.set(false),
+        error: () => {
+          this.acting.set(false);
+          this.toast.error('Could not mark these settlements as settled. Please try again.');
+        },
       });
   }
 
@@ -120,7 +129,10 @@ export class SettlementsComponent {
         this.toast.success(`T+1 cutoff processed ${res.data?.processedCount ?? 0} settlement(s).`);
         this.finishAction();
       },
-      error: () => this.acting.set(false),
+      error: () => {
+        this.acting.set(false);
+        this.toast.error('Could not trigger the T+1 cutoff. Please try again.');
+      },
     });
   }
 
@@ -131,15 +143,44 @@ export class SettlementsComponent {
     this.load();
   }
 
+  protected retry(): void {
+    this.load();
+  }
+
+  /** Exports the selected rows if any are checked, otherwise the whole current page/filter view. */
+  protected exportCsv(): void {
+    const selectedIds = this.selected();
+    const rows = selectedIds.size > 0 ? this.settlements().filter((s) => selectedIds.has(s.id)) : this.settlements();
+    exportToCsv(
+      `settlements-${this.activeStatus() || 'all'}.csv`,
+      rows.map((s) => ({
+        id: s.id,
+        reference: s.settlementReference,
+        vendor: s.vendor?.businessName || s.vendorId,
+        gross_amount: s.grossOrderAmount,
+        fee: s.platformFeeDeduction,
+        net_amount: s.netSettlementAmount,
+        status: s.status,
+        due_date: s.settlementDueDate ?? '',
+        settled_at: s.settledAt ?? '',
+        batch_payout_reference: s.batchPayoutReference ?? '',
+      })),
+    );
+  }
+
   private load(): void {
     this.loading.set(true);
+    this.error.set(false);
+    const generation = ++this.loadGeneration;
     this.service.list(this.activeStatus() || undefined).subscribe({
       next: (res) => {
+        if (generation !== this.loadGeneration) return;
         this.settlements.set(res.data ?? []);
         this.loading.set(false);
       },
       error: () => {
-        this.settlements.set([]);
+        if (generation !== this.loadGeneration) return;
+        this.error.set(true);
         this.loading.set(false);
       },
     });

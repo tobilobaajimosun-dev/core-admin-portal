@@ -14,6 +14,8 @@ import { PaginationMeta } from '@pages/asset-flex/shared/models/generic.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { statusTone } from '../shared/utils/status-tone';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 
 @Component({
   selector: 'app-customers',
@@ -24,6 +26,7 @@ import { statusTone } from '../shared/utils/status-tone';
     HugeiconsIconComponent,
     PageHeaderComponent,
     StatusBadgeComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './customers.component.html',
   styleUrl: './customers.component.scss',
@@ -40,9 +43,11 @@ export class CustomersComponent {
   protected readonly customers = signal<Customer[]>([]);
   protected readonly pagination = signal<PaginationMeta | null>(null);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
   protected readonly page = signal(1);
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   private readonly limit = 20;
+  private loadGeneration = 0;
 
   constructor() {
     const qp = this.route.snapshot.queryParamMap;
@@ -91,18 +96,42 @@ export class CustomersComponent {
     });
   }
 
+  protected retry(): void {
+    this.load();
+  }
+
+  /** Deliberately excludes BVN/NIN — those stay masked everywhere else in this UI. */
+  protected exportCsv(): void {
+    exportToCsv(
+      'customers.csv',
+      this.customers().map((c) => ({
+        id: c.id,
+        name: this.fullName(c),
+        phone_number: c.phoneNumber,
+        email: c.email,
+        status: c.status,
+        triad_verified: c.isTriadVerified,
+        created_at: c.createdAt,
+      })),
+    );
+  }
+
   private load(): void {
     this.loading.set(true);
+    this.error.set(false);
+    const generation = ++this.loadGeneration;
     this.customerService
       .list({ page: this.page(), limit: this.limit, search: this.searchControl.value || undefined })
       .subscribe({
         next: (res) => {
+          if (generation !== this.loadGeneration) return;
           this.customers.set(res.data?.data ?? []);
           this.pagination.set(res.data?.pagination ?? null);
           this.loading.set(false);
         },
         error: () => {
-          this.customers.set([]);
+          if (generation !== this.loadGeneration) return;
+          this.error.set(true);
           this.loading.set(false);
         },
       });

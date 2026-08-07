@@ -54,6 +54,15 @@
   background: #e5e7eb;
 }
 
+.ms-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ms-close:disabled:hover {
+  background: #f3f4f6;
+}
+
 .ms-close:focus-visible {
   outline: 2px solid var(--color-primary-hex);
   outline-offset: 2px;

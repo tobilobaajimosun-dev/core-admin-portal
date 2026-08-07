@@ -11,10 +11,11 @@ import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-he
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { KNOWN_PERMISSIONS, PERMISSION_CATALOG } from '../shared/utils/permission-catalog';
 import { formatLabel } from '../shared/utils/format';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 
 @Component({
   selector: 'app-roles',
-  imports: [ReactiveFormsModule, HugeiconsIconComponent, PageHeaderComponent, ModalShellComponent],
+  imports: [ReactiveFormsModule, HugeiconsIconComponent, PageHeaderComponent, ModalShellComponent, ErrorStateComponent],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +32,7 @@ export class RolesComponent {
 
   protected readonly roles = signal<Role[]>([]);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
   protected readonly dialogOpen = signal(false);
   protected readonly saving = signal(false);
   protected readonly editingId = signal<string | null>(null);
@@ -115,19 +117,27 @@ export class RolesComponent {
         this.dialogOpen.set(false);
         this.load();
       },
-      error: () => this.saving.set(false),
+      error: () => {
+        this.saving.set(false);
+        this.toast.error(editing ? 'Could not update this role. Please try again.' : 'Could not create this role. Please try again.');
+      },
     });
+  }
+
+  protected retry(): void {
+    this.load();
   }
 
   private load(): void {
     this.loading.set(true);
+    this.error.set(false);
     this.service.list().subscribe({
       next: (res) => {
         this.roles.set(res.data ?? []);
         this.loading.set(false);
       },
       error: () => {
-        this.roles.set([]);
+        this.error.set(true);
         this.loading.set(false);
       },
     });

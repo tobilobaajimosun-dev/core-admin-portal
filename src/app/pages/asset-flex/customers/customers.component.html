@@ -1,4 +1,10 @@
-<app-page-header title="Customers" subtitle="End customers who financed purchases through vendors." />
+<app-page-header title="Customers" subtitle="End customers who financed purchases through vendors.">
+  <div actions>
+    <button class="pa-btn pa-btn--white pa-btn--sm" type="button" [disabled]="customers().length === 0" (click)="exportCsv()">
+      Export CSV
+    </button>
+  </div>
+</app-page-header>
 
 <div class="pa-toolbar">
   <div class="pa-search">
@@ -21,6 +27,8 @@
       @for (r of [1, 2, 3, 4, 5]; track r) {
         <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
       }
+    } @else if (error()) {
+      <app-error-state message="Couldn't load customers. Check your connection and try again." (retry)="retry()" />
     } @else if (customers().length === 0) {
       <div class="pa-gtable__empty">
         <p class="pa-empty__title">No customers found</p>

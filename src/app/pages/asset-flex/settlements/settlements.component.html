@@ -1,5 +1,8 @@
 <app-page-header title="Settlements" subtitle="Vendor payouts on the T+1 settlement ledger.">
   <div actions class="head-actions">
+    <button class="pa-btn pa-btn--white pa-btn--sm" type="button" [disabled]="settlements().length === 0" (click)="exportCsv()">
+      Export CSV{{ selectedCount() > 0 ? ' (' + selectedCount() + ' selected)' : '' }}
+    </button>
     <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="openCutoff()">Trigger T+1 cutoff</button>
     <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" [disabled]="selectedCount() === 0" (click)="openMark()">
       Mark settled@if (selectedCount() > 0) { ({{ selectedCount() }}) }
@@ -27,7 +30,7 @@
   <div class="pa-gtable settlements-gtable">
     <div class="pa-gtable__head">
       <span class="pa-gtable__cell--center">
-        <input type="checkbox" aria-label="Select all" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" />
+        <input type="checkbox" aria-label="Select all on this page" title="Selects only the rows on this page" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" />
       </span>
       <span>Reference</span>
       <span>Vendor</span>
@@ -42,9 +45,12 @@
       @for (r of [1, 2, 3, 4]; track r) {
         <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
       }
+    } @else if (error()) {
+      <app-error-state message="Couldn't load settlements. Check your connection and try again." (retry)="retry()" />
     } @else if (settlements().length === 0) {
       <div class="pa-gtable__empty">
         <p class="pa-empty__title">No settlements</p>
+        <p class="pa-empty__text">Try a different status filter, or check back once a payout run is due.</p>
       </div>
     } @else {
       @for (s of settlements(); track s.id) {

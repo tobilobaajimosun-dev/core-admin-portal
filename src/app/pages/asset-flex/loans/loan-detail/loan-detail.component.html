@@ -1,5 +1,7 @@
 @if (loading()) {
   <div class="loan-loading">Loading loan…</div>
+} @else if (loadError()) {
+  <app-error-state message="Couldn't load this loan. Check your connection and try again." (retry)="retry()" />
 } @else if (!loan()) {
   <div class="loan-loading">Loan not found.</div>
 } @else {
@@ -19,7 +21,22 @@
         <span class="loan-head__muted">{{ l.vendor?.businessName || l.vendorId }}</span>
       </div>
     </div>
-    <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openDialog()">Update status</button>
+    <div class="loan-head__actions">
+      @if (canDisburse()) {
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openDisburseDialog()">
+          Disburse loan
+        </button>
+      }
+      <button
+        class="pa-btn pa-btn--white pa-btn--sm"
+        type="button"
+        (click)="openDialog()"
+        [disabled]="otherNextStatuses().length === 0"
+        [title]="otherNextStatuses().length === 0 ? 'This loan is in a terminal state and cannot be changed.' : ''"
+      >
+        Update status
+      </button>
+    </div>
   </header>
 
   <div class="loan-grid">
@@ -54,7 +71,7 @@
       <div class="pa-field">
         <label class="pa-field__label" for="loan-status">Status</label>
         <select id="loan-status" class="pa-select" [formControl]="statusControl">
-          @for (s of statuses; track s) {
+          @for (s of otherNextStatuses(); track s) {
             <option [value]="s">{{ label(s) }}</option>
           }
         </select>
@@ -63,6 +80,21 @@
         <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDialog()" [disabled]="saving()">Cancel</button>
         <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="saveStatus()" [disabled]="saving()">
           {{ saving() ? 'Saving…' : 'Update status' }}
+        </button>
+      </ng-container>
+    </app-modal-shell>
+  }
+
+  @if (disburseDialogOpen()) {
+    <app-modal-shell title="Disburse loan" [dismissable]="!disbursing()" maxWidth="420px" (closed)="closeDisburseDialog()">
+      <p class="dialog-text">
+        This releases <strong>{{ l.principalAmount | naira }}</strong> to <strong>{{ l.vendor?.businessName || l.vendorId }}</strong>.
+        This action cannot be undone.
+      </p>
+      <ng-container modalFooter>
+        <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDisburseDialog()" [disabled]="disbursing()">Cancel</button>
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="confirmDisburse()" [disabled]="disbursing()">
+          {{ disbursing() ? 'Disbursing…' : 'Disburse loan' }}
         </button>
       </ng-container>
     </app-modal-shell>

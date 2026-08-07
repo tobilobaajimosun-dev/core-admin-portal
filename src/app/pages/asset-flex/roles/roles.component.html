@@ -11,6 +11,8 @@
       <div class="role-card"><span class="skeleton"></span></div>
     }
   </div>
+} @else if (error()) {
+  <app-error-state message="Couldn't load roles. Check your connection and try again." (retry)="retry()" />
 } @else if (roles().length === 0) {
   <p class="empty">No roles defined yet.</p>
 } @else {

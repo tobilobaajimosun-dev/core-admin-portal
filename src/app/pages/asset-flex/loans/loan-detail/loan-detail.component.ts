@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -8,12 +8,13 @@ import { ArrowLeft01Icon } from '@hugeicons-pro/core-stroke-rounded';
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 
 import { LoanService } from '../../shared/services/loan.service';
-import { Loan, LoanStatus, LOAN_STATUSES } from '../../shared/models/loan.model';
+import { Loan, LoanStatus, LOAN_STATUS_TRANSITIONS } from '../../shared/models/loan.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { NairaPipe } from '../../shared/pipes/naira.pipe';
 import { statusTone } from '../../shared/utils/status-tone';
 import { formatLabel } from '../../shared/utils/format';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 
 @Component({
   selector: 'app-loan-detail',
@@ -25,12 +26,13 @@ import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-s
     StatusBadgeComponent,
     NairaPipe,
     ModalShellComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './loan-detail.component.html',
   styleUrl: './loan-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoanDetailComponent implements OnInit {
+export class LoanDetailComponent {
   private readonly loanService = inject(LoanService);
   private readonly toast = inject(PsToastService);
 
@@ -39,15 +41,37 @@ export class LoanDetailComponent implements OnInit {
   protected readonly backIcon = ArrowLeft01Icon;
   protected readonly statusTone = statusTone;
   protected readonly label = formatLabel;
-  protected readonly statuses = LOAN_STATUSES;
 
   protected readonly loan = signal<Loan | null>(null);
   protected readonly loading = signal(true);
+  protected readonly loadError = signal(false);
   protected readonly dialogOpen = signal(false);
   protected readonly saving = signal(false);
   protected readonly statusControl = new FormControl<LoanStatus>('ACTIVE', { nonNullable: true });
 
-  ngOnInit(): void {
+  /** Valid next statuses for the loan's current status; empty when terminal. */
+  protected readonly allowedNextStatuses = computed(() => {
+    const l = this.loan();
+    return l ? LOAN_STATUS_TRANSITIONS[l.status] : [];
+  });
+
+  /** Statuses offered by the generic "Update status" dialog — DISBURSED is handled by its own scoped action. */
+  protected readonly otherNextStatuses = computed(() => this.allowedNextStatuses().filter((s) => s !== 'DISBURSED'));
+
+  protected readonly canDisburse = computed(
+    () => this.loan()?.status === 'PENDING_DISBURSEMENT' && this.allowedNextStatuses().includes('DISBURSED'),
+  );
+  protected readonly disburseDialogOpen = signal(false);
+  protected readonly disbursing = signal(false);
+
+  constructor() {
+    effect(() => {
+      this.id();
+      this.load();
+    });
+  }
+
+  protected retry(): void {
     this.load();
   }
 
@@ -58,24 +82,57 @@ export class LoanDetailComponent implements OnInit {
       return;
     }
     this.loading.set(true);
+    this.loadError.set(false);
     this.loanService.getOne(id).subscribe({
       next: (res) => {
         this.loan.set(res.data ?? null);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.loadError.set(true);
+        this.loading.set(false);
+      },
     });
   }
 
   protected openDialog(): void {
-    const l = this.loan();
-    if (l) this.statusControl.setValue(l.status);
+    const next = this.otherNextStatuses();
+    if (next.length === 0) return;
+    this.statusControl.setValue(next[0]);
     this.dialogOpen.set(true);
   }
 
   protected closeDialog(): void {
     if (this.saving()) return;
     this.dialogOpen.set(false);
+  }
+
+  protected openDisburseDialog(): void {
+    if (!this.canDisburse()) return;
+    this.disburseDialogOpen.set(true);
+  }
+
+  protected closeDisburseDialog(): void {
+    if (this.disbursing()) return;
+    this.disburseDialogOpen.set(false);
+  }
+
+  protected confirmDisburse(): void {
+    const id = this.id();
+    if (!id) return;
+    this.disbursing.set(true);
+    this.loanService.updateStatus(id, { status: 'DISBURSED' }).subscribe({
+      next: () => {
+        this.toast.success('Loan disbursed.');
+        this.disbursing.set(false);
+        this.disburseDialogOpen.set(false);
+        this.load();
+      },
+      error: () => {
+        this.disbursing.set(false);
+        this.toast.error('Could not disburse this loan. Please try again.');
+      },
+    });
   }
 
   protected saveStatus(): void {
@@ -89,7 +146,10 @@ export class LoanDetailComponent implements OnInit {
         this.dialogOpen.set(false);
         this.load();
       },
-      error: () => this.saving.set(false),
+      error: () => {
+        this.saving.set(false);
+        this.toast.error('Could not update the loan status. Please try again.');
+      },
     });
   }
 }

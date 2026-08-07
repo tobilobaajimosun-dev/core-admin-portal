@@ -20,6 +20,8 @@
       @for (row of [1, 2, 3, 4]; track row) {
         <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
       }
+    } @else if (error()) {
+      <app-error-state message="Couldn't load admin users. Check your connection and try again." (retry)="retry()" />
     } @else if (users().length === 0) {
       <div class="pa-gtable__empty">
         <p class="pa-empty__title">No admin users yet</p>

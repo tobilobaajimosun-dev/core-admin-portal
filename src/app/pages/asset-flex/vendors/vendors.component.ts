@@ -14,6 +14,8 @@ import { PaginationMeta } from '@pages/asset-flex/shared/models/generic.model';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { statusTone } from '../shared/utils/status-tone';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 
 const STATUS_FILTERS: { label: string; value: '' | VendorStatus }[] = [
   { label: 'All', value: '' },
@@ -33,6 +35,7 @@ const STATUS_FILTERS: { label: string; value: '' | VendorStatus }[] = [
     HugeiconsIconComponent,
     StatusBadgeComponent,
     PageHeaderComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './vendors.component.html',
   styleUrl: './vendors.component.scss',
@@ -49,6 +52,7 @@ export class VendorsComponent {
   protected readonly vendors = signal<Vendor[]>([]);
   protected readonly pagination = signal<PaginationMeta | null>(null);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
   protected readonly activeStatus = signal<'' | VendorStatus>('');
   protected readonly page = signal(1);
 
@@ -56,6 +60,7 @@ export class VendorsComponent {
   protected readonly statusTone = statusTone;
 
   private readonly limit = 20;
+  private loadGeneration = 0;
 
   constructor() {
     // Seed state from the URL so filters/search/page survive back-navigation.
@@ -104,8 +109,31 @@ export class VendorsComponent {
     });
   }
 
+  protected retry(): void {
+    this.load();
+  }
+
+  protected exportCsv(): void {
+    exportToCsv(
+      `vendors-${this.activeStatus() || 'all'}.csv`,
+      this.vendors().map((v) => ({
+        id: v.id,
+        business_name: v.businessName,
+        contact_email: v.contactEmail,
+        contact_phone: v.contactPhone,
+        status: v.status,
+        settlement_account_name: v.settlementAccountName,
+        settlement_account_number: v.settlementAccountNumber,
+        platform_fee_percentage: v.platformFeePercentage,
+        created_at: v.createdAt,
+      })),
+    );
+  }
+
   private load(): void {
     this.loading.set(true);
+    this.error.set(false);
+    const generation = ++this.loadGeneration;
     this.vendorService
       .list({
         page: this.page(),
@@ -115,12 +143,14 @@ export class VendorsComponent {
       })
       .subscribe({
         next: (res) => {
+          if (generation !== this.loadGeneration) return;
           this.vendors.set(res.data?.data ?? []);
           this.pagination.set(res.data?.pagination ?? null);
           this.loading.set(false);
         },
         error: () => {
-          this.vendors.set([]);
+          if (generation !== this.loadGeneration) return;
+          this.error.set(true);
           this.loading.set(false);
         },
       });

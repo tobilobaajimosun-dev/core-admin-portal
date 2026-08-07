@@ -46,6 +46,20 @@
 .loan-head__sep { color: #cbd5e1; }
 .loan-head__muted { color: #667085; }
 
+.loan-head__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dialog-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0 0 12px;
+}
+
 .loan-grid {
   display: grid;
   grid-template-columns: 1fr;

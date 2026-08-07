@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -9,6 +9,7 @@ import { CustomerService } from '../../shared/services/customer.service';
 import { Customer } from '../../shared/models/customer.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { statusTone } from '../../shared/utils/status-tone';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 
 /** Masks all but the last 4 chars of a sensitive value. */
 function mask(value: string | null | undefined): string {
@@ -19,11 +20,13 @@ function mask(value: string | null | undefined): string {
 
 @Component({
   selector: 'app-customer-detail',
-  imports: [DatePipe, RouterLink, HugeiconsIconComponent, StatusBadgeComponent],
+  imports: [DatePipe, RouterLink, HugeiconsIconComponent, StatusBadgeComponent, ErrorStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (loading()) {
       <div class="c-loading">Loading customer…</div>
+    } @else if (loadError()) {
+      <app-error-state message="Couldn't load this customer. Check your connection and try again." (retry)="retry()" />
     } @else if (!customer()) {
       <div class="c-loading">Customer not found.</div>
     } @else {
@@ -78,7 +81,7 @@ function mask(value: string | null | undefined): string {
     `,
   ],
 })
-export class CustomerDetailComponent implements OnInit {
+export class CustomerDetailComponent {
   private readonly customerService = inject(CustomerService);
 
   readonly id = input<string>('');
@@ -87,6 +90,7 @@ export class CustomerDetailComponent implements OnInit {
 
   protected readonly customer = signal<Customer | null>(null);
   protected readonly loading = signal(true);
+  protected readonly loadError = signal(false);
 
   protected readonly fullName = computed(() => {
     const c = this.customer();
@@ -100,18 +104,34 @@ export class CustomerDetailComponent implements OnInit {
   protected readonly maskedBvn = computed(() => mask(this.customer()?.bvn));
   protected readonly maskedNin = computed(() => mask(this.customer()?.nin));
 
-  ngOnInit(): void {
+  constructor() {
+    effect(() => {
+      this.id();
+      this.load();
+    });
+  }
+
+  protected retry(): void {
+    this.load();
+  }
+
+  private load(): void {
     const id = this.id();
     if (!id) {
       this.loading.set(false);
       return;
     }
+    this.loading.set(true);
+    this.loadError.set(false);
     this.customerService.getOne(id).subscribe({
       next: (res) => {
         this.customer.set(res.data ?? null);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.loadError.set(true);
+        this.loading.set(false);
+      },
     });
   }
 }

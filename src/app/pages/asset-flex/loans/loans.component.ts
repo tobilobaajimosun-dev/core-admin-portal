@@ -16,6 +16,8 @@ import { StatusBadgeComponent } from '../shared/components/status-badge/status-b
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
 import { formatLabel } from '../shared/utils/format';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 
 @Component({
   selector: 'app-loans',
@@ -27,6 +29,7 @@ import { formatLabel } from '../shared/utils/format';
     PageHeaderComponent,
     StatusBadgeComponent,
     NairaPipe,
+    ErrorStateComponent,
   ],
   templateUrl: './loans.component.html',
   styleUrl: './loans.component.scss',
@@ -48,19 +51,41 @@ export class LoansComponent {
   protected readonly loans = signal<Loan[]>([]);
   protected readonly pagination = signal<PaginationMeta | null>(null);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
   protected readonly activeStatus = signal<'' | LoanStatus>('');
   protected readonly page = signal(1);
   protected readonly searchControl = new FormControl('', { nonNullable: true });
+  protected readonly fromDateControl = new FormControl('', { nonNullable: true });
+  protected readonly toDateControl = new FormControl('', { nonNullable: true });
   private readonly limit = 20;
+  private loadGeneration = 0;
 
   constructor() {
     const qp = this.route.snapshot.queryParamMap;
     this.activeStatus.set((qp.get('status') as LoanStatus) || '');
     this.page.set(Number(qp.get('page')) || 1);
     this.searchControl.setValue(qp.get('search') ?? '', { emitEvent: false });
+    this.fromDateControl.setValue(qp.get('from_date') ?? '', { emitEvent: false });
+    this.toDateControl.setValue(qp.get('to_date') ?? '', { emitEvent: false });
 
     this.searchControl.valueChanges
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe(() => {
+        this.page.set(1);
+        this.syncUrl();
+        this.load();
+      });
+
+    this.fromDateControl.valueChanges
+      .pipe(debounceTime(200), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe(() => {
+        this.page.set(1);
+        this.syncUrl();
+        this.load();
+      });
+
+    this.toDateControl.valueChanges
+      .pipe(debounceTime(200), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe(() => {
         this.page.set(1);
         this.syncUrl();
@@ -96,29 +121,58 @@ export class LoansComponent {
         status: this.activeStatus() || null,
         search: this.searchControl.value || null,
         page: this.page() > 1 ? this.page() : null,
+        from_date: this.fromDateControl.value || null,
+        to_date: this.toDateControl.value || null,
       },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
   }
 
+  protected retry(): void {
+    this.load();
+  }
+
+  protected exportCsv(): void {
+    exportToCsv(
+      `loans-${this.activeStatus() || 'all'}.csv`,
+      this.loans().map((l) => ({
+        id: l.id,
+        reference: l.loanReference,
+        vendor: l.vendor?.businessName || l.vendorId,
+        principal_amount: l.principalAmount,
+        total_repayable: l.totalRepayable,
+        tenor_months: l.tenorMonths,
+        status: l.status,
+        disbursed_at: l.disbursedAt ?? '',
+        created_at: l.createdAt,
+      })),
+    );
+  }
+
   private load(): void {
     this.loading.set(true);
+    this.error.set(false);
+    const generation = ++this.loadGeneration;
     this.loanService
       .list({
         page: this.page(),
         limit: this.limit,
         search: this.searchControl.value || undefined,
         status: this.activeStatus() || undefined,
+        from_date: this.fromDateControl.value || undefined,
+        to_date: this.toDateControl.value || undefined,
       })
       .subscribe({
         next: (res) => {
+          if (generation !== this.loadGeneration) return;
           this.loans.set(res.data?.data ?? []);
           this.pagination.set(res.data?.pagination ?? null);
           this.loading.set(false);
         },
         error: () => {
-          this.loans.set([]);
+          if (generation !== this.loadGeneration) return;
+          this.error.set(true);
           this.loading.set(false);
         },
       });

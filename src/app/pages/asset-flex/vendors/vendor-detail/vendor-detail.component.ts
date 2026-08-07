@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { minTrimmedLength } from '../../shared/utils/validators';
 import { RouterLink } from '@angular/router';
 
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -14,6 +15,7 @@ import { Vendor, VendorDocument, VendorStatus } from '../../shared/models/vendor
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { statusTone } from '../../shared/utils/status-tone';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 
 type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
 
@@ -26,12 +28,13 @@ type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
     HugeiconsIconComponent,
     StatusBadgeComponent,
     ModalShellComponent,
+    ErrorStateComponent,
   ],
   templateUrl: './vendor-detail.component.html',
   styleUrl: './vendor-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VendorDetailComponent implements OnInit {
+export class VendorDetailComponent {
   private readonly vendorService = inject(VendorService);
   private readonly loanProductService = inject(LoanProductService);
   private readonly toast = inject(PsToastService);
@@ -46,11 +49,12 @@ export class VendorDetailComponent implements OnInit {
   protected readonly vendor = signal<Vendor | null>(null);
   protected readonly documents = signal<VendorDocument[]>([]);
   protected readonly loading = signal(true);
+  protected readonly loadError = signal(false);
   protected readonly acting = signal(false);
   protected readonly dialog = signal<DialogType | null>(null);
   protected readonly rejectReason = new FormControl('', {
     nonNullable: true,
-    validators: [Validators.required, Validators.minLength(5)],
+    validators: [Validators.required, minTrimmedLength(5)],
   });
 
   protected readonly isPending = computed(() => this.vendor()?.status === 'PENDING_APPROVAL');
@@ -79,9 +83,7 @@ export class VendorDetailComponent implements OnInit {
   protected openAssign(): void {
     this.assignSelected.set(new Set());
     this.assignOpen.set(true);
-    if (this.loanProducts().length === 0) {
-      this.loanProductService.list().subscribe({ next: (res) => this.loanProducts.set(res.data ?? []) });
-    }
+    this.loanProductService.list().subscribe({ next: (res) => this.loanProducts.set(res.data ?? []) });
   }
 
   protected closeAssign(): void {
@@ -100,12 +102,21 @@ export class VendorDetailComponent implements OnInit {
         this.assigning.set(false);
         this.assignOpen.set(false);
       },
-      error: () => this.assigning.set(false),
+      error: () => {
+        this.assigning.set(false);
+        this.toast.error('Could not assign these products to the vendor. Please try again.');
+      },
     });
   }
 
-  ngOnInit(): void {
-    // Route-param inputs are populated before ngOnInit under withComponentInputBinding.
+  constructor() {
+    effect(() => {
+      this.id();
+      this.load();
+    });
+  }
+
+  protected retry(): void {
     this.load();
   }
 
@@ -116,12 +127,16 @@ export class VendorDetailComponent implements OnInit {
       return;
     }
     this.loading.set(true);
+    this.loadError.set(false);
     this.vendorService.getOne(id).subscribe({
       next: (res) => {
         this.vendor.set(res.data ?? null);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.loadError.set(true);
+        this.loading.set(false);
+      },
     });
     this.vendorService.getDocuments(id).subscribe({
       next: (res) => this.documents.set(res.data ?? []),
@@ -167,7 +182,10 @@ export class VendorDetailComponent implements OnInit {
       this.dialog.set(null);
       this.load();
     };
-    const fail = () => this.acting.set(false);
+    const fail = () => {
+      this.acting.set(false);
+      this.toast.error(`Could not ${this.dialogTitle(type).toLowerCase()}. Please try again.`);
+    };
 
     switch (type) {
       case 'approve':
@@ -175,28 +193,29 @@ export class VendorDetailComponent implements OnInit {
         break;
       case 'reject':
         this.vendorService
-          .rejectKyc(id, { reason: this.rejectReason.value })
+          .rejectKyc(id, { reason: this.rejectReason.value.trim() })
           .subscribe({ next: () => done('Vendor KYC rejected.'), error: fail });
         break;
       case 'blacklist':
         this.vendorService.blacklist(id).subscribe({ next: () => done('Vendor blacklisted.'), error: fail });
         break;
       case 'suspend':
-        this.setStatus('SUSPENDED', 'Vendor suspended.', done, fail);
+        this.setStatus(id, 'SUSPENDED', 'Vendor suspended.', done, fail);
         break;
       case 'activate':
-        this.setStatus('APPROVED', 'Vendor reactivated.', done, fail);
+        this.setStatus(id, 'APPROVED', 'Vendor reactivated.', done, fail);
         break;
     }
   }
 
   private setStatus(
+    id: string,
     status: VendorStatus,
     message: string,
     done: (m: string) => void,
     fail: () => void,
   ): void {
-    this.vendorService.updateStatus(this.id(), { status }).subscribe({
+    this.vendorService.updateStatus(id, { status }).subscribe({
       next: () => done(message),
       error: fail,
     });

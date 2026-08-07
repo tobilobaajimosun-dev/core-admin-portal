@@ -11,6 +11,7 @@ import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-he
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 
 @Component({
   selector: 'app-loan-products',
@@ -21,6 +22,7 @@ import { NairaPipe } from '../shared/pipes/naira.pipe';
     ModalShellComponent,
     StatusBadgeComponent,
     NairaPipe,
+    ErrorStateComponent,
   ],
   templateUrl: './loan-products.component.html',
   styleUrl: './loan-products.component.scss',
@@ -38,6 +40,7 @@ export class LoanProductsComponent {
   protected readonly products = signal<LoanProduct[]>([]);
   protected readonly catalog = signal<CaltosCatalogItem[]>([]);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
   protected readonly saving = signal(false);
   protected readonly togglingId = signal<string | null>(null);
   protected readonly mode = signal<'create' | 'edit' | null>(null);
@@ -93,7 +96,10 @@ export class LoanProductsComponent {
       this.saving.set(true);
       this.service.update(editing, v).subscribe({
         next: () => this.done('Loan product updated.'),
-        error: () => this.saving.set(false),
+        error: () => {
+          this.saving.set(false);
+          this.toast.error('Could not update this loan product. Please try again.');
+        },
       });
     } else {
       if (this.createForm.invalid) return this.createForm.markAllAsTouched();
@@ -101,7 +107,10 @@ export class LoanProductsComponent {
       this.saving.set(true);
       this.service.create({ caltos_product_id: v.caltos_product_id, code: v.code, product_code: v.code }).subscribe({
         next: () => this.done('Loan product created.'),
-        error: () => this.saving.set(false),
+        error: () => {
+          this.saving.set(false);
+          this.toast.error('Could not create this loan product. Please try again.');
+        },
       });
     }
   }
@@ -114,7 +123,10 @@ export class LoanProductsComponent {
         this.togglingId.set(null);
         this.load();
       },
-      error: () => this.togglingId.set(null),
+      error: () => {
+        this.togglingId.set(null);
+        this.toast.error('Could not change auto-disburse for this loan product. Please try again.');
+      },
     });
   }
 
@@ -129,8 +141,15 @@ export class LoanProductsComponent {
         this.deleting.set(null);
         this.load();
       },
-      error: () => this.saving.set(false),
+      error: () => {
+        this.saving.set(false);
+        this.toast.error('Could not delete this loan product. Please try again.');
+      },
     });
+  }
+
+  protected retry(): void {
+    this.load();
   }
 
   private done(message: string): void {
@@ -142,13 +161,14 @@ export class LoanProductsComponent {
 
   private load(): void {
     this.loading.set(true);
+    this.error.set(false);
     this.service.list().subscribe({
       next: (res) => {
         this.products.set(res.data ?? []);
         this.loading.set(false);
       },
       error: () => {
-        this.products.set([]);
+        this.error.set(true);
         this.loading.set(false);
       },
     });

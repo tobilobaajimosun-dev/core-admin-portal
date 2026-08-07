@@ -8,6 +8,7 @@ import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-he
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { IdentityProviderService, UtilityProviderService } from '../shared/services/provider.service';
 import { formatLabel } from '../shared/utils/format';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 
 interface ProviderRow {
   id: string;
@@ -20,7 +21,7 @@ interface ProviderRow {
 
 @Component({
   selector: 'app-providers',
-  imports: [PageHeaderComponent, StatusBadgeComponent],
+  imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-page-header [title]="title()" [subtitle]="subtitle()" />
@@ -39,6 +40,8 @@ interface ProviderRow {
           @for (r of [1, 2, 3]; track r) {
             <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
           }
+        } @else if (error()) {
+          <app-error-state message="Couldn't load providers. Check your connection and try again." (retry)="retry()" />
         } @else if (rows().length === 0) {
           <div class="pa-gtable__empty">
             <p class="pa-empty__title">No providers configured</p>
@@ -96,14 +99,20 @@ export class ProvidersComponent {
 
   protected readonly rows = signal<ProviderRow[]>([]);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
   protected readonly settingId = signal<string | null>(null);
 
   constructor() {
     this.load();
   }
 
+  protected retry(): void {
+    this.load();
+  }
+
   private load(): void {
     this.loading.set(true);
+    this.error.set(false);
     const req$: Observable<ApiResponse<ProviderRow[]>> =
       this.kind === 'utilities'
         ? (this.utilities.list() as Observable<ApiResponse<ProviderRow[]>>)
@@ -115,7 +124,7 @@ export class ProvidersComponent {
         this.loading.set(false);
       },
       error: () => {
-        this.rows.set([]);
+        this.error.set(true);
         this.loading.set(false);
       },
     });
@@ -131,7 +140,10 @@ export class ProvidersComponent {
         this.settingId.set(null);
         this.load();
       },
-      error: () => this.settingId.set(null),
+      error: () => {
+        this.settingId.set(null);
+        this.toast.error(`Could not set ${p.name} as default. Please try again.`);
+      },
     });
   }
 }

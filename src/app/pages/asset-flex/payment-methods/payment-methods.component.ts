@@ -3,10 +3,11 @@ import { PaymentMethodService } from '../shared/services/payment-method.service'
 import { PaymentMethod } from '../shared/models/payment-method.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
+import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 
 @Component({
   selector: 'app-payment-methods',
-  imports: [PageHeaderComponent, StatusBadgeComponent],
+  imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-page-header title="Payment Methods" subtitle="Collection methods available across loan products." />
@@ -24,6 +25,8 @@ import { StatusBadgeComponent } from '../shared/components/status-badge/status-b
           @for (r of [1, 2, 3]; track r) {
             <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
           }
+        } @else if (error()) {
+          <app-error-state message="Couldn't load payment methods. Check your connection and try again." (retry)="retry()" />
         } @else if (methods().length === 0) {
           <div class="pa-gtable__empty">
             <p class="pa-empty__title">No payment methods</p>
@@ -46,14 +49,28 @@ export class PaymentMethodsComponent {
   private readonly service = inject(PaymentMethodService);
   protected readonly methods = signal<PaymentMethod[]>([]);
   protected readonly loading = signal(true);
+  protected readonly error = signal(false);
 
   constructor() {
+    this.load();
+  }
+
+  protected retry(): void {
+    this.load();
+  }
+
+  private load(): void {
+    this.loading.set(true);
+    this.error.set(false);
     this.service.list().subscribe({
       next: (res) => {
         this.methods.set(res.data ?? []);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.error.set(true);
+        this.loading.set(false);
+      },
     });
   }
 }

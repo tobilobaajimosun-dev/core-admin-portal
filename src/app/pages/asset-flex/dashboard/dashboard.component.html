@@ -3,24 +3,38 @@
   <p class="page-subtitle">Overview of Asset Flex vendors and activity.</p>
 </header>
 
-<section class="stat-grid" aria-label="Summary statistics">
-  @for (stat of stats(); track stat.key) {
-    <article class="stat">
-      <div class="stat__label-row">
-        <span class="stat__label">{{ stat.label }}</span>
-        <hugeicons-icon [icon]="stat.icon" [size]="14" [strokeWidth]="1.6" color="currentColor" class="stat__icon" />
-      </div>
-      <div class="stat__box">
-        @if (loading()) {
-          <span class="stat__value-skeleton" aria-hidden="true"></span>
-        } @else {
-          <span class="stat__value">{{ stat.value }}</span>
-        }
-      </div>
-      <p class="stat__hint">{{ stat.hint }}</p>
-    </article>
-  }
-</section>
+@if (error()) {
+  <app-error-state message="Couldn't load dashboard summary. Check your connection and try again." (retry)="retry()" />
+} @else {
+  <section class="stat-grid" aria-label="Summary statistics">
+    @for (stat of stats(); track stat.key) {
+      @if (stat.route) {
+        <a class="stat stat--link" [routerLink]="stat.route" [queryParams]="stat.queryParams">
+          <ng-container [ngTemplateOutlet]="statBody" [ngTemplateOutletContext]="{ $implicit: stat }" />
+        </a>
+      } @else {
+        <article class="stat">
+          <ng-container [ngTemplateOutlet]="statBody" [ngTemplateOutletContext]="{ $implicit: stat }" />
+        </article>
+      }
+    }
+  </section>
+}
+
+<ng-template #statBody let-stat>
+  <div class="stat__label-row">
+    <span class="stat__label">{{ stat.label }}</span>
+    <hugeicons-icon [icon]="stat.icon" [size]="14" [strokeWidth]="1.6" color="currentColor" class="stat__icon" />
+  </div>
+  <div class="stat__box">
+    @if (loading()) {
+      <span class="stat__value-skeleton" aria-hidden="true"></span>
+    } @else {
+      <span class="stat__value">{{ stat.value }}</span>
+    }
+  </div>
+  <p class="stat__hint">{{ stat.hint }}</p>
+</ng-template>
 
 <section class="panel">
   <h2 class="panel__title">Getting started</h2>
