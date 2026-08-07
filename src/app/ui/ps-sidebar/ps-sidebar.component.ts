@@ -14,6 +14,7 @@ import { SIDEBAR_ROUTES } from './routes';
 import { filter } from 'rxjs';
 import { AuthStore } from '@core/store/auth.store';
 import { LoggedInUser } from '@core/interfaces/auth.model';
+import { AppPreferenceService } from '@core/services/app-preference.service';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
 
 type MenuItem = {
@@ -37,6 +38,7 @@ export class PsSidebarComponent implements AfterViewInit {
   @Output() closeSidebarEvent = new EventEmitter<void>();
 
   private authStore = inject(AuthStore);
+  private appPreference = inject(AppPreferenceService);
   router = inject(Router);
 
   menus = computed(() => {
@@ -76,6 +78,11 @@ export class PsSidebarComponent implements AfterViewInit {
 
   logOut() {
     this.authStore.logOut();
+  }
+
+  switchApp(): void {
+    this.appPreference.clearAll();
+    this.router.navigate(['/select-app']);
   }
 
   ngAfterViewInit(): void {

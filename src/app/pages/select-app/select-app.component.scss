@@ -1,0 +1,6 @@
+.app-card {
+  &:hover {
+    border-color: var(--accent);
+    background-color: color-mix(in srgb, var(--accent) 6%, white);
+  }
+}

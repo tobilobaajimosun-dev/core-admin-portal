@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@core/guards/auth.guard';
+import { appChosenGuard } from '@core/guards/app-chosen.guard';
 
 export const LAYOUT_ROUTES: Routes = [
   {
     path: '',
-     canMatch: [authGuard({ requiresAuthentication: true })],
+     canMatch: [authGuard({ requiresAuthentication: true }), appChosenGuard],
     loadComponent: () =>
       import('./authenticated-layout.component').then(
         (m) => m.AuthenticatedLayoutComponent

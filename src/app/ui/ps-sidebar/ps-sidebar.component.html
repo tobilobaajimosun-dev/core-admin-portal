@@ -66,6 +66,28 @@
     </div>
   </nav>
 
+  <!-- Switch app -->
+  <div class="flex-shrink-0 px-3 pt-2">
+    <button type="button" (click)="switchApp()"
+      class="flex items-center justify-between w-full rounded-lg transition-colors duration-150 hover:bg-[#F0F0F0] group px-3 py-2.5">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center justify-center flex-shrink-0 w-[18px] h-[18px] text-[#51575B]">
+              <ps-svg-icon name="refresh-icon">
+              </ps-svg-icon>
+          </span>
+        <span class="text-sm font-medium text-[#51575B] transition-colors cursor-pointer">
+          Switch app
+        </span>
+      </div>
+
+      <!-- Arrow -->
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="text-[#727C84]">
+        <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+
   <!-- Logout -->
   <div class="flex-shrink-0 px-3 py-4">
     <button type="button" (click)="logOut()"

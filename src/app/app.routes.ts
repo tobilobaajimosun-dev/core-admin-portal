@@ -9,6 +9,12 @@ export const routes: Routes = [
       import('./pages/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'select-app',
+    canMatch: [authGuard({ requiresAuthentication: true })],
+    loadComponent: () =>
+      import('./pages/select-app/select-app.component').then((m) => m.SelectAppComponent),
+  },
+  {
     path: '',
     canMatch: [authGuard({ requiresAuthentication: true })],
     loadChildren: () =>

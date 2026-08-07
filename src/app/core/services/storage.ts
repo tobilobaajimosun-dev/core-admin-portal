@@ -90,7 +90,8 @@ export class LocalStorageService {
 
   public clear(): void {
     try {
-      window.localStorage.clear();
+      window.localStorage.removeItem(this.authSessionUser);
+      window.localStorage.removeItem(this.authSessionToken);
     } catch (error) {
     }
   }

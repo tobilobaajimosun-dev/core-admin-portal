@@ -1,0 +1,52 @@
+<main class="min-h-screen w-full flex flex-col items-center justify-center bg-white px-6 py-12">
+  <div class="w-full max-w-[720px]">
+
+    <!-- Logo -->
+    <div class="mb-10 flex justify-center">
+      <img src="images/logo.png" width="107" height="40" class="w-[107px] h-10 object-contain" alt="Core by Princeps" loading="eager" />
+    </div>
+
+    <header class="text-center mb-10">
+      <h1 class="text-[28px] font-semibold text-[#121212] leading-tight mb-2">Choose an application</h1>
+      <p class="text-sm text-[#5E5F6E]">Select which admin backend you want to open.</p>
+    </header>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" role="list">
+      @for (app of apps; track app.key) {
+        <button
+          type="button"
+          role="listitem"
+          class="app-card group flex flex-col items-start gap-3 rounded-xl border border-[#E2E8F0] bg-white p-5 text-left
+            transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 cursor-pointer"
+          [style.--accent]="app.accent"
+          (click)="chooseApp(app)"
+        >
+          <span
+            class="flex items-center justify-center w-11 h-11 rounded-lg text-sm font-semibold"
+            [style.color]="app.accent"
+            [style.background]="app.accent + '14'"
+            aria-hidden="true"
+          >
+            {{ app.initials }}
+          </span>
+          <span class="text-base font-semibold text-[#121212]">{{ app.name }}</span>
+          <span class="text-sm text-[#5E5F6E]">{{ app.description }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="mt-8 flex flex-col items-center gap-2">
+      <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          class="w-4 h-4 rounded border-[#E2E8F0] text-[#00B3FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          [checked]="remember()"
+          (change)="remember.set($any($event.target).checked)"
+        />
+        <span class="text-sm text-[#2B3033]">Remember my choice</span>
+      </label>
+      <p class="text-xs text-[#B5B5B5]">You can switch apps anytime from the sidebar.</p>
+    </div>
+
+  </div>
+</main>
