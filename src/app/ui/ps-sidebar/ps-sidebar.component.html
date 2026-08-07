@@ -32,7 +32,8 @@
         ></ps-svg-icon>
       </button>
 
-      <div dropdownMenu role="menu" aria-label="Account menu" class="z-20 bg-white rounded-xl border border-[#E1E6ED] shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[240px] py-1.5">
+      <ng-template dropdownMenu>
+      <div role="menu" aria-label="Account menu" class="z-20 bg-white rounded-xl border border-[#E1E6ED] shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[240px] py-1.5">
         <!-- Header: avatar + name + role tag -->
         <div class="flex items-center gap-2.5 px-3 py-2.5 border-b border-[#ECF1F5]">
           @if (userAvatar()) {
@@ -81,6 +82,7 @@
           </button>
         </div>
       </div>
+      </ng-template>
     </app-dropdown>
   </div>
 

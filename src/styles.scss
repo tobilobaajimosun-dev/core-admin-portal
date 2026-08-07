@@ -4,6 +4,25 @@
 @import "./app/pages/asset-flex/asset-flex-design-system.scss";
 
 /* ─────────────────────────────────────────
+   FONTS — self-hosted (public/fonts)
+   ───────────────────────────────────────── */
+@font-face {
+  font-family: "Cal Sans";
+  src: url("/fonts/CalSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mona Sans";
+  src: url("/fonts/MonaSans.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─────────────────────────────────────────
    THEME — Tailwind v4 custom tokens
    ───────────────────────────────────────── */
 @theme {
@@ -17,8 +36,9 @@
   --color-grey-light: #899299;
   --color-accent: #bbbbcb;
 
-  /* Font */
-  --font-sans: "Plus Jakarta Sans";
+  /* Font — Mona Sans for body copy, Cal Sans for headings/hero text */
+  --font-sans: "Mona Sans";
+  --font-heading: "Cal Sans";
   --default-font-family: var(--font-sans);
 }
 
@@ -47,11 +67,15 @@
 *::before,
 *::after {
   box-sizing: border-box;
-  font-family: "Plus Jakarta Sans";
+  font-family: "Mona Sans", var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Cal Sans", var(--font-heading);
 }
 
 body {
-  font-family: "Plus Jakarta Sans";
+  font-family: "Mona Sans", var(--font-sans);
   color: #121212;
   background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
