@@ -1,12 +1,7 @@
 <div class="h-full flex flex-col bg-white overflow-hidden w-[220px] border-r border-[#F0F0F0]">
 
-  <!-- Logo -->
-  <div class="flex items-center justify-center pt-6 pb-4 flex-shrink-0">
-    <img src="images/logo.png" alt="Core by Princeps" class="object-contain w-[107px] h-10" loading="eager" />
-  </div>
-
-  <!-- User Profile -->
-  <div class="px-3 pb-3 flex-shrink-0">
+  <!-- Profile + app switcher -->
+  <div class="px-3 pt-4 pb-3 flex-shrink-0">
     <app-dropdown placement="bottom-start" #profileDropdown>
       <button
         dropdownHeader
@@ -98,12 +93,12 @@
         class="flex items-center gap-3 rounded-lg transition-all duration-150 cursor-pointer px-3 py-2.5 no-underline"
         [class.bg-[#D0EEFB]]="rla.isActive" [class.bg-transparent]="!rla.isActive">
 
-        <span class="flex items-center justify-center flex-shrink-0 w-5 h-5"
+        <span class="flex items-center justify-center flex-shrink-0 w-[length:var(--sidebar-icon-size)] h-[length:var(--sidebar-icon-size)]"
           [class.text-[#2B3033]]="rla.isActive" [class.text-[#727C84]]="!rla.isActive">
-          <ps-svg-icon [name]="menu.icon" class="w-5 h-5"></ps-svg-icon>
+          <ps-svg-icon [name]="menu.icon" class="w-[length:var(--sidebar-icon-size)] h-[length:var(--sidebar-icon-size)]"></ps-svg-icon>
         </span>
 
-        <span class="text-[15px] leading-none" [class.font-semibold]="rla.isActive" [class.text-[#2B3033]]="rla.isActive"
+        <span class="text-[length:var(--sidebar-font-size)] leading-none" [class.font-semibold]="rla.isActive" [class.text-[#2B3033]]="rla.isActive"
           [class.font-medium]="!rla.isActive" [class.text-[#51575B]]="!rla.isActive">
           {{ menu.name }}
         </span>
