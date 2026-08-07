@@ -6,6 +6,7 @@ import {
   EventEmitter,
   inject,
   Output,
+  signal,
   ViewChild,
 } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -21,6 +22,7 @@ type MenuItem = {
   name: string;
   route: string;
   icon: string;
+  app: 'core' | 'asset-flex';
   children: any[];
   expanded?: boolean;
   type?: string;
@@ -41,9 +43,13 @@ export class PsSidebarComponent implements AfterViewInit {
   private appPreference = inject(AppPreferenceService);
   router = inject(Router);
 
+  /** Which app's session is active — drives which nav items render. Re-read on every navigation. */
+  private readonly activeApp = signal(this.appPreference.getActiveApp());
+
   menus = computed(() => {
-    const allMenus: MenuItem[] = [...SIDEBAR_ROUTES];
-    return allMenus;
+    const allMenus: MenuItem[] = [...SIDEBAR_ROUTES] as MenuItem[];
+    const active = this.activeApp();
+    return allMenus.filter((m) => m.app === active);
   });
 
   userAvatar = computed(() => this.authStore.user()?.profile_image || null);
@@ -69,25 +75,16 @@ export class PsSidebarComponent implements AfterViewInit {
   // }
 
   goToProfileSettings(): void {
-    this.router.navigate(['/settings']); // adjust to your actual settings route
+    this.router.navigate([this.activeApp() === 'asset-flex' ? '/asset-flex/settings' : '/settings']);
   }
 
   closeSidebar() {
     this.closeSidebarEvent.emit();
   }
 
-  logOut() {
-    this.authStore.logOut();
-  }
-
-  switchApp(): void {
-    this.appPreference.clearAll();
-    this.router.navigate(['/select-app']);
-  }
-
   ngAfterViewInit(): void {
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe();
+      .subscribe(() => this.activeApp.set(this.appPreference.getActiveApp()));
   }
 }

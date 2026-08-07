@@ -23,6 +23,7 @@ function mask(value: string | null | undefined): string {
   imports: [DatePipe, RouterLink, HugeiconsIconComponent, StatusBadgeComponent, ErrorStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <div class="p-6">
     @if (loading()) {
       <div class="c-loading">Loading customer…</div>
     } @else if (loadError()) {
@@ -64,6 +65,7 @@ function mask(value: string | null | undefined): string {
         </dl>
       </section>
     }
+    </div>
   `,
   styles: [
     `

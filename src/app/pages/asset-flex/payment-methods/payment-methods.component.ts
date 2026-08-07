@@ -10,6 +10,7 @@ import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-s
   imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <div class="p-6">
     <app-page-header title="Payment Methods" subtitle="Collection methods available across loan products." />
 
     <div class="pa-gtable-wrap">
@@ -42,6 +43,7 @@ import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-s
           }
         }
       </div>
+    </div>
     </div>
   `,
 })
