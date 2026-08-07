@@ -49,10 +49,7 @@
     } @else if (error()) {
       <app-error-state message="Couldn't load settlements. Check your connection and try again." (retry)="retry()" />
     } @else if (settlements().length === 0) {
-      <div class="pa-gtable__empty">
-        <p class="pa-empty__title">No settlements</p>
-        <p class="pa-empty__text">Try a different status filter, or check back once a payout run is due.</p>
-      </div>
+      <app-empty-state title="No settlements" subtitle="Try a different status filter, or check back once a payout run is due." />
     } @else {
       @for (s of settlements(); track s.id) {
         <div class="pa-gtable__row">

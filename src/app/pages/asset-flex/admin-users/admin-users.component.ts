@@ -17,6 +17,7 @@ import { applyServerErrors } from '../shared/utils/apply-server-errors';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 
 const STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED', 'INACTIVE'];
 
@@ -30,6 +31,7 @@ const STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED', 'INACTIVE'];
     PageHeaderComponent,
     ModalShellComponent,
     ErrorStateComponent,
+    EmptyStateComponent,
   ],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.scss',

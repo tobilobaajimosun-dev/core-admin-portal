@@ -25,10 +25,7 @@
     } @else if (error()) {
       <app-error-state message="Couldn't load loan products. Check your connection and try again." (retry)="retry()" />
     } @else if (products().length === 0) {
-      <div class="pa-gtable__empty">
-        <p class="pa-empty__title">No loan products</p>
-        <p class="pa-empty__text">Create one from the Caltos catalog.</p>
-      </div>
+      <app-empty-state title="No loan products" subtitle="Create one from the Caltos catalog." actionLabel="New loan product" (action)="openCreate()" />
     } @else {
       @for (p of products(); track p.id) {
         <div class="pa-gtable__row">

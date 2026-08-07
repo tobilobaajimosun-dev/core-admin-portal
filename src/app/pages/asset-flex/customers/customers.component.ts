@@ -15,6 +15,7 @@ import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-he
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { statusTone } from '../shared/utils/status-tone';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 
 @Component({
@@ -27,6 +28,7 @@ import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
     PageHeaderComponent,
     StatusBadgeComponent,
     ErrorStateComponent,
+    EmptyStateComponent,
   ],
   templateUrl: './customers.component.html',
   styleUrl: './customers.component.scss',

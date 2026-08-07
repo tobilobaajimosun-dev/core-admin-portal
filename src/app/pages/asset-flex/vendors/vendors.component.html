@@ -51,10 +51,7 @@
     } @else if (error()) {
       <app-error-state message="Couldn't load vendors. Check your connection and try again." (retry)="retry()" />
     } @else if (vendors().length === 0) {
-      <div class="pa-gtable__empty">
-        <p class="pa-empty__title">No vendors found</p>
-        <p class="pa-empty__text">Try a different search or status filter.</p>
-      </div>
+      <app-empty-state title="No vendors found" subtitle="Try a different search or status filter." />
     } @else {
       @for (v of vendors(); track v.id) {
         <div class="pa-gtable__row">

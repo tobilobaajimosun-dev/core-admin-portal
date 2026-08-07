@@ -4,10 +4,11 @@ import { PaymentMethod } from '../shared/models/payment-method.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-payment-methods',
-  imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent],
+  imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-6">
@@ -29,9 +30,7 @@ import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-s
         } @else if (error()) {
           <app-error-state message="Couldn't load payment methods. Check your connection and try again." (retry)="retry()" />
         } @else if (methods().length === 0) {
-          <div class="pa-gtable__empty">
-            <p class="pa-empty__title">No payment methods</p>
-          </div>
+          <app-empty-state title="No payment methods" subtitle="Payment methods configured on your account will show up here." />
         } @else {
           @for (m of methods(); track m.code) {
             <div class="pa-gtable__row">

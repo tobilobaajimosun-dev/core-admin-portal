@@ -17,6 +17,7 @@ import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
 import { formatLabel } from '../shared/utils/format';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 import {
   DropdownComponent,
@@ -35,6 +36,7 @@ import {
     StatusBadgeComponent,
     NairaPipe,
     ErrorStateComponent,
+    EmptyStateComponent,
     DropdownComponent,
     DropdownHeaderDirective,
     DropdownMenuDirective,

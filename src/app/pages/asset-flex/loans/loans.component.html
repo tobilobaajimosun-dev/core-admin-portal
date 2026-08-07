@@ -74,10 +74,7 @@
     } @else if (error()) {
       <app-error-state message="Couldn't load loans. Check your connection and try again." (retry)="retry()" />
     } @else if (loans().length === 0) {
-      <div class="pa-gtable__empty">
-        <p class="pa-empty__title">No loans found</p>
-        <p class="pa-empty__text">Try a different search or filter.</p>
-      </div>
+      <app-empty-state title="No loans found" subtitle="Try a different search, status, or date range filter." />
     } @else {
       @for (l of loans(); track l.id) {
         <div class="pa-gtable__row">

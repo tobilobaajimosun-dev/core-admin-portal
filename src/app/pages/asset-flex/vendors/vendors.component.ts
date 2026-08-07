@@ -15,6 +15,7 @@ import { StatusBadgeComponent } from '../shared/components/status-badge/status-b
 import { statusTone } from '../shared/utils/status-tone';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 
 const STATUS_FILTERS: { label: string; value: '' | VendorStatus }[] = [
@@ -36,6 +37,7 @@ const STATUS_FILTERS: { label: string; value: '' | VendorStatus }[] = [
     StatusBadgeComponent,
     PageHeaderComponent,
     ErrorStateComponent,
+    EmptyStateComponent,
   ],
   templateUrl: './vendors.component.html',
   styleUrl: './vendors.component.scss',

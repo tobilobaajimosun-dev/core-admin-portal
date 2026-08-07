@@ -9,6 +9,7 @@ import { StatusBadgeComponent } from '../shared/components/status-badge/status-b
 import { IdentityProviderService, UtilityProviderService } from '../shared/services/provider.service';
 import { formatLabel } from '../shared/utils/format';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 
 interface ProviderRow {
   id: string;
@@ -21,7 +22,7 @@ interface ProviderRow {
 
 @Component({
   selector: 'app-providers',
-  imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent],
+  imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-6">
@@ -44,9 +45,7 @@ interface ProviderRow {
         } @else if (error()) {
           <app-error-state message="Couldn't load providers. Check your connection and try again." (retry)="retry()" />
         } @else if (rows().length === 0) {
-          <div class="pa-gtable__empty">
-            <p class="pa-empty__title">No providers configured</p>
-          </div>
+          <app-empty-state title="No providers configured" [subtitle]="'No ' + title().toLowerCase() + ' set up yet.'" />
         } @else {
           @for (p of rows(); track p.id) {
             <div class="pa-gtable__row">

@@ -12,6 +12,7 @@ import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-s
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-loan-products',
@@ -23,6 +24,7 @@ import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-s
     StatusBadgeComponent,
     NairaPipe,
     ErrorStateComponent,
+    EmptyStateComponent,
   ],
   templateUrl: './loan-products.component.html',
   styleUrl: './loan-products.component.scss',

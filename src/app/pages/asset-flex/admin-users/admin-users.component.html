@@ -24,9 +24,7 @@
     } @else if (error()) {
       <app-error-state message="Couldn't load admin users. Check your connection and try again." (retry)="retry()" />
     } @else if (users().length === 0) {
-      <div class="pa-gtable__empty">
-        <p class="pa-empty__title">No admin users yet</p>
-      </div>
+      <app-empty-state title="No admin users yet" subtitle="Invite your first admin to give someone else access." actionLabel="Invite admin user" (action)="openCreate()" />
     } @else {
       @for (u of users(); track u.id) {
         <div class="pa-gtable__row">

@@ -31,9 +31,7 @@
     } @else if (error()) {
       <app-error-state message="Couldn't load customers. Check your connection and try again." (retry)="retry()" />
     } @else if (customers().length === 0) {
-      <div class="pa-gtable__empty">
-        <p class="pa-empty__title">No customers found</p>
-      </div>
+      <app-empty-state title="No customers found" subtitle="Try a different search, or check back once a vendor checkout brings one in." />
     } @else {
       @for (c of customers(); track c.id) {
         <div class="pa-gtable__row">

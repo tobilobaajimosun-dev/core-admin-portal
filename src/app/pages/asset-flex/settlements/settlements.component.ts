@@ -12,6 +12,7 @@ import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
 import { minTrimmedLength } from '../shared/utils/validators';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 
 const FILTERS = ['', 'PENDING', 'DUE', 'SETTLED', 'FAILED'];
@@ -27,6 +28,7 @@ const FILTERS = ['', 'PENDING', 'DUE', 'SETTLED', 'FAILED'];
     StatusBadgeComponent,
     NairaPipe,
     ErrorStateComponent,
+    EmptyStateComponent,
   ],
   templateUrl: './settlements.component.html',
   styleUrl: './settlements.component.scss',

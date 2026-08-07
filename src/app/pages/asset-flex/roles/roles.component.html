@@ -15,7 +15,7 @@
 } @else if (error()) {
   <app-error-state message="Couldn't load roles. Check your connection and try again." (retry)="retry()" />
 } @else if (roles().length === 0) {
-  <p class="empty">No roles defined yet.</p>
+  <app-empty-state title="No roles defined yet" subtitle="Create a role to start assigning permissions." actionLabel="New role" (action)="openCreate()" />
 } @else {
   <div class="role-grid">
     @for (r of roles(); track r.id) {

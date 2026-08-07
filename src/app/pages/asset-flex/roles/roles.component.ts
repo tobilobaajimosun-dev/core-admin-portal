@@ -12,10 +12,11 @@ import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-s
 import { KNOWN_PERMISSIONS, PERMISSION_CATALOG } from '../shared/utils/permission-catalog';
 import { formatLabel } from '../shared/utils/format';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-roles',
-  imports: [ReactiveFormsModule, HugeiconsIconComponent, PageHeaderComponent, ModalShellComponent, ErrorStateComponent],
+  imports: [ReactiveFormsModule, HugeiconsIconComponent, PageHeaderComponent, ModalShellComponent, ErrorStateComponent, EmptyStateComponent],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
