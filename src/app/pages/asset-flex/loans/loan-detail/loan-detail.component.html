@@ -1,0 +1,70 @@
+@if (loading()) {
+  <div class="loan-loading">Loading loan…</div>
+} @else if (!loan()) {
+  <div class="loan-loading">Loan not found.</div>
+} @else {
+  @let l = loan()!;
+
+  <a class="breadcrumb" routerLink="/asset-flex/loans">
+    <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.6" color="currentColor" />
+    <span>Loans</span>
+  </a>
+
+  <header class="loan-head">
+    <div>
+      <h1 class="loan-head__ref">{{ l.loanReference }}</h1>
+      <div class="loan-head__meta">
+        <app-status-badge [tone]="statusTone(l.status)" [text]="l.status" />
+        <span class="loan-head__sep">·</span>
+        <span class="loan-head__muted">{{ l.vendor?.businessName || l.vendorId }}</span>
+      </div>
+    </div>
+    <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openDialog()">Update status</button>
+  </header>
+
+  <div class="loan-grid">
+    <section class="pa-card">
+      <h2 class="pa-card__title">Loan terms</h2>
+      <dl class="pa-kv">
+        <div class="pa-kv__row"><dt>Principal</dt><dd>{{ l.principalAmount | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Total interest</dt><dd>{{ l.totalInterest | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Total repayable</dt><dd>{{ l.totalRepayable | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Monthly installment</dt><dd>{{ l.monthlyInstallment | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Tenor</dt><dd>{{ l.tenorMonths }} months</dd></div>
+        <div class="pa-kv__row"><dt>Product</dt><dd>{{ l.loanProduct?.name || l.loanProductId }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="pa-card">
+      <h2 class="pa-card__title">Collection &amp; parties</h2>
+      <dl class="pa-kv">
+        <div class="pa-kv__row"><dt>Vendor</dt><dd>{{ l.vendor?.businessName || l.vendorId }}</dd></div>
+        <div class="pa-kv__row"><dt>Customer</dt><dd>{{ (l.customer?.firstName || '') + ' ' + (l.customer?.lastName || '') || l.customerId }}</dd></div>
+        <div class="pa-kv__row"><dt>Salary provider</dt><dd>{{ l.salaryProviderUsed || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Direct debit</dt><dd>{{ l.directDebitProvider || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Mandate ref</dt><dd class="pa-mono">{{ l.mandateReference || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Disbursed</dt><dd>{{ l.disbursedAt ? (l.disbursedAt | date: 'medium') : '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Created</dt><dd>{{ l.createdAt | date: 'medium' }}</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  @if (dialogOpen()) {
+    <app-modal-shell title="Update loan status" [dismissable]="!saving()" maxWidth="420px" (closed)="closeDialog()">
+      <div class="pa-field">
+        <label class="pa-field__label" for="loan-status">Status</label>
+        <select id="loan-status" class="pa-select" [formControl]="statusControl">
+          @for (s of statuses; track s) {
+            <option [value]="s">{{ label(s) }}</option>
+          }
+        </select>
+      </div>
+      <ng-container modalFooter>
+        <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDialog()" [disabled]="saving()">Cancel</button>
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="saveStatus()" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Update status' }}
+        </button>
+      </ng-container>
+    </app-modal-shell>
+  }
+}

@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.settlements-gtable {
+  --gt-cols: 32px 1.4fr 1.2fr 0.9fr 0.9fr 0.9fr 1fr 1fr;
+}
+
+.head-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary-hex);
+  cursor: pointer;
+}
+
+.dialog-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0 0 14px;
+}

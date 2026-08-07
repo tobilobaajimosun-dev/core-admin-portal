@@ -1,0 +1,137 @@
+:host {
+  display: block;
+}
+
+.page-head {
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--ca-text);
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--ca-text-muted);
+  margin: 4px 0 0;
+}
+
+/* Card pattern ported from Core Admin's loan-stats component:
+   outer tinted card, white inner box with a hairline shadow, big bold number. */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--ca-card-bg);
+  border: 1px solid #f6fbfe;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.stat__label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ca-text-muted);
+  letter-spacing: -0.005em;
+  line-height: 1;
+}
+
+.stat__icon {
+  color: var(--ca-placeholder);
+  flex-shrink: 0;
+}
+
+.stat__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76px;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.55);
+  border-radius: 6px;
+  box-shadow:
+    0 0 1px 0 rgba(0, 0, 0, 0.01),
+    0 2px 1px 0 rgba(0, 0, 0, 0.01);
+}
+
+.stat__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ca-text);
+  line-height: 1;
+  animation: value-in 0.35s var(--ease-out) both;
+}
+
+.stat__value-skeleton {
+  display: block;
+  width: 56px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--ca-border) 25%, #e9eef3 37%, var(--ca-border) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+@keyframes value-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.stat__hint {
+  font-size: 11px;
+  color: var(--ca-text-faint);
+  margin: 0;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--ca-border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.panel__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ca-text);
+  margin: 0 0 6px;
+}
+
+.panel__text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ca-text-muted);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat__value-skeleton { animation: none; }
+}

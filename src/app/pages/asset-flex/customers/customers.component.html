@@ -1,0 +1,61 @@
+<app-page-header title="Customers" subtitle="End customers who financed purchases through vendors." />
+
+<div class="pa-toolbar">
+  <div class="pa-search">
+    <hugeicons-icon class="pa-search__icon" [icon]="searchIcon" [size]="16" [strokeWidth]="1.6" color="currentColor" />
+    <input class="pa-search__input" type="text" placeholder="Search customers…" aria-label="Search customers" [formControl]="searchControl" />
+  </div>
+</div>
+
+<div class="pa-gtable-wrap">
+  <div class="pa-gtable customers-gtable">
+    <div class="pa-gtable__head">
+      <span>Name</span>
+      <span>Contact</span>
+      <span>Verified</span>
+      <span>Status</span>
+      <span class="pa-gtable__cell--right">Joined</span>
+    </div>
+
+    @if (loading()) {
+      @for (r of [1, 2, 3, 4, 5]; track r) {
+        <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
+      }
+    } @else if (customers().length === 0) {
+      <div class="pa-gtable__empty">
+        <p class="pa-empty__title">No customers found</p>
+      </div>
+    } @else {
+      @for (c of customers(); track c.id) {
+        <div class="pa-gtable__row">
+          <div class="pa-gtable__cell identity">
+            <span class="avatar" aria-hidden="true">{{ initials(c) }}</span>
+            <span class="stack">
+              <a class="pa-cell-link" [routerLink]="['/asset-flex/customers', c.id]">{{ fullName(c) }}</a>
+              <span class="pa-cell-sub">{{ c.internalCustomerId || c.id }}</span>
+            </span>
+          </div>
+          <div class="pa-gtable__cell">
+            <span class="pa-cell-primary">{{ c.email || '—' }}</span>
+            <span class="pa-cell-sub">{{ c.phoneNumber }}</span>
+          </div>
+          <div class="pa-gtable__cell">
+            <app-status-badge [tone]="c.isTriadVerified ? 'success' : 'neutral'" [text]="c.isTriadVerified ? 'VERIFIED' : 'UNVERIFIED'" />
+          </div>
+          <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(c.status)" [text]="c.status" /></div>
+          <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ c.createdAt | date: 'mediumDate' }}</div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (pagination(); as p) {
+  @if (p.totalPages > 1) {
+    <nav class="pa-pager" aria-label="Pagination">
+      <button type="button" class="pa-btn pa-btn--white pa-btn--sm" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">Previous</button>
+      <span class="pa-pager__info">Page {{ p.page }} of {{ p.totalPages }} · {{ p.total }} total</span>
+      <button type="button" class="pa-btn pa-btn--white pa-btn--sm" [disabled]="page() >= p.totalPages" (click)="goToPage(page() + 1)">Next</button>
+    </nav>
+  }
+}

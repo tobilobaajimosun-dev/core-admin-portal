@@ -1,0 +1,134 @@
+<app-page-header title="Loan Products" subtitle="Financing products offered through vendor checkouts.">
+  <button actions class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openCreate()">
+    <hugeicons-icon [icon]="addIcon" [size]="16" [strokeWidth]="1.8" color="currentColor" />
+    New product
+  </button>
+</app-page-header>
+
+<div class="pa-gtable-wrap">
+  <div class="pa-gtable loan-products-gtable">
+    <div class="pa-gtable__head">
+      <span>Product</span>
+      <span>Tenor</span>
+      <span>Interest</span>
+      <span>Principal range</span>
+      <span>Active</span>
+      <span>Auto-disburse</span>
+      <span class="pa-gtable__cell--right">Actions</span>
+    </div>
+
+    @if (loading()) {
+      @for (r of [1, 2, 3]; track r) {
+        <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
+      }
+    } @else if (products().length === 0) {
+      <div class="pa-gtable__empty">
+        <p class="pa-empty__title">No loan products</p>
+        <p class="pa-empty__text">Create one from the Caltos catalog.</p>
+      </div>
+    } @else {
+      @for (p of products(); track p.id) {
+        <div class="pa-gtable__row">
+          <div class="pa-gtable__cell">
+            <span class="pa-cell-primary">{{ p.name }}</span>
+            <span class="pa-cell-sub pa-mono">{{ p.code }}</span>
+          </div>
+          <div class="pa-gtable__cell pa-cell-sub">{{ p.tenorMonths }} mo</div>
+          <div class="pa-gtable__cell pa-cell-sub">{{ p.interestRatePercentage }}%</div>
+          <div class="pa-gtable__cell pa-cell-sub">{{ p.minPrincipalAmount | naira }} – {{ p.maxPrincipalAmount | naira }}</div>
+          <div class="pa-gtable__cell">
+            <app-status-badge [tone]="p.isActive ? 'success' : 'neutral'" [text]="p.isActive ? 'ACTIVE' : 'INACTIVE'" />
+          </div>
+          <div class="pa-gtable__cell">
+            <button
+              class="pa-toggle"
+              type="button"
+              role="switch"
+              [attr.aria-checked]="p.autoDisburse"
+              [class.pa-toggle--on]="p.autoDisburse"
+              [disabled]="togglingId() !== null"
+              (click)="toggleAutoDisburse(p)"
+              [attr.aria-label]="'Toggle auto-disburse for ' + p.name"
+            >
+              <span class="pa-toggle__knob"></span>
+            </button>
+          </div>
+          <div class="pa-gtable__cell pa-gtable__cell--right row-actions">
+            <button class="pa-icon-btn" type="button" (click)="openEdit(p)" [attr.aria-label]="'Edit ' + p.name">
+              <hugeicons-icon [icon]="editIcon" [size]="15" [strokeWidth]="1.6" color="currentColor" />
+            </button>
+            <button class="pa-icon-btn pa-icon-btn--danger" type="button" (click)="deleting.set(p)" [attr.aria-label]="'Delete ' + p.name">
+              <hugeicons-icon [icon]="deleteIcon" [size]="15" [strokeWidth]="1.6" color="currentColor" />
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (dialogOpen()) {
+  <app-modal-shell
+    [title]="mode() === 'edit' ? 'Edit loan product' : 'New loan product'"
+    [dismissable]="!saving()"
+    maxWidth="460px"
+    (closed)="closeDialog()"
+  >
+    @if (mode() === 'create') {
+      <form [formGroup]="createForm" (ngSubmit)="save()" novalidate class="form" id="lp-create">
+        <div class="pa-field">
+          <label class="pa-field__label" for="caltos">Caltos product</label>
+          <select id="caltos" class="pa-select" formControlName="caltos_product_id">
+            <option value="" disabled>Select from catalog</option>
+            @for (item of catalog(); track item.id) {
+              <option [value]="item.id">{{ catalogLabel(item) }}</option>
+            }
+          </select>
+        </div>
+        <div class="pa-field">
+          <label class="pa-field__label" for="code">Product code</label>
+          <input id="code" class="pa-input" type="text" formControlName="code" placeholder="PROD_SAL_FLEX_3M" />
+        </div>
+      </form>
+    } @else {
+      <form [formGroup]="editForm" (ngSubmit)="save()" novalidate class="form" id="lp-edit">
+        <div class="pa-field">
+          <label class="pa-field__label" for="ecode">Product code</label>
+          <input id="ecode" class="pa-input" type="text" formControlName="code" />
+        </div>
+        <label class="pa-check">
+          <input type="checkbox" formControlName="isActive" />
+          <span>Active</span>
+        </label>
+        <label class="pa-check">
+          <input type="checkbox" formControlName="autoDisburse" />
+          <span>Auto-disburse on approval</span>
+        </label>
+      </form>
+    }
+
+    <ng-container modalFooter>
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDialog()" [disabled]="saving()">Cancel</button>
+      <button
+        class="pa-btn pa-btn--primary pa-btn--sm"
+        type="submit"
+        [attr.form]="mode() === 'edit' ? 'lp-edit' : 'lp-create'"
+        [disabled]="saving()"
+      >
+        {{ saving() ? 'Saving…' : (mode() === 'edit' ? 'Save changes' : 'Create product') }}
+      </button>
+    </ng-container>
+  </app-modal-shell>
+}
+
+@if (deleting(); as p) {
+  <app-modal-shell title="Delete loan product" [dismissable]="!saving()" maxWidth="420px" (closed)="deleting.set(null)">
+    <p class="dialog-text">Delete <strong>{{ p.name }}</strong>? Vendors will no longer be able to offer it.</p>
+    <ng-container modalFooter>
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="deleting.set(null)" [disabled]="saving()">Cancel</button>
+      <button class="pa-btn pa-btn--danger pa-btn--sm" type="button" (click)="confirmDelete()" [disabled]="saving()">
+        {{ saving() ? 'Deleting…' : 'Delete' }}
+      </button>
+    </ng-container>
+  </app-modal-shell>
+}

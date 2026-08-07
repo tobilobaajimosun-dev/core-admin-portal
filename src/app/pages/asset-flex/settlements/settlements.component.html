@@ -1,0 +1,102 @@
+<app-page-header title="Settlements" subtitle="Vendor payouts on the T+1 settlement ledger.">
+  <div actions class="head-actions">
+    <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="openCutoff()">Trigger T+1 cutoff</button>
+    <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" [disabled]="selectedCount() === 0" (click)="openMark()">
+      Mark settled@if (selectedCount() > 0) { ({{ selectedCount() }}) }
+    </button>
+  </div>
+</app-page-header>
+
+<div class="pa-toolbar">
+  <div class="pa-filters" role="group" aria-label="Filter by status">
+    @for (f of filters; track f) {
+      <button
+        type="button"
+        class="pa-filter"
+        [class.pa-filter--active]="activeStatus() === f"
+        [attr.aria-pressed]="activeStatus() === f"
+        (click)="setStatus(f)"
+      >
+        {{ f === '' ? 'All' : (f | titlecase) }}
+      </button>
+    }
+  </div>
+</div>
+
+<div class="pa-gtable-wrap">
+  <div class="pa-gtable settlements-gtable">
+    <div class="pa-gtable__head">
+      <span class="pa-gtable__cell--center">
+        <input type="checkbox" aria-label="Select all" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" />
+      </span>
+      <span>Reference</span>
+      <span>Vendor</span>
+      <span>Gross</span>
+      <span>Fee</span>
+      <span>Net</span>
+      <span>Status</span>
+      <span class="pa-gtable__cell--right">Due</span>
+    </div>
+
+    @if (loading()) {
+      @for (r of [1, 2, 3, 4]; track r) {
+        <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
+      }
+    } @else if (settlements().length === 0) {
+      <div class="pa-gtable__empty">
+        <p class="pa-empty__title">No settlements</p>
+      </div>
+    } @else {
+      @for (s of settlements(); track s.id) {
+        <div class="pa-gtable__row">
+          <div class="pa-gtable__cell pa-gtable__cell--center">
+            <input
+              type="checkbox"
+              [attr.aria-label]="'Select ' + s.settlementReference"
+              [checked]="isSelected(s.id)"
+              (change)="toggle(s.id, $any($event.target).checked)"
+            />
+          </div>
+          <div class="pa-gtable__cell pa-mono">{{ s.settlementReference }}</div>
+          <div class="pa-gtable__cell pa-cell-sub">{{ s.vendor?.businessName || '—' }}</div>
+          <div class="pa-gtable__cell">{{ s.grossOrderAmount | naira }}</div>
+          <div class="pa-gtable__cell pa-cell-sub">{{ s.platformFeeDeduction | naira }}</div>
+          <div class="pa-gtable__cell pa-cell-primary">{{ s.netSettlementAmount | naira }}</div>
+          <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(s.status)" [text]="s.status" /></div>
+          <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ s.settlementDueDate ? (s.settlementDueDate | date: 'mediumDate') : '—' }}</div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (dialog() === 'mark') {
+  <app-modal-shell title="Mark as settled" [dismissable]="!acting()" maxWidth="420px" (closed)="closeDialog()">
+    <p class="dialog-text">Marking <strong>{{ selectedCount() }}</strong> settlement(s) as paid. Enter the batch payout reference.</p>
+    <div class="pa-field" [class.pa-field--invalid]="batchRef.touched && batchRef.invalid">
+      <label class="pa-field__label" for="batch-ref">Batch payout reference</label>
+      <input id="batch-ref" class="pa-input" type="text" [formControl]="batchRef" placeholder="e.g. REMITA-BULK-PAY-99102" />
+      @if (batchRef.touched && batchRef.invalid) {
+        <span class="pa-field__error">A reference of at least 3 characters is required.</span>
+      }
+    </div>
+    <ng-container modalFooter>
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDialog()" [disabled]="acting()">Cancel</button>
+      <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="confirmMark()" [disabled]="acting()">
+        {{ acting() ? 'Working…' : 'Mark settled' }}
+      </button>
+    </ng-container>
+  </app-modal-shell>
+}
+
+@if (dialog() === 'cutoff') {
+  <app-modal-shell title="Trigger T+1 cutoff" [dismissable]="!acting()" maxWidth="420px" (closed)="closeDialog()">
+    <p class="dialog-text">Run the T+1 cutoff now? This transitions all due settlements to the next state for payout.</p>
+    <ng-container modalFooter>
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDialog()" [disabled]="acting()">Cancel</button>
+      <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="confirmCutoff()" [disabled]="acting()">
+        {{ acting() ? 'Working…' : 'Run cutoff' }}
+      </button>
+    </ng-container>
+  </app-modal-shell>
+}

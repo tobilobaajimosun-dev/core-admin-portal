@@ -1,0 +1,181 @@
+@if (loading()) {
+  <div class="detail-loading">Loading vendor…</div>
+} @else if (!vendor()) {
+  <div class="detail-loading">Vendor not found.</div>
+} @else {
+  @let v = vendor()!;
+
+  <a class="breadcrumb" routerLink="/asset-flex/vendors">
+    <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.6" color="currentColor" />
+    <span>Vendors</span>
+  </a>
+
+  <header class="detail-head">
+    <div class="detail-head__id">
+      <span class="detail-head__avatar" aria-hidden="true">{{ v.businessName.charAt(0) }}</span>
+      <div>
+        <h1 class="detail-head__name">{{ v.businessName }}</h1>
+        <div class="detail-head__meta">
+          <app-status-badge [tone]="statusTone(v.status)" [text]="v.status" />
+          <span class="detail-head__sep">·</span>
+          <span class="detail-head__muted">{{ v.contactEmail }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-head__actions">
+      @if (isPending()) {
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openDialog('approve')">Approve</button>
+        <button class="pa-btn pa-btn--danger-outline pa-btn--sm" type="button" (click)="openDialog('reject')">Reject KYC</button>
+      }
+      @if (!isPending() && !isBlacklisted()) {
+        @if (isSuspended()) {
+          <button class="pa-btn pa-btn--primary-outline pa-btn--sm" type="button" (click)="openDialog('activate')">Reactivate</button>
+        } @else {
+          <button class="pa-btn pa-btn--warning-outline pa-btn--sm" type="button" (click)="openDialog('suspend')">Suspend</button>
+        }
+        <button class="pa-btn pa-btn--danger-outline pa-btn--sm" type="button" (click)="openDialog('blacklist')">Blacklist</button>
+      }
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="openAssign()">Assign products</button>
+    </div>
+  </header>
+
+  @if (isPending()) {
+    <div class="review-banner" role="status">
+      This vendor is awaiting KYB review. Approve to activate their account, or reject with a reason.
+    </div>
+  }
+
+  <div class="detail-grid">
+    <!-- Main column -->
+    <div class="detail-main">
+      <section class="card">
+        <h2 class="card__title">Business information</h2>
+        <dl class="kv">
+          <div class="kv__row"><dt>Business name</dt><dd>{{ v.businessName }}</dd></div>
+          <div class="kv__row"><dt>Contact email</dt><dd>{{ v.contactEmail }}</dd></div>
+          <div class="kv__row"><dt>Contact phone</dt><dd>{{ v.contactPhone }}</dd></div>
+          <div class="kv__row"><dt>Webhook URL</dt><dd>{{ v.webhookUrl || '—' }}</dd></div>
+          <div class="kv__row"><dt>Platform fee</dt><dd>{{ v.platformFeePercentage }}%</dd></div>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">KYC documents</h2>
+        @if (documents().length === 0) {
+          <p class="card__empty">No documents uploaded.</p>
+        } @else {
+          <ul class="doc-list">
+            @for (doc of documents(); track doc.id) {
+              <li class="doc">
+                <span class="doc__icon" aria-hidden="true">
+                  <hugeicons-icon [icon]="fileIcon" [size]="18" [strokeWidth]="1.6" color="currentColor" />
+                </span>
+                <div class="doc__body">
+                  <a class="doc__name" [href]="doc.fileUrl" target="_blank" rel="noopener">{{ doc.documentType }}</a>
+                  <span class="doc__date">Uploaded {{ doc.uploadedAt | date: 'mediumDate' }}</span>
+                </div>
+                <app-status-badge [tone]="statusTone(doc.status)" [text]="doc.status" />
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+
+    <!-- Side panel -->
+    <aside class="detail-side">
+      <section class="card">
+        <h2 class="card__title">Settlement</h2>
+        <dl class="kv">
+          <div class="kv__row"><dt>Account name</dt><dd>{{ v.settlementAccountName || '—' }}</dd></div>
+          <div class="kv__row"><dt>Account number</dt><dd>{{ v.settlementAccountNumber || '—' }}</dd></div>
+          <div class="kv__row"><dt>Bank code</dt><dd>{{ v.settlementBankCode || '—' }}</dd></div>
+          <div class="kv__row"><dt>Schedule</dt><dd>{{ v.settlementSchedule }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">API keys</h2>
+        <dl class="kv">
+          <div class="kv__row"><dt>Live public key</dt><dd class="mono">{{ v.apiKeyLive || '—' }}</dd></div>
+          <div class="kv__row"><dt>Live secret key</dt><dd class="mono">•••••••• (hidden)</dd></div>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">Timeline</h2>
+        <dl class="kv">
+          <div class="kv__row"><dt>Onboarded</dt><dd>{{ v.createdAt | date: 'medium' }}</dd></div>
+          <div class="kv__row"><dt>Last updated</dt><dd>{{ v.updatedAt | date: 'medium' }}</dd></div>
+        </dl>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Confirm dialog -->
+  @if (dialog(); as d) {
+    <app-modal-shell [title]="dialogTitle(d)" [dismissable]="!acting()" maxWidth="440px" (closed)="closeDialog()">
+      @switch (d) {
+        @case ('approve') { <p class="dialog-text">Approve <strong>{{ v.businessName }}</strong> and activate their vendor account?</p> }
+        @case ('blacklist') { <p class="dialog-text">Blacklist <strong>{{ v.businessName }}</strong>? This revokes their access immediately.</p> }
+        @case ('suspend') { <p class="dialog-text">Suspend <strong>{{ v.businessName }}</strong>? They will be unable to transact until reactivated.</p> }
+        @case ('activate') { <p class="dialog-text">Reactivate <strong>{{ v.businessName }}</strong>?</p> }
+        @case ('reject') {
+          <p class="dialog-text">Provide a reason — the vendor will be asked to resubmit.</p>
+          <textarea
+            class="dialog-reason"
+            rows="3"
+            aria-label="Rejection reason"
+            placeholder="e.g. CAC certificate is illegible, please resubmit a clearer scan."
+            [formControl]="rejectReason"
+          ></textarea>
+          @if (rejectReason.touched && rejectReason.invalid) {
+            <p class="dialog-error">Please enter a reason (at least 5 characters).</p>
+          }
+        }
+      }
+
+      <ng-container modalFooter>
+        <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDialog()" [disabled]="acting()">Cancel</button>
+        <button
+          class="pa-btn pa-btn--sm"
+          [class.pa-btn--primary]="d === 'approve' || d === 'activate'"
+          [class.pa-btn--danger]="d !== 'approve' && d !== 'activate'"
+          type="button"
+          (click)="confirm()"
+          [disabled]="acting()"
+        >
+          {{ acting() ? 'Working…' : 'Confirm' }}
+        </button>
+      </ng-container>
+    </app-modal-shell>
+  }
+
+  @if (assignOpen()) {
+    <app-modal-shell title="Assign loan products" [dismissable]="!assigning()" maxWidth="480px" (closed)="closeAssign()">
+      @if (loanProducts().length === 0) {
+        <p class="dialog-text">No loan products available to assign.</p>
+      } @else {
+        <p class="dialog-text">Select the loan products <strong>{{ v.businessName }}</strong> can offer at checkout.</p>
+        <div class="assign-list">
+          @for (p of loanProducts(); track p.id) {
+            <label class="assign-item">
+              <input type="checkbox" [checked]="isProductSelected(p.id)" (change)="toggleProduct(p.id, $any($event.target).checked)" />
+              <span class="assign-item__body">
+                <span class="assign-item__name">{{ p.name }}</span>
+                <span class="assign-item__code">{{ p.code }} · {{ p.tenorMonths }} mo · {{ p.interestRatePercentage }}%</span>
+              </span>
+            </label>
+          }
+        </div>
+      }
+      <ng-container modalFooter>
+        <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeAssign()" [disabled]="assigning()">Cancel</button>
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="confirmAssign()" [disabled]="assigning() || assignSelected().size === 0">
+          {{ assigning() ? 'Assigning…' : 'Assign' }}
+        </button>
+      </ng-container>
+    </app-modal-shell>
+  }
+}

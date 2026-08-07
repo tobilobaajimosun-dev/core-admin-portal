@@ -1,0 +1,107 @@
+<app-page-header title="Roles &amp; Permissions" subtitle="Define roles and the permissions granted to each.">
+  <button actions class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openCreate()">
+    <hugeicons-icon [icon]="addIcon" [size]="16" [strokeWidth]="1.8" color="currentColor" />
+    New role
+  </button>
+</app-page-header>
+
+@if (loading()) {
+  <div class="role-grid">
+    @for (row of [1, 2, 3]; track row) {
+      <div class="role-card"><span class="skeleton"></span></div>
+    }
+  </div>
+} @else if (roles().length === 0) {
+  <p class="empty">No roles defined yet.</p>
+} @else {
+  <div class="role-grid">
+    @for (r of roles(); track r.id) {
+      <article class="role-card">
+        <div class="role-card__head">
+          <h2 class="role-card__name">{{ roleLabel(r.name) }}</h2>
+          <div class="role-card__head-right">
+            @if (r.isSystem) {
+              <span class="role-card__system">System</span>
+            }
+            <button class="pa-icon-btn" type="button" (click)="openEdit(r)" [attr.aria-label]="'Edit ' + roleLabel(r.name)">
+              <hugeicons-icon [icon]="editIcon" [size]="15" [strokeWidth]="1.6" color="currentColor" />
+            </button>
+          </div>
+        </div>
+        @if (r.description) {
+          <p class="role-card__desc">{{ r.description }}</p>
+        }
+        <p class="role-card__count">{{ r.permissions.length }} permission{{ r.permissions.length === 1 ? '' : 's' }}</p>
+        <div class="role-card__perms">
+          @for (p of r.permissions; track p) {
+            <span class="perm-chip">{{ p }}</span>
+          }
+        </div>
+      </article>
+    }
+  </div>
+}
+
+@if (dialogOpen()) {
+  <app-modal-shell [title]="dialogTitle()" [dismissable]="!saving()" maxWidth="540px" (closed)="closeDialog()">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate class="form" id="role-form">
+      <div class="pa-field">
+        <label class="pa-field__label" for="role-name">Role name</label>
+        <input id="role-name" class="pa-input" type="text" formControlName="name" placeholder="KYB_REVIEWER" />
+        <span class="pa-field__hint">Uppercase token, e.g. KYB_REVIEWER.</span>
+      </div>
+
+      <div class="pa-field">
+        <label class="pa-field__label" for="role-desc">Description</label>
+        <input id="role-desc" class="pa-input" type="text" formControlName="description" placeholder="Can review vendor KYB applications" />
+      </div>
+
+      <fieldset class="matrix">
+        <legend class="matrix__legend">Permissions</legend>
+        @for (group of catalog; track group.resource) {
+          <div class="matrix__group">
+            <p class="matrix__resource">{{ group.resource }}</p>
+            <div class="matrix__items">
+              @for (item of group.items; track item.token) {
+                <label class="perm">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(item.token)"
+                    (change)="toggle(item.token, $any($event.target).checked)"
+                  />
+                  <span class="perm__label">{{ item.label }}</span>
+                  <span class="perm__token">{{ item.token }}</span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+
+        @if (customTokens().length > 0) {
+          <div class="matrix__group">
+            <p class="matrix__resource">Other (existing)</p>
+            <div class="matrix__items">
+              @for (token of customTokens(); track token) {
+                <label class="perm">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(token)"
+                    (change)="toggle(token, $any($event.target).checked)"
+                  />
+                  <span class="perm__label">{{ token }}</span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+      </fieldset>
+    </form>
+
+    <ng-container modalFooter>
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDialog()" [disabled]="saving()">Cancel</button>
+      <button class="pa-btn pa-btn--primary pa-btn--sm" type="submit" form="role-form" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : (editingId() ? 'Save changes' : 'Create role') }}
+      </button>
+    </ng-container>
+  </app-modal-shell>
+}

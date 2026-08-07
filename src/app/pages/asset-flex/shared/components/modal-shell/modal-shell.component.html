@@ -1,0 +1,27 @@
+<div class="ms-scrim" (click)="onBackdrop()">
+  <div
+    class="ms-panel"
+    cdkTrapFocus
+    [cdkTrapFocusAutoCapture]="true"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="titleId"
+    [style.maxWidth]="maxWidth()"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="ms-head">
+      <h2 class="ms-title" [id]="titleId">{{ title() }}</h2>
+      <button class="ms-close" type="button" (click)="close()" aria-label="Close dialog">
+        <hugeicons-icon [icon]="closeIcon" [size]="18" [strokeWidth]="1.8" color="currentColor" />
+      </button>
+    </div>
+
+    <div class="ms-body">
+      <ng-content />
+    </div>
+
+    <div class="ms-foot">
+      <ng-content select="[modalFooter]" />
+    </div>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<app-page-header title="Settings" subtitle="Your account and security." />
+
+<div class="settings-grid">
+  <section class="card">
+    <h2 class="card__title">Profile</h2>
+    @if (user(); as u) {
+      <dl class="kv">
+        <div class="kv__row"><dt>Name</dt><dd>{{ fullName() }}</dd></div>
+        <div class="kv__row"><dt>Email</dt><dd>{{ u.email }}</dd></div>
+        <div class="kv__row"><dt>Role</dt><dd>{{ roleLabel(u.role.name) }}</dd></div>
+        <div class="kv__row">
+          <dt>Status</dt>
+          <dd>
+            <app-status-badge
+              [tone]="statusTone(u.is_active ? 'ACTIVE' : 'INACTIVE')"
+              [text]="u.is_active ? 'Active' : 'Inactive'"
+            />
+          </dd>
+        </div>
+      </dl>
+    } @else {
+      <p class="card__muted">Not signed in.</p>
+    }
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Change password</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="form">
+      <div class="pa-field" [class.pa-field--invalid]="!!errorFor('current_password')">
+        <label class="pa-field__label" for="cp-current">Current password</label>
+        <input id="cp-current" class="pa-input" type="password" formControlName="current_password" autocomplete="current-password" placeholder="Current password" />
+        @if (errorFor('current_password')) { <span class="pa-field__error">{{ errorFor('current_password') }}</span> }
+      </div>
+
+      <div class="pa-field" [class.pa-field--invalid]="!!errorFor('new_password')">
+        <label class="pa-field__label" for="cp-new">New password</label>
+        <input id="cp-new" class="pa-input" type="password" formControlName="new_password" autocomplete="new-password" placeholder="New password" />
+        @if (errorFor('new_password')) { <span class="pa-field__error">{{ errorFor('new_password') }}</span> } @else { <span class="pa-field__hint">At least 8 characters.</span> }
+      </div>
+
+      <div class="pa-field" [class.pa-field--invalid]="!!errorFor('confirm_new_password')">
+        <label class="pa-field__label" for="cp-confirm">Confirm new password</label>
+        <input id="cp-confirm" class="pa-input" type="password" formControlName="confirm_new_password" autocomplete="new-password" placeholder="Re-enter new password" />
+        @if (errorFor('confirm_new_password')) { <span class="pa-field__error">{{ errorFor('confirm_new_password') }}</span> }
+      </div>
+
+      <div class="form__actions">
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Update password' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

@@ -71,6 +71,11 @@ export const LAYOUT_ROUTES: Routes = [
           import('@pages/push-notifications/push-notifications.component').then((m) => m.PushNotificationsComponent),
       },
       {
+        path: 'asset-flex',
+        loadChildren: () =>
+          import('@pages/asset-flex/asset-flex.routes').then((m) => m.ASSET_FLEX_ROUTES),
+      },
+      {
         path: '',
         redirectTo: 'home',
         pathMatch: 'full',

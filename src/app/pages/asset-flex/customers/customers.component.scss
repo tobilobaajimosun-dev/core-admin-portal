@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+.customers-gtable {
+  --gt-cols: 1.6fr 1.6fr 1fr 1fr 1fr;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary-active-hex);
+  color: var(--color-primary-hex);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
