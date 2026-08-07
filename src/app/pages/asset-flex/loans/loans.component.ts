@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -18,6 +18,11 @@ import { statusTone } from '../shared/utils/status-tone';
 import { formatLabel } from '../shared/utils/format';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
+import {
+  DropdownComponent,
+  DropdownHeaderDirective,
+  DropdownMenuDirective,
+} from '@shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-loans',
@@ -30,6 +35,9 @@ import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
     StatusBadgeComponent,
     NairaPipe,
     ErrorStateComponent,
+    DropdownComponent,
+    DropdownHeaderDirective,
+    DropdownMenuDirective,
   ],
   templateUrl: './loans.component.html',
   styleUrl: './loans.component.scss',
@@ -112,6 +120,27 @@ export class LoansComponent {
 
   protected open(loan: Loan): void {
     this.router.navigate(['/asset-flex/loans', loan.id]);
+  }
+
+  // Plain methods, not computed(): FormControl.value isn't a signal, so a computed()
+  // reading it would never re-evaluate after the first read. OnPush + the signal
+  // writes already triggered by valueChanges (e.g. page.set) keep these fresh on
+  // every change-detection pass.
+  protected hasDateFilter(): boolean {
+    return !!this.fromDateControl.value || !!this.toDateControl.value;
+  }
+
+  protected dateFilterLabel(): string {
+    const from = this.fromDateControl.value;
+    const to = this.toDateControl.value;
+    if (!from && !to) return 'Date range';
+    if (from && to) return `${from} → ${to}`;
+    return from ? `From ${from}` : `Until ${to}`;
+  }
+
+  protected clearDateFilter(): void {
+    this.fromDateControl.setValue('');
+    this.toDateControl.setValue('');
   }
 
   private syncUrl(): void {
