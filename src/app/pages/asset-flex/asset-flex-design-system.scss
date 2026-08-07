@@ -247,34 +247,52 @@
   margin-bottom: 12px;
 }
 
+/*
+ * Flexbox layout, not absolute positioning: hugeicons-icon's `class` input maps to
+ * an internal `iconClass` applied to the inner <svg>, not the host element, which
+ * made pixel-perfect absolute placement of the icon unreliable and caused it to
+ * visually collide with the input's placeholder text. Flex naturally reserves space
+ * for whatever box the icon renders as, with a guaranteed gap — no pixel math.
+ */
 .pa-search {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex: 1;
   min-width: 220px;
   max-width: 320px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #f6f8fa;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.pa-search:hover { background: #eef1f4; }
+.pa-search:focus-within {
+  background: #fff;
+  border-color: var(--color-primary-hex);
+  box-shadow: 0 0 0 3px rgba(0, 179, 255, 0.12);
 }
 
 .pa-search__icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   color: #8792a2;
   pointer-events: none;
 }
 
 .pa-search__input {
-  width: 100%;
-  height: 36px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: #f6f8fa;
-  padding: 0 12px 0 34px;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
   font-size: 13px;
   color: var(--ca-text);
   outline: none;
   appearance: none;
-  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 .pa-search__input::placeholder { color: #8792a2; }
 .pa-search__input::-webkit-search-decoration,
@@ -282,12 +300,6 @@
 .pa-search__input::-webkit-search-results-button,
 .pa-search__input::-webkit-search-results-decoration {
   display: none;
-}
-.pa-search__input:hover { background: #eef1f4; }
-.pa-search__input:focus {
-  background: #fff;
-  border-color: var(--color-primary-hex);
-  box-shadow: 0 0 0 3px rgba(0, 179, 255, 0.12);
 }
 
 .pa-filters { display: flex; gap: 6px; flex-wrap: wrap; }

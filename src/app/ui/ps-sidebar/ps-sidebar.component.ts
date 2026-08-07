@@ -72,24 +72,65 @@ export class PsSidebarComponent implements AfterViewInit {
     return allMenus.filter((m) => m.app === active);
   });
 
-  userAvatar = computed(() => this.authStore.user()?.profile_image || null);
+  userAvatar = computed(() => {
+    const u = this.rawUser();
+    return u?.['profile_image'] || u?.['profileImage'] || u?.['avatar_url'] || u?.['avatarUrl'] || null;
+  });
+
+  /**
+   * The real login response's field names aren't guaranteed to match this app's
+   * LoggedInUser interface exactly — tolerate common snake_case/camelCase variants
+   * instead of rendering a blank name/avatar when they don't line up.
+   */
+  private rawUser(): Record<string, any> | null {
+    return (this.authStore.user() as unknown as Record<string, any>) || null;
+  }
+
+  private firstName(): string {
+    const u = this.rawUser();
+    return u?.['first_name'] || u?.['firstName'] || u?.['given_name'] || '';
+  }
+
+  private lastName(): string {
+    const u = this.rawUser();
+    return u?.['last_name'] || u?.['lastName'] || u?.['family_name'] || u?.['surname'] || '';
+  }
+
+  private fallbackFullName(): string {
+    const u = this.rawUser();
+    return u?.['name'] || u?.['full_name'] || u?.['fullName'] || u?.['display_name'] || '';
+  }
 
   getUserInitials(): string {
-    const user = this.authStore.user();
+    const user = this.rawUser();
     if (!user) return 'U';
-    const first = user.first_name?.charAt(0) || '';
-    const last = user.last_name?.charAt(0) || '';
-    return (first + last).toUpperCase();
+    const first = this.firstName();
+    const last = this.lastName();
+    if (first || last) return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || 'U';
+    const fullName = this.fallbackFullName();
+    if (fullName) {
+      const [a, b] = fullName.trim().split(/\s+/);
+      return `${a?.[0] ?? ''}${b?.[0] ?? ''}`.toUpperCase() || 'U';
+    }
+    const email = user['email'] as string | undefined;
+    return email ? email.charAt(0).toUpperCase() : 'U';
   }
 
   getUserFullName(): string {
-    const user = this.authStore.user();
+    const user = this.rawUser();
     if (!user) return '';
-    return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    const combined = `${this.firstName()} ${this.lastName()}`.trim();
+    if (combined) return combined;
+    const fallback = this.fallbackFullName();
+    if (fallback) return fallback;
+    return (user['email'] as string) || '';
   }
 
   getUserRoleLabel(): string {
-    return this.authStore.user()?.role?.name || 'Member';
+    const u = this.rawUser();
+    const role = u?.['role'];
+    const roleName = typeof role === 'string' ? role : role?.name;
+    return roleName || 'Member';
   }
 
   protected isNewSection(index: number): boolean {
