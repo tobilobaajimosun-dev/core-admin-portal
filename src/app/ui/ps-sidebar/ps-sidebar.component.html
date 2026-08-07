@@ -6,39 +6,82 @@
   </div>
 
   <!-- User Profile -->
-  <div class="flex flex-col items-center px-4 pb-5 pt-2 flex-shrink-0">
+  <div class="px-3 pb-3 flex-shrink-0">
+    <app-dropdown placement="bottom-start" #profileDropdown>
+      <button
+        dropdownHeader
+        type="button"
+        class="group flex items-center gap-2 w-full rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-[#F5F7FA] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="profileDropdown.isOpen"
+      >
+        @if (userAvatar()) {
+          <img [src]="userAvatar()" alt="" class="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+        } @else {
+          <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#00B3FF] text-white font-semibold text-xs flex-shrink-0">
+            {{ getUserInitials() }}
+          </span>
+        }
+        <span class="text-[13px] font-semibold text-[#121212] truncate flex-1 text-left">
+          {{ getUserFullName() }}
+        </span>
+        <ps-svg-icon
+          name="caret-down-icon"
+          class="w-3.5 h-3.5 flex-shrink-0 text-[#727C84] opacity-0 group-hover:opacity-100 transition-opacity"
+          [class.opacity-100]="profileDropdown.isOpen"
+        ></ps-svg-icon>
+      </button>
 
-<!-- Avatar -->
-<div class="relative mb-3">
-  @if (userAvatar()) {
-    <img [src]="userAvatar()" alt="Profile image"
-      class="w-14 h-14 rounded-full object-cover" />
-  } @else {
-    <div
-      class="flex items-center justify-center w-14 h-14 rounded-full bg-[#00B3FF] text-white font-semibold text-lg">
-      {{ getUserInitials() }}
-    </div>
-  }
-  <!-- Edit icon -->
-  <button type="button" (click)="goToProfileSettings()"
-    class="absolute bottom-0 right-0 flex items-center justify-center w-5 h-5 rounded-full bg-white
-      border border-[#F0F0F0] cursor-pointer">
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-      <path d="M7.5 1.25L8.75 2.5L3.125 8.125H1.875V6.875L7.5 1.25Z" stroke="#5E5F6E" stroke-width="1"
-        stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-  </button>
-</div>
+      <div dropdownMenu role="menu" aria-label="Account menu" class="z-20 bg-white rounded-xl border border-[#E1E6ED] shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[240px] py-1.5">
+        <!-- Header: avatar + name + role tag -->
+        <div class="flex items-center gap-2.5 px-3 py-2.5 border-b border-[#ECF1F5]">
+          @if (userAvatar()) {
+            <img [src]="userAvatar()" alt="" class="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+          } @else {
+            <span class="flex items-center justify-center w-9 h-9 rounded-full bg-[#00B3FF] text-white font-semibold text-sm flex-shrink-0">
+              {{ getUserInitials() }}
+            </span>
+          }
+          <div class="min-w-0 flex-1">
+            <p class="text-[13px] font-semibold text-[#121212] truncate">{{ getUserFullName() }}</p>
+            <span class="inline-flex items-center rounded-full bg-[#F0F0F0] px-2 py-0.5 text-[11px] font-medium text-[#51575B] mt-0.5">
+              {{ getUserRoleLabel() }}
+            </span>
+          </div>
+        </div>
 
-    <!-- Name -->
-    <p class="text-[13px] font-semibold text-[#121212] text-center leading-snug">
-      {{ getUserFullName() }}
-    </p>
+        <!-- Applications -->
+        <div class="py-1" role="none">
+          @for (item of apps; track item.key) {
+            <button
+              type="button"
+              role="menuitem"
+              (click)="onSelectApp(item.key); profileDropdown.close()"
+              class="flex items-center justify-between w-full px-3 py-2 text-[13px] text-[#2B3033] hover:bg-[#F5F7FA] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+            >
+              <span>{{ item.name }}</span>
+              @if (activeAppSignal() === item.key) {
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="text-primary" aria-hidden="true">
+                  <path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              }
+            </button>
+          }
+        </div>
 
-    <!-- Role -->
-    <!-- <p class="text-xs font-normal text-[#727C84] text-center mt-0.5">
-      {{ getUserRole() }}
-    </p> -->
+        <!-- Log out -->
+        <div class="pt-1 border-t border-[#ECF1F5]" role="none">
+          <button
+            type="button"
+            role="menuitem"
+            (click)="logOut(); profileDropdown.close()"
+            class="flex items-center w-full px-3 py-2 text-[13px] text-[#2B3033] hover:bg-[#F5F7FA] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+          >
+            Log out
+          </button>
+        </div>
+      </div>
+    </app-dropdown>
   </div>
 
   <!-- Navigation -->

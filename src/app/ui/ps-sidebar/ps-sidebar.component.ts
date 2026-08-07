@@ -15,8 +15,13 @@ import { SIDEBAR_ROUTES } from './routes';
 import { filter } from 'rxjs';
 import { AuthStore } from '@core/store/auth.store';
 import { LoggedInUser } from '@core/interfaces/auth.model';
-import { AppPreferenceService } from '@core/services/app-preference.service';
+import { AppPreferenceService, AppKey } from '@core/services/app-preference.service';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
+import {
+  DropdownComponent,
+  DropdownHeaderDirective,
+  DropdownMenuDirective,
+} from '@shared/components/dropdown/dropdown.component';
 
 type MenuItem = {
   name: string;
@@ -29,10 +34,22 @@ type MenuItem = {
   subMenu?: { name: string; route: string }[];
 };
 
+const APPS: { key: AppKey; name: string; route: string }[] = [
+  { key: 'core', name: 'Core Admin', route: '/home' },
+  { key: 'asset-flex', name: 'Asset Flex Admin', route: '/asset-flex/dashboard' },
+];
+
 @Component({
   selector: 'ps-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, PsSvgIconComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    PsSvgIconComponent,
+    DropdownComponent,
+    DropdownHeaderDirective,
+    DropdownMenuDirective,
+  ],
   templateUrl: './ps-sidebar.component.html',
   styleUrl: './ps-sidebar.component.scss',
 })
@@ -43,12 +60,14 @@ export class PsSidebarComponent implements AfterViewInit {
   private appPreference = inject(AppPreferenceService);
   router = inject(Router);
 
+  protected readonly apps = APPS;
+
   /** Which app's session is active — drives which nav items render. Re-read on every navigation. */
-  private readonly activeApp = signal(this.appPreference.getActiveApp());
+  protected readonly activeAppSignal = signal(this.appPreference.getActiveApp());
 
   menus = computed(() => {
     const allMenus: MenuItem[] = [...SIDEBAR_ROUTES] as MenuItem[];
-    const active = this.activeApp();
+    const active = this.activeAppSignal();
     return allMenus.filter((m) => m.app === active);
   });
 
@@ -68,14 +87,20 @@ export class PsSidebarComponent implements AfterViewInit {
     return `${user.first_name || ''} ${user.last_name || ''}`.trim();
   }
 
-  // getUserRole(): string {
-  //   const user = this.authStore.user();
-  //   if (!user) return '';
-  //   return user.profile?.role?.name || 'Administrator';
-  // }
+  getUserRoleLabel(): string {
+    return this.authStore.user()?.role?.name || 'Member';
+  }
 
-  goToProfileSettings(): void {
-    this.router.navigate([this.activeApp() === 'asset-flex' ? '/asset-flex/settings' : '/settings']);
+  protected onSelectApp(app: AppKey): void {
+    if (app === this.activeAppSignal()) return;
+    this.appPreference.switchApp(app);
+    this.activeAppSignal.set(app);
+    const target = this.apps.find((a) => a.key === app);
+    this.router.navigate([target?.route ?? '/home']);
+  }
+
+  protected logOut(): void {
+    this.authStore.logOut();
   }
 
   closeSidebar() {
@@ -85,6 +110,6 @@ export class PsSidebarComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe(() => this.activeApp.set(this.appPreference.getActiveApp()));
+      .subscribe(() => this.activeAppSignal.set(this.appPreference.getActiveApp()));
   }
 }

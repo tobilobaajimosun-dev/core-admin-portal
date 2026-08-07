@@ -20,6 +20,12 @@ export class AppPreferenceService {
     } catch (error) { }
   }
 
+  /** Switches the active app in place, preserving whether the previous choice was remembered. */
+  switchApp(app: AppKey): void {
+    const wasRemembered = this.read(localStorage, PERSISTED_KEY) !== null;
+    this.chooseApp(app, wasRemembered);
+  }
+
   clearAll(): void {
     try {
       sessionStorage.removeItem(SESSION_KEY);
