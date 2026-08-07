@@ -28,6 +28,7 @@ type MenuItem = {
   route: string;
   icon: string;
   app: 'core' | 'asset-flex';
+  section: number;
   children: any[];
   expanded?: boolean;
   type?: string;
@@ -89,6 +90,11 @@ export class PsSidebarComponent implements AfterViewInit {
 
   getUserRoleLabel(): string {
     return this.authStore.user()?.role?.name || 'Member';
+  }
+
+  protected isNewSection(index: number): boolean {
+    const list = this.menus();
+    return index > 0 && list[index].section !== list[index - 1].section;
   }
 
   protected onSelectApp(app: AppKey): void {
