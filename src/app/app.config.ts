@@ -1,11 +1,12 @@
-import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideHttpClient, withInterceptors } from '@angular/common/http'; 
-import { jwtInterceptor } from '@core/interceptors/jwt.interceptor';    
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { jwtInterceptor } from '@core/interceptors/jwt.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,8 +14,12 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([jwtInterceptor])  
+      withInterceptors([jwtInterceptor])
     ),
     importProvidersFrom(OverlayModule),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ]
 };

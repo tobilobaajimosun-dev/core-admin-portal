@@ -4,6 +4,8 @@ import {
   inject,
   OnInit,
   OnDestroy,
+  Output,
+  EventEmitter,
   signal,
   ViewChild,
   ElementRef,
@@ -31,6 +33,7 @@ import { AppNotification, NotificationModalComponent } from '@shared/components/
   styleUrl: './ps-mast-head.component.scss',
 })
 export class PsMastHeadComponent implements OnInit, OnDestroy {
+  @Output() menuClick = new EventEmitter<void>();
 
   // ── Auth ──────────────────────────────────────────────────────────────
   authStore    = inject(AuthStore);

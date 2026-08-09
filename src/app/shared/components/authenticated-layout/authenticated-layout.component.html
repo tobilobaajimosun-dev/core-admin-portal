@@ -1,18 +1,30 @@
 <div class="flex h-screen overflow-hidden">
 
-  <!-- Sidebar — fixed, full height -->
-  <aside class="fixed left-0 top-0 h-full z-30 flex-shrink-0"
-    style="width: var(--sidebar-width);">
-    <ps-sidebar></ps-sidebar>
+  <!-- Backdrop — mobile/tablet only, shown while the drawer is open -->
+  @if (sidebarOpen()) {
+    <div
+      class="fixed inset-0 z-20 bg-black/40 md:hidden"
+      (click)="closeSidebar()"
+    ></div>
+  }
+
+  <!-- Sidebar — fixed, full height. Off-canvas drawer below md, static above. -->
+  <aside
+    class="fixed left-0 top-0 h-full z-30 flex-shrink-0 transition-transform duration-200 ease-out md:translate-x-0"
+    [class.-translate-x-full]="!sidebarOpen()"
+    [class.translate-x-0]="sidebarOpen()"
+    [attr.inert]="sidebarHidden() ? true : null"
+    style="width: var(--sidebar-width);"
+  >
+    <ps-sidebar (closeSidebarEvent)="closeSidebar()"></ps-sidebar>
   </aside>
 
-  <!-- Main area — offset by sidebar width -->
-  <div class="flex flex-col flex-1 overflow-hidden"
-    style="margin-left: var(--sidebar-width);">
+  <!-- Main area — offset by sidebar width from md up only -->
+  <div class="flex flex-col flex-1 overflow-hidden ml-0 md:[margin-left:var(--sidebar-width)]">
 
     <!-- Header — fixed at top, full width minus sidebar -->
     <header class="flex-shrink-0 z-20">
-      <ps-mast-head></ps-mast-head>
+      <ps-mast-head (menuClick)="toggleSidebar()"></ps-mast-head>
     </header>
 
     <!-- Scrollable content -->
