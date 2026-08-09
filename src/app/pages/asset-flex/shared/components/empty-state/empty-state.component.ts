@@ -5,11 +5,11 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   selector: 'app-empty-state',
   imports: [],
   template: `
-    <div class="pa-gtable__empty" role="status">
-      <img class="empty-illustration" src="images/illustrations/empty-state.svg" alt="" width="93" height="48" />
-      <p class="pa-empty__title">{{ title() }}</p>
+    <div class="empty" role="status">
+      <img class="empty__illustration" src="images/illustrations/empty-state.svg" alt="" width="93" height="48" />
+      <p class="empty__title">{{ title() }}</p>
       @if (subtitle()) {
-        <p class="pa-empty__text">{{ subtitle() }}</p>
+        <p class="empty__text">{{ subtitle() }}</p>
       }
       @if (actionLabel()) {
         <button type="button" class="pa-btn pa-btn--primary pa-btn--sm" (click)="action.emit()">
@@ -20,9 +20,30 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   `,
   styles: [
     `
-      .empty-illustration {
-        margin: 0 auto 12px;
-        display: block;
+      .empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 44px 16px;
+      }
+
+      .empty__illustration {
+        margin-bottom: 12px;
+      }
+
+      .empty__title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ca-text-strong, #2b3033);
+        margin: 0 0 4px;
+      }
+
+      .empty__text {
+        font-size: 13px;
+        color: var(--ca-text-muted, #51575b);
+        margin: 0 0 12px;
+        max-width: 360px;
       }
     `,
   ],
