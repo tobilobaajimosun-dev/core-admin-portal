@@ -166,7 +166,7 @@
         <div class="assign-list">
           @for (p of loanProducts(); track p.id) {
             <label class="assign-item">
-              <input type="checkbox" [checked]="isProductSelected(p.id)" (change)="toggleProduct(p.id, $any($event.target).checked)" />
+              <input class="pa-checkbox" type="checkbox" [checked]="isProductSelected(p.id)" (change)="toggleProduct(p.id, $any($event.target).checked)" />
               <span class="assign-item__body">
                 <span class="assign-item__name">{{ p.name }}</span>
                 <span class="assign-item__code">{{ p.code }} · {{ p.tenorMonths }} mo · {{ p.interestRatePercentage }}%</span>

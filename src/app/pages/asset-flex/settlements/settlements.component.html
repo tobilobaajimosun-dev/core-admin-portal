@@ -12,26 +12,14 @@
 </app-page-header>
 
 <div class="pa-toolbar">
-  <div class="pa-filters" role="group" aria-label="Filter by status">
-    @for (f of filters; track f) {
-      <button
-        type="button"
-        class="pa-filter"
-        [class.pa-filter--active]="activeStatus() === f"
-        [attr.aria-pressed]="activeStatus() === f"
-        (click)="setStatus(f)"
-      >
-        {{ f === '' ? 'All' : (f | titlecase) }}
-      </button>
-    }
-  </div>
+  <app-status-filter [options]="filterOptions" [active]="activeStatus()" (statusChange)="setStatus($event)" />
 </div>
 
 <div class="pa-gtable-wrap">
   <div class="pa-gtable settlements-gtable">
     <div class="pa-gtable__head">
       <span class="pa-gtable__cell--center">
-        <input type="checkbox" aria-label="Select all on this page" title="Selects only the rows on this page" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" />
+        <input class="pa-checkbox" type="checkbox" aria-label="Select all on this page" title="Selects only the rows on this page" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" />
       </span>
       <span>Reference</span>
       <span>Vendor</span>
@@ -55,6 +43,7 @@
         <div class="pa-gtable__row">
           <div class="pa-gtable__cell pa-gtable__cell--center">
             <input
+              class="pa-checkbox"
               type="checkbox"
               [attr.aria-label]="'Select ' + s.settlementReference"
               [checked]="isSelected(s.id)"

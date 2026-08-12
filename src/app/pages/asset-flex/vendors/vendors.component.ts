@@ -14,6 +14,7 @@ import { PaginationMeta } from '@pages/asset-flex/shared/models/generic.model';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { statusTone } from '../shared/utils/status-tone';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
+import { StatusFilterComponent } from '@pages/asset-flex/shared/components/status-filter/status-filter.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
@@ -36,6 +37,7 @@ const STATUS_FILTERS: { label: string; value: '' | VendorStatus }[] = [
     HugeiconsIconComponent,
     StatusBadgeComponent,
     PageHeaderComponent,
+    StatusFilterComponent,
     ErrorStateComponent,
     EmptyStateComponent,
   ],

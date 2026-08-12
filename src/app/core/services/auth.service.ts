@@ -30,6 +30,18 @@ export class AuthService {
     try {
       this.storageService.clear();
     } catch (error) { }
+    this.clearCachedApiResponses();
+  }
+
+  /**
+   * The service worker's `api-freshness` data group (ngsw-config.json) caches admin API
+   * responses — loans, customer BVN/NIN, vendor documents — in Cache Storage, which
+   * survives logout unless explicitly cleared. Wipe it so a later login on the same
+   * device/browser can't read the previous session's cached responses.
+   */
+  private clearCachedApiResponses(): void {
+    if (typeof caches === 'undefined') return;
+    caches.keys().then((keys) => keys.forEach((key) => caches.delete(key))).catch(() => {});
   }
 
   setSession(params: { accessToken: string; user: LoggedInUser }): void {

@@ -8,15 +8,8 @@
 
 .head-actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
-}
-
-input[type='checkbox'] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--color-primary-hex);
-  cursor: pointer;
 }
 
 .dialog-text {

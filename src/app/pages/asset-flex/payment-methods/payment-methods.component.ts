@@ -35,9 +35,9 @@ import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-s
           @for (m of methods(); track m.code) {
             <div class="pa-gtable__row">
               <div class="pa-gtable__cell pa-cell-primary">{{ m.name }}</div>
-              <div class="pa-gtable__cell pa-mono">{{ m.code }}</div>
+              <div class="pa-gtable__cell code-cell">{{ m.code }}</div>
               <div class="pa-gtable__cell"><app-status-badge tone="info" [text]="m.paymentType" /></div>
-              <div class="pa-gtable__cell pa-cell-sub">{{ m.description || '—' }}</div>
+              <div class="pa-gtable__cell description-cell">{{ m.description || '—' }}</div>
             </div>
           }
         }
@@ -45,6 +45,22 @@ import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-s
     </div>
     </div>
   `,
+  styles: [
+    `
+      /*
+       * Code and Description are peer columns here, not secondary annotations
+       * under a primary line — .pa-mono/.pa-cell-sub's smaller muted sizing is
+       * for that latter case (see loans/loan-products), so it doesn't apply.
+       * Both inherit the table's 13px base; Code keeps the monospace family only.
+       */
+      .code-cell {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      .description-cell {
+        color: var(--ca-text-muted);
+      }
+    `,
+  ],
 })
 export class PaymentMethodsComponent {
   private readonly service = inject(PaymentMethodService);

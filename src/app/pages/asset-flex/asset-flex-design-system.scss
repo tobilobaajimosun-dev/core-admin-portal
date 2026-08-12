@@ -191,6 +191,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+@media (max-width: 480px) {
+  .pa-field-row { grid-template-columns: 1fr; }
+}
 
 .pa-check {
   display: flex;
@@ -200,11 +203,41 @@
   color: var(--ca-text);
   cursor: pointer;
 }
-.pa-check input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--color-primary-hex);
+
+/* Custom checkbox — owned, self-contained (.pa-checkbox), replaces bare accent-color
+   native checkboxes which render inconsistently across browsers. */
+.pa-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin: 0;
+  border: 1.5px solid #d8dee5;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
+.pa-checkbox::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  transition: transform var(--dur-fast) var(--ease-spring);
+  box-shadow: inset 1em 1em #fff;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.pa-checkbox:hover { border-color: #b6c0cc; }
+.pa-checkbox:checked {
+  background: var(--color-primary-hex);
+  border-color: var(--color-primary-hex);
+}
+.pa-checkbox:checked::before { transform: scale(1); }
+.pa-checkbox:focus-visible { outline: 2px solid var(--color-primary-hex); outline-offset: 2px; }
+.pa-checkbox:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Toggle switch */
 .pa-toggle {
@@ -304,6 +337,9 @@
 
 .pa-filters { display: flex; gap: 6px; flex-wrap: wrap; }
 .pa-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid var(--ca-border-strong);
   background: #fff;
   padding: 0 14px;
@@ -403,15 +439,28 @@
   border-radius: 12px;
   scrollbar-width: thin;
 }
-.pa-gtable { min-width: 640px; }
+.pa-gtable { min-width: 640px; font-size: 13px; }
 
 .pa-gtable__head,
 .pa-gtable__row {
   display: grid;
   grid-template-columns: var(--gt-cols, 1fr);
-  align-items: center;
   column-gap: 16px;
 }
+
+.pa-gtable__head { align-items: center; }
+
+/*
+ * Rows top-align: with a two-line cell (name + sub-label) sharing a row with
+ * single-line cells, vertically centering every cell independently put each
+ * column's first line at a different y-offset — inconsistent baselines read as
+ * misaligned/tacky. Top-aligning keeps every column's first line flush across
+ * the row; standalone controls (checkboxes, toggles, action icons) opt back
+ * into vertical centering below since they have no text baseline to align.
+ */
+.pa-gtable__row { align-items: start; }
+.pa-gtable__cell--center { align-self: center; }
+.pa-gtable__cell:has(> .pa-toggle) { align-self: center; }
 
 .pa-gtable__head {
   padding: 0 16px;

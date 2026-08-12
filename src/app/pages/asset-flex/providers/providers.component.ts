@@ -50,7 +50,7 @@ interface ProviderRow {
           @for (p of rows(); track p.id) {
             <div class="pa-gtable__row">
               <div class="pa-gtable__cell pa-cell-primary">{{ p.name }}</div>
-              <div class="pa-gtable__cell pa-mono">{{ p.code }}</div>
+              <div class="pa-gtable__cell code-cell">{{ p.code }}</div>
               @if (hasType()) { <div class="pa-gtable__cell">{{ roleLabel(p.type || '') || '—' }}</div> }
               <div class="pa-gtable__cell">
                 <app-status-badge [tone]="p.isActive ? 'success' : 'neutral'" [text]="p.isActive ? 'ACTIVE' : 'INACTIVE'" />
@@ -76,6 +76,15 @@ interface ProviderRow {
     </div>
     </div>
   `,
+  styles: [
+    `
+      /* Code is a peer column here, not a secondary annotation — inherit the
+         table's 13px base instead of .pa-mono's muted 12px, keep the family. */
+      .code-cell {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      }
+    `,
+  ],
 })
 export class ProvidersComponent {
   private readonly route = inject(ActivatedRoute);

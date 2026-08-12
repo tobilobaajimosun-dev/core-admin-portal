@@ -55,18 +55,5 @@ export const ASSET_FLEX_ROUTES: Routes = [
     data: { kind: 'utilities' },
     loadComponent: () => import('./providers/providers.component').then((m) => m.ProvidersComponent),
   },
-  {
-    path: 'admin-users',
-    loadComponent: () =>
-      import('./admin-users/admin-users.component').then((m) => m.AdminUsersComponent),
-  },
-  {
-    path: 'roles',
-    loadComponent: () => import('./roles/roles.component').then((m) => m.RolesComponent),
-  },
-  {
-    path: 'settings',
-    loadComponent: () => import('./settings/settings.component').then((m) => m.SettingsComponent),
-  },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 ];

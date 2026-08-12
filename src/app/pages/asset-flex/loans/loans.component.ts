@@ -13,6 +13,7 @@ import { Loan, LoanStatus, LOAN_STATUSES } from '../shared/models/loan.model';
 import { PaginationMeta } from '@pages/asset-flex/shared/models/generic.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
+import { StatusFilterComponent } from '@pages/asset-flex/shared/components/status-filter/status-filter.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
 import { formatLabel } from '../shared/utils/format';
@@ -34,6 +35,7 @@ import {
     HugeiconsIconComponent,
     PageHeaderComponent,
     StatusBadgeComponent,
+    StatusFilterComponent,
     NairaPipe,
     ErrorStateComponent,
     EmptyStateComponent,

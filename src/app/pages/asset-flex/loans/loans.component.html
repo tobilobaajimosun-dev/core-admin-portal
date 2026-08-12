@@ -12,19 +12,7 @@
     <hugeicons-icon class="pa-search__icon" [icon]="searchIcon" [size]="16" [strokeWidth]="1.6" color="currentColor" />
     <input class="pa-search__input" type="text" placeholder="Search by reference…" aria-label="Search loans" [formControl]="searchControl" />
   </div>
-  <div class="pa-filters" role="group" aria-label="Filter by status">
-    @for (f of filters; track f.value) {
-      <button
-        type="button"
-        class="pa-filter"
-        [class.pa-filter--active]="activeStatus() === f.value"
-        [attr.aria-pressed]="activeStatus() === f.value"
-        (click)="setStatus(f.value)"
-      >
-        {{ f.label }}
-      </button>
-    }
-  </div>
+  <app-status-filter [options]="filters" [active]="activeStatus()" (statusChange)="setStatus($any($event))" />
 
   <app-dropdown placement="bottom-end" #dateDropdown>
     <button

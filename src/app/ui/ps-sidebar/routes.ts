@@ -143,28 +143,4 @@ export const SIDEBAR_ROUTES = [
     section: 2,
     children: [],
   },
-  {
-    name: 'Roles',
-    route: '/asset-flex/roles',
-    icon: 'admin-icon',
-    app: 'asset-flex',
-    section: 3,
-    children: [],
-  },
-  {
-    name: 'Admin Users',
-    route: '/asset-flex/admin-users',
-    icon: 'add-user-icon',
-    app: 'asset-flex',
-    section: 3,
-    children: [],
-  },
-  {
-    name: 'Settings',
-    route: '/asset-flex/settings',
-    icon: 'edit-icon',
-    app: 'asset-flex',
-    section: 3,
-    children: [],
-  },
 ];

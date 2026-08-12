@@ -1,4 +1,4 @@
-import { DatePipe, TitleCasePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -8,8 +8,10 @@ import { Settlement } from '../shared/models/settlement.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
+import { StatusFilterComponent } from '@pages/asset-flex/shared/components/status-filter/status-filter.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
+import { formatLabel } from '../shared/utils/format';
 import { minTrimmedLength } from '../shared/utils/validators';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
@@ -21,11 +23,11 @@ const FILTERS = ['', 'PENDING', 'DUE', 'SETTLED', 'FAILED'];
   selector: 'app-settlements',
   imports: [
     DatePipe,
-    TitleCasePipe,
     ReactiveFormsModule,
     PageHeaderComponent,
     ModalShellComponent,
     StatusBadgeComponent,
+    StatusFilterComponent,
     NairaPipe,
     ErrorStateComponent,
     EmptyStateComponent,
@@ -39,7 +41,7 @@ export class SettlementsComponent {
   private readonly toast = inject(PsToastService);
 
   protected readonly statusTone = statusTone;
-  protected readonly filters = FILTERS;
+  protected readonly filterOptions = FILTERS.map((f) => ({ label: f === '' ? 'All' : formatLabel(f), value: f }));
 
   protected readonly settlements = signal<Settlement[]>([]);
   protected readonly loading = signal(true);
