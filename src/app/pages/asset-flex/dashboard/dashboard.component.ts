@@ -4,6 +4,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { VendorService } from '../shared/services/vendor.service';
+import { VendorStatus } from '../shared/models/vendor.model';
+import { fetchAllPages } from '@pages/asset-flex/shared/utils/fetch-all-pages';
 import { SKIP_LOADER } from '@core/interceptors/token';
 import { HugeiconsIconComponent, IconSvgObject } from '@hugeicons/angular';
 import {
@@ -19,9 +21,11 @@ import {
   Calendar01Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  InformationCircleIcon,
 } from '@hugeicons-pro/core-stroke-rounded';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { InfoBannerComponent } from '@pages/asset-flex/shared/components/info-banner/info-banner.component';
+import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
 
@@ -52,6 +56,8 @@ interface StatCard {
   hint: string;
   icon: IconSvgObject;
   accent: string;
+  /** Shown in the info dialog opened from the card's (i) icon. */
+  description: string;
   /** When set, the card links here (e.g. the pending-KYB queue). */
   route?: string;
   queryParams?: Record<string, string>;
@@ -103,6 +109,7 @@ interface MoneyMovementMonth {
     NgTemplateOutlet,
     ErrorStateComponent,
     InfoBannerComponent,
+    ModalShellComponent,
     NairaPipe,
     FiltersComponent,
   ],
@@ -167,6 +174,28 @@ export class DashboardComponent {
     }
     return 1;
   }
+
+  /** All-time monthly trend behind the gross payout volume figure — sample
+   * data, same reporting-endpoint gap as the rest of this section. */
+  private readonly samplePayoutVolume = [
+    { label: 'Sep 25', value: 12_400_000 },
+    { label: 'Oct 25', value: 14_100_000 },
+    { label: 'Nov 25', value: 13_600_000 },
+    { label: 'Dec 25', value: 18_900_000 },
+    { label: 'Jan 26', value: 15_200_000 },
+    { label: 'Feb 26', value: 16_800_000 },
+    { label: 'Mar 26', value: 19_500_000 },
+    { label: 'Apr 26', value: 21_300_000 },
+    { label: 'May 26', value: 20_100_000 },
+    { label: 'Jun 26', value: 23_700_000 },
+    { label: 'Jul 26', value: 25_450_000 },
+    { label: 'Aug 26', value: 24_600_000 },
+  ];
+
+  protected readonly payoutVolumeBars: MonthBar[] = (() => {
+    const max = Math.max(...this.samplePayoutVolume.map((m) => m.value));
+    return this.samplePayoutVolume.map((m) => ({ ...m, heightPct: Math.round((m.value / max) * 100) }));
+  })();
 
   // ── Failed payments / top customers / top categories (sample) ─────────
   protected readonly failedIcon = CancelCircleIcon;
@@ -353,8 +382,17 @@ export class DashboardComponent {
 
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
+  protected readonly infoIcon = InformationCircleIcon;
   protected readonly stats = signal<StatCard[]>([
-    { key: 'total', label: 'Total vendors', value: '—', hint: 'All registered', icon: Store01Icon, accent: '#00b3ff' },
+    {
+      key: 'total',
+      label: 'Total vendors',
+      value: '—',
+      hint: 'All registered',
+      icon: Store01Icon,
+      accent: '#00b3ff',
+      description: 'Every vendor ever registered on Asset Flex, across every KYB status.',
+    },
     {
       key: 'pending',
       label: 'Pending KYB',
@@ -364,10 +402,53 @@ export class DashboardComponent {
       accent: '#b45309',
       route: '/asset-flex/vendors',
       queryParams: { status: 'PENDING_APPROVAL' },
+      description: 'Vendors who have submitted onboarding details but are still awaiting KYB review.',
     },
-    { key: 'approved', label: 'Approved', value: '—', hint: 'Active vendors', icon: CheckmarkCircle02Icon, accent: '#16a34a' },
-    { key: 'blacklisted', label: 'Blacklisted', value: '—', hint: 'Suspended access', icon: UserBlock01Icon, accent: '#dc2626' },
+    {
+      key: 'approved',
+      label: 'Approved',
+      value: '—',
+      hint: 'Active vendors',
+      icon: CheckmarkCircle02Icon,
+      accent: '#16a34a',
+      description: 'Vendors whose KYB has been approved and can receive loan-funded payouts.',
+    },
+    {
+      key: 'blacklisted',
+      label: 'Blacklisted',
+      value: '—',
+      hint: 'Suspended access',
+      icon: UserBlock01Icon,
+      accent: '#dc2626',
+      description: 'Vendors who have been suspended or blacklisted and can no longer transact.',
+    },
   ]);
+
+  // ── Stat card period filter + info dialog ──────────────────────────────
+  protected readonly statsFrom = signal('');
+  protected readonly statsTo = signal('');
+  protected readonly infoCard = signal<StatCard | null>(null);
+
+  protected statsFilterSections(): FilterSection[] {
+    return [
+      { key: 'range', label: 'Period', icon: Calendar01Icon, kind: 'date-range', from: this.statsFrom(), to: this.statsTo() },
+    ];
+  }
+
+  protected onStatsRangeChange(event: { key: string; from: string; to: string }): void {
+    if (event.key !== 'range') return;
+    this.statsFrom.set(event.from);
+    this.statsTo.set(event.to);
+    this.loadSummary();
+  }
+
+  protected openInfo(card: StatCard): void {
+    this.infoCard.set(card);
+  }
+
+  protected closeInfo(): void {
+    this.infoCard.set(null);
+  }
 
   constructor() {
     this.loadSummary();
@@ -382,18 +463,51 @@ export class DashboardComponent {
     const silent = new HttpContext().set(SKIP_LOADER, true);
     this.loading.set(true);
     this.error.set(false);
-    forkJoin({
-      total: this.vendorService.list({ page: 1, limit: 1 }, silent),
-      pending: this.vendorService.list({ page: 1, limit: 1, status: 'PENDING_APPROVAL' }, silent),
-      approved: this.vendorService.list({ page: 1, limit: 1, status: 'APPROVED' }, silent),
-      blacklisted: this.vendorService.list({ page: 1, limit: 1, status: 'BLACKLISTED' }, silent),
-    }).subscribe({
-      next: (res) => {
+
+    const from = this.statsFrom();
+    const to = this.statsTo();
+
+    if (!from && !to) {
+      forkJoin({
+        total: this.vendorService.list({ page: 1, limit: 1 }, silent),
+        pending: this.vendorService.list({ page: 1, limit: 1, status: 'PENDING_APPROVAL' }, silent),
+        approved: this.vendorService.list({ page: 1, limit: 1, status: 'APPROVED' }, silent),
+        blacklisted: this.vendorService.list({ page: 1, limit: 1, status: 'BLACKLISTED' }, silent),
+      }).subscribe({
+        next: (res) => {
+          const counts: Record<string, number> = {
+            total: res.total.data?.pagination?.total ?? 0,
+            pending: res.pending.data?.pagination?.total ?? 0,
+            approved: res.approved.data?.pagination?.total ?? 0,
+            blacklisted: res.blacklisted.data?.pagination?.total ?? 0,
+          };
+          this.stats.update((cards) => cards.map((c) => ({ ...c, value: String(counts[c.key] ?? 0) })));
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set(true);
+          this.loading.set(false);
+        },
+      });
+      return;
+    }
+
+    // A date range is selected: the summary endpoint has no date filter, so
+    // fetch every vendor once and count client-side by createdAt + status.
+    fetchAllPages((page) => this.vendorService.list({ page, limit: 100 }, silent)).subscribe({
+      next: (vendors) => {
+        const inRange = vendors.filter((v) => {
+          const created = v.createdAt.slice(0, 10);
+          if (from && created < from) return false;
+          if (to && created > to) return false;
+          return true;
+        });
+        const countByStatus = (status: VendorStatus) => inRange.filter((v) => v.status === status).length;
         const counts: Record<string, number> = {
-          total: res.total.data?.pagination?.total ?? 0,
-          pending: res.pending.data?.pagination?.total ?? 0,
-          approved: res.approved.data?.pagination?.total ?? 0,
-          blacklisted: res.blacklisted.data?.pagination?.total ?? 0,
+          total: inRange.length,
+          pending: countByStatus('PENDING_APPROVAL'),
+          approved: countByStatus('APPROVED'),
+          blacklisted: countByStatus('BLACKLISTED'),
         };
         this.stats.update((cards) => cards.map((c) => ({ ...c, value: String(counts[c.key] ?? 0) })));
         this.loading.set(false);

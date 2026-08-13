@@ -21,6 +21,9 @@
 @if (error()) {
   <app-error-state message="Couldn't load dashboard summary. Check your connection and try again." (retry)="retry()" />
 } @else {
+  <div class="stat-grid-head">
+    <app-filters [sections]="statsFilterSections()" (dateRangeChange)="onStatsRangeChange($event)" />
+  </div>
   <section class="stat-grid" aria-label="Summary statistics">
     @for (stat of stats(); track stat.key) {
       @if (stat.route) {
@@ -40,6 +43,14 @@
   <div class="stat__label-row">
     <span class="stat__label">{{ stat.label }}</span>
     <hugeicons-icon [icon]="stat.icon" [size]="14" [strokeWidth]="1.75" color="currentColor" class="stat__icon" />
+    <button
+      type="button"
+      class="stat__info-btn"
+      [attr.aria-label]="stat.label + ' — what does this mean?'"
+      (click)="$event.preventDefault(); $event.stopPropagation(); openInfo(stat)"
+    >
+      <hugeicons-icon [icon]="infoIcon" [size]="13" [strokeWidth]="1.75" color="currentColor" />
+    </button>
   </div>
   <div class="stat__box">
     @if (loading()) {
@@ -50,6 +61,15 @@
   </div>
   <p class="stat__hint">{{ stat.hint }}</p>
 </ng-template>
+
+@if (infoCard(); as card) {
+  <app-modal-shell [title]="card.label" maxWidth="380px" (closed)="closeInfo()">
+    <p class="dialog-text">{{ card.description }}</p>
+    <ng-container modalFooter>
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeInfo()">Close</button>
+    </ng-container>
+  </app-modal-shell>
+}
 
 <section class="reports" aria-label="Reports preview">
   <div class="reports__head">
@@ -66,23 +86,25 @@
       <h3 class="panel__title">Pending settlements</h3>
       <a class="panel__link" routerLink="/asset-flex/settlements" [queryParams]="{ status: 'PENDING' }">View all</a>
     </div>
-    <div class="mini-table">
-      <div class="mini-table__head">
-        <span>Customer</span>
-        <span>Vendor</span>
-        <span>Item</span>
-        <span class="mini-table__cell--right">Amount</span>
-        <span class="mini-table__cell--right">Due</span>
-      </div>
-      @for (row of pendingSettlements; track row.customer + row.dueDate) {
-        <div class="mini-table__row">
-          <span class="mini-table__primary">{{ row.customer }}</span>
-          <span class="mini-table__muted">{{ row.vendor }}</span>
-          <span class="mini-table__muted">{{ row.item }}</span>
-          <span class="mini-table__amount mini-table__cell--right">{{ row.amount | naira }}</span>
-          <span class="mini-table__muted mini-table__cell--right">{{ row.dueDate | date: 'mediumDate' }}</span>
+    <div class="pa-gtable-wrap">
+      <div class="pa-gtable" style="--gt-cols: 1.2fr 1.2fr 1.6fr 1fr 1fr">
+        <div class="pa-gtable__head">
+          <span>Customer</span>
+          <span>Vendor</span>
+          <span>Item</span>
+          <span class="pa-gtable__cell--right">Amount</span>
+          <span class="pa-gtable__cell--right">Due</span>
         </div>
-      }
+        @for (row of pendingSettlements; track row.customer + row.dueDate) {
+          <div class="pa-gtable__row">
+            <div class="pa-gtable__cell pa-cell-primary">{{ row.customer }}</div>
+            <div class="pa-gtable__cell pa-cell-sub">{{ row.vendor }}</div>
+            <div class="pa-gtable__cell pa-cell-sub">{{ row.item }}</div>
+            <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ row.amount | naira }}</div>
+            <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ row.dueDate | date: 'mediumDate' }}</div>
+          </div>
+        }
+      </div>
     </div>
   </article>
 
@@ -93,6 +115,16 @@
         <p class="panel__big-value">{{ grossPayoutVolume() | naira }}</p>
       </div>
       <app-filters [sections]="payoutFilterSections()" (dateRangeChange)="onPayoutRangeChange($event)" />
+    </div>
+    <div class="bar-chart bar-chart--payout" role="img" aria-label="Gross payout volume, last 12 months, sample data">
+      @for (m of payoutVolumeBars; track m.label) {
+        <div class="bar-chart__col">
+          <div class="bar-chart__track">
+            <div class="bar-chart__bar" [style.height.%]="m.heightPct"></div>
+          </div>
+          <span class="bar-chart__label">{{ m.label }}</span>
+        </div>
+      }
     </div>
   </article>
 

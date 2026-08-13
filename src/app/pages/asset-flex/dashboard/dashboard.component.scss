@@ -20,6 +20,19 @@
   margin: 4px 0 0;
 }
 
+.dialog-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0 0 14px;
+}
+
+.stat-grid-head {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
 /* Card pattern ported from Core Admin's loan-stats component:
    outer tinted card, white inner box with a hairline shadow, big bold number. */
 .stat-grid {
@@ -74,6 +87,25 @@
   color: var(--ca-placeholder);
   flex-shrink: 0;
 }
+
+.stat__info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ca-text-faint);
+  cursor: pointer;
+  transition: background 130ms cubic-bezier(0.22, 1, 0.36, 1), color 130ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stat__info-btn:hover { background: #fff; color: var(--ca-text-muted); }
+.stat__info-btn:focus-visible { outline: 2px solid var(--color-primary-hex); outline-offset: 1px; }
 
 .stat__box {
   display: flex;
@@ -312,14 +344,14 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
+  height: 32px;
   padding: 0 16px;
   border: 1px solid var(--ca-border-strong);
   border-radius: 999px;
   background: #fff;
-  color: var(--ca-text);
+  color: var(--ca-text-muted);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 400;
   text-decoration: none;
   cursor: pointer;
   transition: background 130ms cubic-bezier(0.22, 1, 0.36, 1), border-color 130ms cubic-bezier(0.22, 1, 0.36, 1), scale 130ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -366,40 +398,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Mini table (pending settlements) ── */
-.mini-table { margin-top: 12px; }
-
-.mini-table__head,
-.mini-table__row {
-  display: grid;
-  grid-template-columns: 1.2fr 1.2fr 1.6fr 1fr 1fr;
-  gap: 12px;
-  align-items: center;
-  padding: 10px 4px;
+.bar-chart--payout {
+  height: 120px;
+  gap: 8px;
+  margin-top: 20px;
 }
-
-.mini-table__head {
-  border-bottom: 1px solid var(--ca-border);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ca-text-muted);
-}
-
-.mini-table__row {
-  border-bottom: 1px solid var(--ca-border);
-  border-radius: 8px;
-  transition: background 130ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.mini-table__row:hover { background: var(--ca-card-bg); }
-.mini-table__row:last-child { border-bottom: 0; }
-
-.mini-table__primary { font-size: 13px; font-weight: 500; color: var(--ca-text); }
-.mini-table__muted { font-size: 13px; color: var(--ca-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mini-table__amount { font-size: 13px; font-weight: 600; color: var(--ca-text); font-variant-numeric: tabular-nums; }
-.mini-table__cell--right { text-align: right; }
 
 /* ── Failed payments list ── */
 .failed-list {
@@ -544,10 +547,3 @@
 .party-list__amount { font-size: 13px; font-weight: 600; color: var(--ca-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .party-list__amount--out { color: #dc2626; }
 
-@media (max-width: 640px) {
-  .mini-table__head,
-  .mini-table__row { grid-template-columns: 1fr; gap: 2px; }
-  .mini-table__head { display: none; }
-  .mini-table__row { padding: 12px 4px; }
-  .mini-table__cell--right { text-align: left; }
-}
