@@ -371,24 +371,10 @@ export class VendorOnboardingWizardComponent {
       })
       .subscribe({
         next: (res) => {
-          const id = res.data?.id;
-          if (!id) {
-            this.submitting.set(false);
-            this.submitError.set('Vendor was created but the response was missing an ID. Refresh the vendors list to check.');
-            return;
-          }
-          this.vendorService.getOne(id).subscribe({
-            next: (full) => {
-              this.submitting.set(false);
-              this.submitted.set(true);
-              if (full.data) this.created.emit(full.data);
-              else this.close();
-            },
-            error: () => {
-              this.submitting.set(false);
-              this.submitError.set('Vendor was created, but reloading its details failed. Check the vendors list.');
-            },
-          });
+          this.submitting.set(false);
+          this.submitted.set(true);
+          if (res.data) this.created.emit(res.data);
+          else this.close();
         },
         error: (err) => {
           this.submitting.set(false);

@@ -23,14 +23,6 @@ export interface OnboardVendorPayload {
   platform_fee_percentage?: number;
 }
 
-interface OnboardVendorResponseData {
-  id: string;
-  business_name: string;
-  api_key_live: string;
-  secret_key_live: string;
-  status: string;
-}
-
 @Injectable({ providedIn: 'root' })
 export class VendorService {
   private readonly http = inject(HttpClient);
@@ -38,10 +30,11 @@ export class VendorService {
   private readonly onboardUrl = `${assetFlexApiBaseUrl}/api/v1/vendors/onboard`;
 
   /** POST /api/v1/vendors/onboard — self-service or admin vendor creation.
-   * Response is a minimal snake_case subset, so callers should follow up
-   * with getOne(id) to get the full camelCase Vendor record. */
-  onboard(payload: OnboardVendorPayload): Observable<ApiResponse<OnboardVendorResponseData>> {
-    return this.http.post<ApiResponse<OnboardVendorResponseData>>(this.onboardUrl, payload);
+   * Live-verified: despite the swagger doc claiming a minimal snake_case
+   * response, it actually returns the full camelCase Vendor record (plus
+   * a passwordHash field we ignore), so no getOne(id) follow-up is needed. */
+  onboard(payload: OnboardVendorPayload): Observable<ApiResponse<Vendor>> {
+    return this.http.post<ApiResponse<Vendor>>(this.onboardUrl, payload);
   }
 
   /** GET /api/v1/admin/vendors — params: status, search, page, limit. */
