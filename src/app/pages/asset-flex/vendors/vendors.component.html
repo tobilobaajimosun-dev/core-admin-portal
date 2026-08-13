@@ -1,4 +1,4 @@
-<div class="p-6">
+<div class="p-4 sm:p-6">
 <app-page-header title="Vendors" subtitle="Review KYB submissions and manage vendor accounts.">
   <div actions>
     <button class="pa-btn pa-btn--white pa-btn--sm" type="button" [disabled]="vendors().length === 0" (click)="exportCsv()">
@@ -21,22 +21,12 @@
 
   <div class="pa-toolbar__actions">
     <app-filters
-      #filtersRef
       [sections]="filterSections()"
       (checklistChange)="onChecklistChange($event)"
       (dateRangeChange)="onDateRangeChange($event)"
-      (clearAll)="clearAllFilters()"
     />
   </div>
 </div>
-
-<app-active-filter-chips
-  [sections]="filterSections()"
-  (checklistChange)="onChecklistChange($event)"
-  (dateRangeChange)="onDateRangeChange($event)"
-  (clearAll)="clearAllFilters()"
-  (sectionClick)="filtersRef.openSection($event)"
-/>
 
 <div class="pa-gtable-wrap">
   <div class="pa-gtable vendors-gtable">

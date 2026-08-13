@@ -104,3 +104,17 @@
     animation: none;
   }
 }
+
+@media (max-width: 640px) {
+  /* Content margins drop to 16px on mobile — 24px reads as wasted edge space
+     on a ~340px-wide sheet, and footer buttons stack full-width instead of
+     being squeezed into a right-aligned row. */
+  .ms-scrim { padding: 16px; }
+  .ms-head { padding: 20px 16px 16px; }
+  .ms-body { padding: 0 16px 16px; }
+  .ms-foot:not(:empty) {
+    flex-direction: column-reverse;
+    padding: 14px 16px;
+  }
+  .ms-foot:not(:empty) .pa-btn { width: 100%; }
+}

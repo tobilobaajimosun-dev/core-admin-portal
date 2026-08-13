@@ -10,7 +10,6 @@ import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-he
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
-import { ActiveFilterChipsComponent } from '@pages/asset-flex/shared/components/active-filter-chips/active-filter-chips.component';
 import { Tag01Icon, Calendar01Icon } from '@hugeicons-pro/core-stroke-rounded';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
@@ -31,7 +30,6 @@ const FILTERS = ['PENDING', 'DUE', 'SETTLED', 'FAILED'];
     ModalShellComponent,
     StatusBadgeComponent,
     FiltersComponent,
-    ActiveFilterChipsComponent,
     NairaPipe,
     ErrorStateComponent,
     EmptyStateComponent,
@@ -105,12 +103,6 @@ export class SettlementsComponent {
     this.fromDate.set(event.from);
     this.toDate.set(event.to);
     this.selected.set(new Set());
-  }
-
-  protected clearAllFilters(): void {
-    this.fromDate.set('');
-    this.toDate.set('');
-    this.setStatuses([]);
   }
 
   protected setStatuses(statuses: string[]): void {

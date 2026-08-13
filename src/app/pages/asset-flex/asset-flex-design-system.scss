@@ -318,6 +318,16 @@
   transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 .pa-search:hover { background: #eef1f4; }
+
+@media (max-width: 640px) {
+  /* Below tablet width, form controls and the search field fill the 16px
+     content margin instead of sitting at a fixed max-width — the fixed cap
+     was designed for a wide toolbar and reads as cramped/cut-off once the
+     toolbar itself is only ~340px wide. */
+  .pa-search { min-width: 0; max-width: none; width: 100%; }
+  .pa-toolbar { flex-direction: column; align-items: stretch; }
+  .pa-toolbar__actions { margin-left: 0; width: 100%; }
+}
 .pa-search:focus-within {
   background: #fff;
   border-color: var(--color-primary-hex);
@@ -528,3 +538,18 @@
 .pa-kv__row { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: baseline; }
 .pa-kv dt { font-size: 12px; color: var(--ca-text-muted); margin: 0; }
 .pa-kv dd { font-size: 13px; color: var(--ca-text); margin: 0; word-break: break-word; }
+
+@media (max-width: 640px) {
+  /* Page-header action buttons (New product, Export CSV, the Settlements
+     trio, etc.) are projected content, so this has to live in the global
+     sheet rather than PageHeaderComponent's own styles to actually match
+     them. Stack full-width instead of a cramped inline row. */
+  .ph__actions { width: 100%; }
+  .ph__actions .pa-btn { width: 100%; }
+  .ph__actions .head-actions,
+  .ph__actions [actions] {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+}

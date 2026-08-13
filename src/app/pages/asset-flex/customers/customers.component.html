@@ -1,4 +1,4 @@
-<div class="p-6">
+<div class="p-4 sm:p-6">
 <app-page-header title="Customers" subtitle="End customers who financed purchases through vendors.">
   <div actions>
     <button class="pa-btn pa-btn--white pa-btn--sm" type="button" [disabled]="customers().length === 0" (click)="exportCsv()">
@@ -14,22 +14,12 @@
   </div>
   <div class="pa-toolbar__actions">
     <app-filters
-      #filtersRef
       [sections]="filterSections()"
       (checklistChange)="onChecklistChange($event)"
       (dateRangeChange)="onDateRangeChange($event)"
-      (clearAll)="clearAllFilters()"
     />
   </div>
 </div>
-
-<app-active-filter-chips
-  [sections]="filterSections()"
-  (checklistChange)="onChecklistChange($event)"
-  (dateRangeChange)="onDateRangeChange($event)"
-  (clearAll)="clearAllFilters()"
-  (sectionClick)="filtersRef.openSection($event)"
-/>
 
 <div class="pa-gtable-wrap">
   <div class="pa-gtable customers-gtable">

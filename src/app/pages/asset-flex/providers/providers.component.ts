@@ -25,7 +25,7 @@ interface ProviderRow {
   imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="p-6">
+    <div class="p-4 sm:p-6">
     <app-page-header [title]="title()" [subtitle]="subtitle()" />
 
     <div class="pa-gtable-wrap">

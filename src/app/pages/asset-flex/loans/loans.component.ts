@@ -15,7 +15,6 @@ import { PaginationMeta } from '@pages/asset-flex/shared/models/generic.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
-import { ActiveFilterChipsComponent } from '@pages/asset-flex/shared/components/active-filter-chips/active-filter-chips.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
 import { formatLabel } from '../shared/utils/format';
@@ -33,7 +32,6 @@ import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
     PageHeaderComponent,
     StatusBadgeComponent,
     FiltersComponent,
-    ActiveFilterChipsComponent,
     NairaPipe,
     ErrorStateComponent,
     EmptyStateComponent,
@@ -144,16 +142,6 @@ export class LoansComponent {
     }
     this.page.set(1);
     this.load();
-  }
-
-  protected clearAllFilters(): void {
-    this.tenorMin.set('');
-    this.tenorMax.set('');
-    this.principalMin.set('');
-    this.principalMax.set('');
-    this.fromDateControl.setValue('');
-    this.toDateControl.setValue('');
-    this.setStatuses([]);
   }
 
   protected setStatuses(statuses: string[]): void {

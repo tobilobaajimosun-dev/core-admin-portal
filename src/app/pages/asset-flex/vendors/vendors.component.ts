@@ -16,7 +16,6 @@ import { StatusBadgeComponent } from '../shared/components/status-badge/status-b
 import { statusTone } from '../shared/utils/status-tone';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
-import { ActiveFilterChipsComponent } from '@pages/asset-flex/shared/components/active-filter-chips/active-filter-chips.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
@@ -39,7 +38,6 @@ const STATUS_FILTERS: { label: string; value: VendorStatus }[] = [
     StatusBadgeComponent,
     PageHeaderComponent,
     FiltersComponent,
-    ActiveFilterChipsComponent,
     ErrorStateComponent,
     EmptyStateComponent,
   ],
@@ -121,12 +119,6 @@ export class VendorsComponent {
     this.onboardedTo.set(event.to);
     this.page.set(1);
     this.load();
-  }
-
-  protected clearAllFilters(): void {
-    this.onboardedFrom.set('');
-    this.onboardedTo.set('');
-    this.setStatuses([]);
   }
 
   protected setStatuses(statuses: string[]): void {

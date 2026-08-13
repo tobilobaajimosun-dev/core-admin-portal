@@ -1,4 +1,4 @@
-<div class="p-6">
+<div class="p-4 sm:p-6">
 <app-page-header title="Settlements" subtitle="Vendor payouts on the T+1 settlement ledger.">
   <div actions class="head-actions">
     <button class="pa-btn pa-btn--white pa-btn--sm" type="button" [disabled]="settlements().length === 0" (click)="exportCsv()">
@@ -13,17 +13,9 @@
 
 <div class="pa-toolbar">
   <div class="pa-toolbar__actions">
-    <app-filters #filtersRef [sections]="filterSections()" (checklistChange)="onChecklistChange($event)" (dateRangeChange)="onDateRangeChange($event)" (clearAll)="clearAllFilters()" />
+    <app-filters [sections]="filterSections()" (checklistChange)="onChecklistChange($event)" (dateRangeChange)="onDateRangeChange($event)" />
   </div>
 </div>
-
-<app-active-filter-chips
-  [sections]="filterSections()"
-  (checklistChange)="onChecklistChange($event)"
-  (dateRangeChange)="onDateRangeChange($event)"
-  (clearAll)="clearAllFilters()"
-  (sectionClick)="filtersRef.openSection($event)"
-/>
 
 <div class="pa-gtable-wrap">
   <div class="pa-gtable settlements-gtable">

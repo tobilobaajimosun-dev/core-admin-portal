@@ -15,7 +15,6 @@ import { PaginationMeta } from '@pages/asset-flex/shared/models/generic.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
-import { ActiveFilterChipsComponent } from '@pages/asset-flex/shared/components/active-filter-chips/active-filter-chips.component';
 import { statusTone } from '../shared/utils/status-tone';
 import { formatLabel } from '../shared/utils/format';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
@@ -32,7 +31,6 @@ import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
     PageHeaderComponent,
     StatusBadgeComponent,
     FiltersComponent,
-    ActiveFilterChipsComponent,
     ErrorStateComponent,
     EmptyStateComponent,
   ],
@@ -133,15 +131,6 @@ export class CustomersComponent {
     this.joinedFrom.set(event.from);
     this.joinedTo.set(event.to);
     this.page.set(1);
-    this.load();
-  }
-
-  protected clearAllFilters(): void {
-    this.activeStatuses.set([]);
-    this.joinedFrom.set('');
-    this.joinedTo.set('');
-    this.page.set(1);
-    this.syncUrl();
     this.load();
   }
 
