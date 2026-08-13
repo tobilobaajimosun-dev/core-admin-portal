@@ -21,11 +21,10 @@ import {
   Calendar01Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
-  InformationCircleIcon,
 } from '@hugeicons-pro/core-stroke-rounded';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { InfoBannerComponent } from '@pages/asset-flex/shared/components/info-banner/info-banner.component';
-import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { InfoTooltipComponent } from '@pages/asset-flex/shared/components/info-tooltip/info-tooltip.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
 
@@ -55,8 +54,7 @@ interface StatCard {
   value: string;
   hint: string;
   icon: IconSvgObject;
-  accent: string;
-  /** Shown in the info dialog opened from the card's (i) icon. */
+  /** Shown in the info tooltip opened from the card's (i) icon. */
   description: string;
   /** When set, the card links here (e.g. the pending-KYB queue). */
   route?: string;
@@ -96,11 +94,6 @@ interface LoanRequestRow {
   requestedAt: string;
 }
 
-interface PanelInfo {
-  title: string;
-  description: string;
-}
-
 interface MoneyMovementParty {
   name: string;
   amount: number;
@@ -123,7 +116,7 @@ interface MoneyMovementMonth {
     NgTemplateOutlet,
     ErrorStateComponent,
     InfoBannerComponent,
-    ModalShellComponent,
+    InfoTooltipComponent,
     NairaPipe,
     FiltersComponent,
   ],
@@ -404,7 +397,6 @@ export class DashboardComponent {
 
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
-  protected readonly infoIcon = InformationCircleIcon;
   protected readonly stats = signal<StatCard[]>([
     {
       key: 'total',
@@ -412,7 +404,6 @@ export class DashboardComponent {
       value: '—',
       hint: 'All registered',
       icon: Store01Icon,
-      accent: '#00b3ff',
       description: 'Every vendor ever registered on Asset Flex, across every KYB status.',
     },
     {
@@ -421,7 +412,6 @@ export class DashboardComponent {
       value: '—',
       hint: 'Awaiting review',
       icon: Clock01Icon,
-      accent: '#b45309',
       route: '/asset-flex/vendors',
       queryParams: { status: 'PENDING_APPROVAL' },
       description: 'Vendors who have submitted onboarding details but are still awaiting KYB review.',
@@ -432,7 +422,6 @@ export class DashboardComponent {
       value: '—',
       hint: 'Active vendors',
       icon: CheckmarkCircle02Icon,
-      accent: '#16a34a',
       description: 'Vendors whose KYB has been approved and can receive loan-funded payouts.',
     },
     {
@@ -441,15 +430,13 @@ export class DashboardComponent {
       value: '—',
       hint: 'Suspended access',
       icon: UserBlock01Icon,
-      accent: '#dc2626',
       description: 'Vendors who have been suspended or blacklisted and can no longer transact.',
     },
   ]);
 
-  // ── Stat card period filter + info dialog ──────────────────────────────
+  // ── Stat card period filter ─────────────────────────────────────────────
   protected readonly statsFrom = signal('');
   protected readonly statsTo = signal('');
-  protected readonly infoCard = signal<StatCard | null>(null);
 
   protected statsFilterSections(): FilterSection[] {
     return [
@@ -462,25 +449,6 @@ export class DashboardComponent {
     this.statsFrom.set(event.from);
     this.statsTo.set(event.to);
     this.loadSummary();
-  }
-
-  protected openInfo(card: StatCard): void {
-    this.infoCard.set(card);
-  }
-
-  protected closeInfo(): void {
-    this.infoCard.set(null);
-  }
-
-  // ── Report panel info dialogs ───────────────────────────────────────────
-  protected readonly panelInfo = signal<PanelInfo | null>(null);
-
-  protected openPanelInfo(title: string, description: string): void {
-    this.panelInfo.set({ title, description });
-  }
-
-  protected closePanelInfo(): void {
-    this.panelInfo.set(null);
   }
 
   constructor() {

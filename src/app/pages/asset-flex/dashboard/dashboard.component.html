@@ -42,15 +42,8 @@
 <ng-template #statBody let-stat>
   <div class="stat__label-row">
     <span class="stat__label">{{ stat.label }}</span>
-    <hugeicons-icon [icon]="stat.icon" [size]="14" [strokeWidth]="1.75" [color]="stat.accent" class="stat__icon" />
-    <button
-      type="button"
-      class="stat__info-btn"
-      [attr.aria-label]="stat.label + ' — what does this mean?'"
-      (click)="$event.preventDefault(); $event.stopPropagation(); openInfo(stat)"
-    >
-      <hugeicons-icon [icon]="infoIcon" [size]="13" [strokeWidth]="1.75" color="currentColor" />
-    </button>
+    <hugeicons-icon [icon]="stat.icon" [size]="14" [strokeWidth]="1.75" color="var(--color-primary-hex)" class="stat__icon" />
+    <app-info-tooltip [text]="stat.description" [label]="stat.label + ' — what does this mean?'" class="stat__info-tooltip" />
   </div>
   <div class="stat__box">
     @if (loading()) {
@@ -61,24 +54,6 @@
   </div>
   <p class="stat__hint">{{ stat.hint }}</p>
 </ng-template>
-
-@if (infoCard(); as card) {
-  <app-modal-shell [title]="card.label" maxWidth="380px" (closed)="closeInfo()">
-    <p class="dialog-text">{{ card.description }}</p>
-    <ng-container modalFooter>
-      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeInfo()">Close</button>
-    </ng-container>
-  </app-modal-shell>
-}
-
-@if (panelInfo(); as info) {
-  <app-modal-shell [title]="info.title" maxWidth="380px" (closed)="closePanelInfo()">
-    <p class="dialog-text">{{ info.description }}</p>
-    <ng-container modalFooter>
-      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closePanelInfo()">Close</button>
-    </ng-container>
-  </app-modal-shell>
-}
 
 <section class="reports" aria-label="Reports preview">
   <div class="reports__head">
@@ -94,9 +69,7 @@
     <div class="panel__head-row">
       <div class="panel__title-row">
         <h3 class="panel__title">Pending settlements</h3>
-        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Pending settlements', 'Loans that have been disbursed to customers but whose funds haven\'t settled to the vendor yet. Once a settlement runs, the row moves off this list.')">
-          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-        </button>
+        <app-info-tooltip text="Loans that have been disbursed to customers but whose funds haven't settled to the vendor yet. Once a settlement runs, the row moves off this list." />
       </div>
       <a class="panel__link" routerLink="/asset-flex/settlements" [queryParams]="{ status: 'PENDING' }">View all</a>
     </div>
@@ -127,9 +100,7 @@
       <div>
         <div class="panel__title-row">
           <h3 class="panel__title">Gross payout volume</h3>
-          <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Gross payout volume', 'The total amount paid out to vendors for loan-funded purchases in the selected period, before platform fees are deducted.')">
-            <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-          </button>
+          <app-info-tooltip text="The total amount paid out to vendors for loan-funded purchases in the selected period, before platform fees are deducted." />
         </div>
         <p class="panel__big-value">{{ grossPayoutVolume() | naira }}</p>
         <p class="panel__change" [class.panel__change--down]="payoutChangePct() < 0">
@@ -155,9 +126,7 @@
     <div class="panel__head-row">
       <div class="panel__title-row">
         <h3 class="panel__title">Recent loan requests</h3>
-        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Recent loan requests', 'The most recent checkout requests customers have made against a vendor\'s loan products, whatever their current review outcome.')">
-          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-        </button>
+        <app-info-tooltip text="The most recent checkout requests customers have made against a vendor's loan products, whatever their current review outcome." />
       </div>
       <a class="panel__link" routerLink="/asset-flex/loans">View all</a>
     </div>
@@ -188,9 +157,7 @@
   <article class="panel panel--wide">
     <div class="panel__title-row">
       <h3 class="panel__title">Loan status breakdown</h3>
-      <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Loan status breakdown', 'How every loan on the platform currently splits across active, paid off, overdue, and pending-disbursement status.')">
-        <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-      </button>
+      <app-info-tooltip text="How every loan on the platform currently splits across active, paid off, overdue, and pending-disbursement status." />
     </div>
     <div class="status-bar" role="img" aria-label="Loan status breakdown, sample data">
       @for (s of loanStatusBreakdown; track s.label) {
@@ -212,9 +179,7 @@
     <article class="panel">
       <div class="panel__title-row">
         <h3 class="panel__title">Top vendors by volume</h3>
-        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Top vendors by volume', 'The five vendors that have moved the most loan-funded volume through the platform.')">
-          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-        </button>
+        <app-info-tooltip text="The five vendors that have moved the most loan-funded volume through the platform." />
       </div>
       <ul class="leaderboard">
         @for (v of topVendors; track v.name) {
@@ -232,9 +197,7 @@
     <article class="panel">
       <div class="panel__title-row">
         <h3 class="panel__title">Failed payments</h3>
-        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Failed payments', 'Recent customer payments that didn\'t go through, along with the reason each one failed.')">
-          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-        </button>
+        <app-info-tooltip text="Recent customer payments that didn't go through, along with the reason each one failed." />
       </div>
       <ul class="failed-list">
         @for (f of failedPayments; track f.customer + f.date) {
@@ -253,9 +216,7 @@
     <article class="panel">
       <div class="panel__title-row">
         <h3 class="panel__title">Top customers by amount</h3>
-        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Top customers by amount', 'The five customers with the highest total loan-funded spend across all vendors.')">
-          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-        </button>
+        <app-info-tooltip text="The five customers with the highest total loan-funded spend across all vendors." />
       </div>
       <ul class="leaderboard">
         @for (c of topCustomers; track c.name) {
@@ -273,9 +234,7 @@
     <article class="panel">
       <div class="panel__title-row">
         <h3 class="panel__title">Top categories</h3>
-        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Top categories', 'The item categories moving the most volume, based on the line of business of the vendors selling them — there\'s no category field on individual items yet.')">
-          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-        </button>
+        <app-info-tooltip text="The item categories moving the most volume, based on the line of business of the vendors selling them — there's no category field on individual items yet." />
       </div>
       <ul class="leaderboard">
         @for (cat of topCategories; track cat.name) {
@@ -295,9 +254,7 @@
     <div class="money-movement__head">
       <div class="panel__title-row">
         <h3 class="panel__title">Money movement</h3>
-        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Money movement', 'Money in (customer repayments and settlements received) versus money out (vendor payouts), broken down by month with each side\'s top contributors.')">
-          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-        </button>
+        <app-info-tooltip text="Money in (customer repayments and settlements received) versus money out (vendor payouts), broken down by month with each side's top contributors." />
       </div>
       <div class="money-movement__nav">
         <button type="button" class="money-movement__nav-btn" [disabled]="!canGoPrevMonth()" (click)="goPrevMonth()" aria-label="Previous month">

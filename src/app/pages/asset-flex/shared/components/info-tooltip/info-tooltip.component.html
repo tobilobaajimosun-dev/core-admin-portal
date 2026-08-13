@@ -1,0 +1,17 @@
+<span class="info-tooltip" (mouseenter)="show()" (mouseleave)="hide()">
+  <button
+    type="button"
+    class="info-tooltip__trigger"
+    [attr.aria-label]="label()"
+    [attr.aria-describedby]="open() ? tooltipId : null"
+    (click)="onTriggerClick($event)"
+    (focus)="show()"
+    (blur)="hide()"
+  >
+    <hugeicons-icon [icon]="infoIcon" [size]="13" [strokeWidth]="1.75" color="currentColor" />
+  </button>
+
+  @if (open()) {
+    <div class="info-tooltip__bubble" [id]="tooltipId" role="tooltip">{{ text() }}</div>
+  }
+</span>

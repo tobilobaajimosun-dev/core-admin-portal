@@ -27,13 +27,6 @@ h2, h3, h4 {
   margin: 4px 0 0;
 }
 
-.dialog-text {
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--ca-text-muted);
-  margin: 0 0 14px;
-}
-
 .stat-grid-head {
   display: flex;
   justify-content: flex-end;
@@ -91,30 +84,15 @@ h2, h3, h4 {
 }
 
 .stat__icon {
-  /* Colored via [color]="stat.accent" on the icon itself, not this class —
-     it used to sit on var(--ca-placeholder) regardless of accent, which
-     made every card's icon the same washed-out grey. */
+  /* Colored via color="var(--color-primary-hex)" on the icon itself, not
+     this class — it used to sit on var(--ca-placeholder) unconditionally,
+     which made every card's icon a flat, barely-visible grey. */
   flex-shrink: 0;
 }
 
-.stat__info-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
+.stat__info-tooltip {
   margin-left: auto;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--ca-text-faint);
-  cursor: pointer;
-  transition: background 130ms cubic-bezier(0.22, 1, 0.36, 1), color 130ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-
-.stat__info-btn:hover { background: #fff; color: var(--ca-text-muted); }
-.stat__info-btn:focus-visible { outline: 2px solid var(--color-primary-hex); outline-offset: 1px; }
 
 .stat__box {
   display: flex;
@@ -189,24 +167,6 @@ h2, h3, h4 {
   gap: 6px;
   margin-bottom: 6px;
 }
-
-.panel__info-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--ca-text-faint);
-  cursor: pointer;
-  transition: background 130ms cubic-bezier(0.22, 1, 0.36, 1), color 130ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.panel__info-btn:hover { background: var(--ca-card-bg); color: var(--ca-text-muted); }
-.panel__info-btn:focus-visible { outline: 2px solid var(--color-primary-hex); outline-offset: 1px; }
 
 .panel__text {
   font-size: 13px;
