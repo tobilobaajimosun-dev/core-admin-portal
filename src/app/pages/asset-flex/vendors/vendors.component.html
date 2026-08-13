@@ -57,7 +57,7 @@
             <span class="avatar" aria-hidden="true">{{ v.businessName.charAt(0) }}</span>
             <span class="stack">
               @if (isPrototype(v.id)) {
-                <span class="pa-cell-primary">{{ v.businessName }}<span class="demo-badge">Demo</span></span>
+                <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', v.id]">{{ v.businessName }}<span class="demo-badge">Demo</span></a>
               } @else {
                 <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', v.id]">{{ v.businessName }}</a>
               }

@@ -20,6 +20,7 @@ import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-s
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 import { VendorOnboardingWizardComponent } from './onboarding-wizard/vendor-onboarding-wizard.component';
+import { PrototypeVendorStore } from '@pages/asset-flex/shared/services/prototype-vendor.store';
 
 const STATUS_FILTERS: { label: string; value: VendorStatus }[] = [
   { label: 'Pending', value: 'PENDING_APPROVAL' },
@@ -51,6 +52,7 @@ export class VendorsComponent {
   private readonly vendorService = inject(VendorService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly prototypeStore = inject(PrototypeVendorStore);
 
   protected readonly searchIcon = Search01Icon;
   protected readonly filters = STATUS_FILTERS;
@@ -179,6 +181,7 @@ export class VendorsComponent {
 
   protected onVendorCreated(vendor: Vendor): void {
     this.prototypeIds.update((ids) => new Set(ids).add(vendor.id));
+    this.prototypeStore.add(vendor);
     this.vendors.update((rows) => [vendor, ...rows]);
     this.addOpen.set(false);
   }

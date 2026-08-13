@@ -16,6 +16,8 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { statusTone } from '../../shared/utils/status-tone';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { InfoBannerComponent } from '@pages/asset-flex/shared/components/info-banner/info-banner.component';
+import { isPrototypeVendorId, PrototypeVendorStore } from '@pages/asset-flex/shared/services/prototype-vendor.store';
 
 type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
 
@@ -29,6 +31,7 @@ type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
     StatusBadgeComponent,
     ModalShellComponent,
     ErrorStateComponent,
+    InfoBannerComponent,
   ],
   templateUrl: './vendor-detail.component.html',
   styleUrl: './vendor-detail.component.scss',
@@ -37,10 +40,15 @@ type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
 export class VendorDetailComponent {
   private readonly vendorService = inject(VendorService);
   private readonly loanProductService = inject(LoanProductService);
+  private readonly prototypeStore = inject(PrototypeVendorStore);
   private readonly toast = inject(PsToastService);
 
   /** Bound from the :id route param via withComponentInputBinding. */
   readonly id = input<string>('');
+
+  /** Vendors created through the onboarding wizard live in memory only —
+   * status actions here mutate the local store instead of calling the API. */
+  protected readonly isPrototype = computed(() => isPrototypeVendorId(this.id()));
 
   protected readonly backIcon = ArrowLeft01Icon;
   protected readonly fileIcon = File01Icon;
@@ -96,6 +104,16 @@ export class VendorDetailComponent {
     const ids = [...this.assignSelected()];
     if (!id || ids.length === 0) return;
     this.assigning.set(true);
+
+    if (this.isPrototype()) {
+      setTimeout(() => {
+        this.toast.success(`Assigned ${ids.length} product(s) (prototype only — not saved anywhere).`);
+        this.assigning.set(false);
+        this.assignOpen.set(false);
+      }, 500);
+      return;
+    }
+
     this.vendorService.assignProducts(id, ids).subscribe({
       next: () => {
         this.toast.success(`Assigned ${ids.length} product(s) to this vendor.`);
@@ -128,6 +146,15 @@ export class VendorDetailComponent {
     }
     this.loading.set(true);
     this.loadError.set(false);
+
+    if (isPrototypeVendorId(id)) {
+      // No documents endpoint call — prototype vendors were never uploaded anywhere.
+      this.vendor.set(this.prototypeStore.get(id) ?? null);
+      this.documents.set([]);
+      this.loading.set(false);
+      return;
+    }
+
     this.vendorService.getOne(id).subscribe({
       next: (res) => {
         this.vendor.set(res.data ?? null);
@@ -186,6 +213,30 @@ export class VendorDetailComponent {
       this.acting.set(false);
       this.toast.error(`Could not ${this.dialogTitle(type).toLowerCase()}. Please try again.`);
     };
+
+    if (this.isPrototype()) {
+      // Prototype vendor — no real vendor to call the API against, so mutate
+      // the in-memory store after a short delay to still feel like an action.
+      const statusByType: Record<DialogType, VendorStatus> = {
+        approve: 'APPROVED',
+        reject: 'REJECTED',
+        blacklist: 'BLACKLISTED',
+        suspend: 'SUSPENDED',
+        activate: 'APPROVED',
+      };
+      const messageByType: Record<DialogType, string> = {
+        approve: 'Vendor approved (prototype only — not saved anywhere).',
+        reject: 'Vendor KYC rejected (prototype only — not saved anywhere).',
+        blacklist: 'Vendor blacklisted (prototype only — not saved anywhere).',
+        suspend: 'Vendor suspended (prototype only — not saved anywhere).',
+        activate: 'Vendor reactivated (prototype only — not saved anywhere).',
+      };
+      setTimeout(() => {
+        this.prototypeStore.patch(id, { status: statusByType[type] });
+        done(messageByType[type]);
+      }, 500);
+      return;
+    }
 
     switch (type) {
       case 'approve':
