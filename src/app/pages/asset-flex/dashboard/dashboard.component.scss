@@ -2,6 +2,13 @@
   display: block;
 }
 
+/* Only the page's own h1 keeps the Cal Sans "welcome feel" heading font —
+ * every other heading in the dashboard (section/panel titles) reads better
+ * in Mona Sans at this density. */
+h2, h3, h4 {
+  font-family: "Mona Sans", var(--font-sans);
+}
+
 .page-head {
   margin-bottom: 20px;
 }
@@ -164,15 +171,40 @@
   background: #fff;
   border: 1px solid var(--ca-border);
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
 }
 
 .panel__title {
   font-size: 15px;
   font-weight: 600;
   color: var(--ca-text);
-  margin: 0 0 6px;
+  margin: 0;
 }
+
+.panel__title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.panel__info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ca-text-faint);
+  cursor: pointer;
+  transition: background 130ms cubic-bezier(0.22, 1, 0.36, 1), color 130ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.panel__info-btn:hover { background: var(--ca-card-bg); color: var(--ca-text-muted); }
+.panel__info-btn:focus-visible { outline: 2px solid var(--color-primary-hex); outline-offset: 1px; }
 
 .panel__text {
   font-size: 13px;
@@ -193,7 +225,8 @@
 .reports__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .bar-chart {
@@ -269,6 +302,17 @@
 }
 
 .status-legend__item:hover { background: var(--ca-card-bg); }
+
+/* Now that the status breakdown is a full-width panel, lay the legend out
+ * as a row instead of a column so the extra width doesn't sit empty. */
+.status-legend--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+}
+.status-legend--row .status-legend__item { margin: 0; padding: 0; height: auto; }
+.status-legend--row .status-legend__item:hover { background: transparent; }
+.status-legend--row .status-legend__label { flex: none; }
 
 .status-legend__dot {
   width: 8px;
@@ -370,7 +414,7 @@
 .quick-action--primary:hover { background: #009fe6; border-color: #009fe6; }
 
 /* ── Panel variants ── */
-.panel--wide { margin-bottom: 12px; }
+.panel--wide { margin-bottom: 16px; }
 
 .panel__head-row {
   display: flex;
@@ -396,6 +440,23 @@
   color: var(--ca-text);
   margin: 4px 0 0;
   font-variant-numeric: tabular-nums;
+}
+
+.panel__change {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+  margin: 6px 0 0;
+}
+
+.panel__change--down { color: #dc2626; }
+
+.panel__change-label {
+  font-weight: 400;
+  color: var(--ca-text-muted);
 }
 
 .bar-chart--payout {

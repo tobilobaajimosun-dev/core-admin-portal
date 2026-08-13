@@ -87,6 +87,20 @@ interface FailedPaymentRow {
   date: string;
 }
 
+interface LoanRequestRow {
+  customer: string;
+  vendor: string;
+  product: string;
+  amount: number;
+  status: string;
+  requestedAt: string;
+}
+
+interface PanelInfo {
+  title: string;
+  description: string;
+}
+
 interface MoneyMovementParty {
   name: string;
   amount: number;
@@ -142,6 +156,15 @@ export class DashboardComponent {
     { customer: 'Grace Adeyemi', vendor: 'Aro Fashion House', item: 'Designer wardrobe bundle', amount: 145_000, dueDate: '2026-08-17' },
   ];
 
+  // ── Recent loan requests table (sample) ─────────────────────────────────
+  protected readonly recentLoanRequests: LoanRequestRow[] = [
+    { customer: 'Chiamaka Nnadi', vendor: 'Northgate Retail', product: 'Flex 30', amount: 320_000, status: 'Approved', requestedAt: '2026-08-12T09:20:00' },
+    { customer: 'Yusuf Bello', vendor: 'Everstone Motors', product: 'Flex 90', amount: 2_100_000, status: 'Pending review', requestedAt: '2026-08-12T08:05:00' },
+    { customer: 'Ronke Adisa', vendor: 'Bluewave Electronics', product: 'Flex 60', amount: 540_000, status: 'Approved', requestedAt: '2026-08-11T17:40:00' },
+    { customer: 'Chukwuemeka Ike', vendor: 'Palm Court Appliances', product: 'Flex 30', amount: 180_000, status: 'Declined', requestedAt: '2026-08-11T14:12:00' },
+    { customer: 'Halima Suleiman', vendor: 'Aro Fashion House', product: 'Flex 60', amount: 95_000, status: 'Approved', requestedAt: '2026-08-11T11:30:00' },
+  ];
+
   // ── Gross payout volume + day filter ───────────────────────────────────
   protected readonly payoutIcon = Calendar01Icon;
   protected readonly payoutFrom = signal('');
@@ -152,6 +175,19 @@ export class DashboardComponent {
   protected readonly grossPayoutVolume = computed(() => {
     const span = this.rangeSpanDays(this.payoutFrom(), this.payoutTo());
     return Math.round(820_000 * span * (1 + (span % 3) * 0.08));
+  });
+
+  /** Same-length period immediately before the selected one, for the
+   * up/down comparison next to the headline figure. */
+  protected readonly grossPayoutVolumePrev = computed(() => {
+    const span = this.rangeSpanDays(this.payoutFrom(), this.payoutTo());
+    return Math.round(760_000 * span * (1 + (span % 4) * 0.05));
+  });
+
+  protected readonly payoutChangePct = computed(() => {
+    const prev = this.grossPayoutVolumePrev();
+    if (!prev) return 0;
+    return Math.round(((this.grossPayoutVolume() - prev) / prev) * 1000) / 10;
   });
 
   protected payoutFilterSections(): FilterSection[] {
@@ -343,20 +379,6 @@ export class DashboardComponent {
    * a reports section could look like once that backend work lands; it is
    * never fetched and never presented as real.
    */
-  private readonly sampleLoanVolume = [
-    { label: 'Mar', value: 4_200_000 },
-    { label: 'Apr', value: 5_100_000 },
-    { label: 'May', value: 4_800_000 },
-    { label: 'Jun', value: 6_300_000 },
-    { label: 'Jul', value: 7_450_000 },
-    { label: 'Aug', value: 6_900_000 },
-  ];
-
-  protected readonly loanVolumeBars: MonthBar[] = (() => {
-    const max = Math.max(...this.sampleLoanVolume.map((m) => m.value));
-    return this.sampleLoanVolume.map((m) => ({ ...m, heightPct: Math.round((m.value / max) * 100) }));
-  })();
-
   protected readonly loanStatusBreakdown: StatusSlice[] = (() => {
     const raw: Omit<StatusSlice, 'pct'>[] = [
       { label: 'Active', value: 412, color: '#00b3ff' },
@@ -448,6 +470,17 @@ export class DashboardComponent {
 
   protected closeInfo(): void {
     this.infoCard.set(null);
+  }
+
+  // ── Report panel info dialogs ───────────────────────────────────────────
+  protected readonly panelInfo = signal<PanelInfo | null>(null);
+
+  protected openPanelInfo(title: string, description: string): void {
+    this.panelInfo.set({ title, description });
+  }
+
+  protected closePanelInfo(): void {
+    this.panelInfo.set(null);
   }
 
   constructor() {

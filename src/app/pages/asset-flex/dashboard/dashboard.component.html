@@ -71,6 +71,15 @@
   </app-modal-shell>
 }
 
+@if (panelInfo(); as info) {
+  <app-modal-shell [title]="info.title" maxWidth="380px" (closed)="closePanelInfo()">
+    <p class="dialog-text">{{ info.description }}</p>
+    <ng-container modalFooter>
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closePanelInfo()">Close</button>
+    </ng-container>
+  </app-modal-shell>
+}
+
 <section class="reports" aria-label="Reports preview">
   <div class="reports__head">
     <h2 class="reports__title">Reports</h2>
@@ -83,7 +92,12 @@
 
   <article class="panel panel--wide">
     <div class="panel__head-row">
-      <h3 class="panel__title">Pending settlements</h3>
+      <div class="panel__title-row">
+        <h3 class="panel__title">Pending settlements</h3>
+        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Pending settlements', 'Loans that have been disbursed to customers but whose funds haven\'t settled to the vendor yet. Once a settlement runs, the row moves off this list.')">
+          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+      </div>
       <a class="panel__link" routerLink="/asset-flex/settlements" [queryParams]="{ status: 'PENDING' }">View all</a>
     </div>
     <div class="pa-gtable-wrap">
@@ -111,8 +125,17 @@
   <article class="panel panel--wide">
     <div class="panel__head-row">
       <div>
-        <h3 class="panel__title">Gross payout volume</h3>
+        <div class="panel__title-row">
+          <h3 class="panel__title">Gross payout volume</h3>
+          <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Gross payout volume', 'The total amount paid out to vendors for loan-funded purchases in the selected period, before platform fees are deducted.')">
+            <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+          </button>
+        </div>
         <p class="panel__big-value">{{ grossPayoutVolume() | naira }}</p>
+        <p class="panel__change" [class.panel__change--down]="payoutChangePct() < 0">
+          {{ payoutChangePct() >= 0 ? '▲' : '▼' }} {{ payoutChangePct() < 0 ? payoutChangePct() * -1 : payoutChangePct() }}%
+          <span class="panel__change-label">vs prior period ({{ grossPayoutVolumePrev() | naira }})</span>
+        </p>
       </div>
       <app-filters [sections]="payoutFilterSections()" (dateRangeChange)="onPayoutRangeChange($event)" />
     </div>
@@ -128,41 +151,71 @@
     </div>
   </article>
 
-  <div class="reports__grid">
-    <article class="panel">
-      <h3 class="panel__title">Loan volume, last 6 months</h3>
-      <div class="bar-chart" role="img" aria-label="Loan volume by month, sample data">
-        @for (m of loanVolumeBars; track m.label) {
-          <div class="bar-chart__col">
-            <div class="bar-chart__track">
-              <div class="bar-chart__bar" [style.height.%]="m.heightPct"></div>
-            </div>
-            <span class="bar-chart__label">{{ m.label }}</span>
+  <article class="panel panel--wide">
+    <div class="panel__head-row">
+      <div class="panel__title-row">
+        <h3 class="panel__title">Recent loan requests</h3>
+        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Recent loan requests', 'The most recent checkout requests customers have made against a vendor\'s loan products, whatever their current review outcome.')">
+          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+      </div>
+      <a class="panel__link" routerLink="/asset-flex/loans">View all</a>
+    </div>
+    <div class="pa-gtable-wrap">
+      <div class="pa-gtable" style="--gt-cols: 1.2fr 1.2fr 1fr 1fr 1fr 1fr">
+        <div class="pa-gtable__head">
+          <span>Customer</span>
+          <span>Vendor</span>
+          <span>Product</span>
+          <span class="pa-gtable__cell--right">Amount</span>
+          <span>Status</span>
+          <span class="pa-gtable__cell--right">Requested</span>
+        </div>
+        @for (row of recentLoanRequests; track row.customer + row.requestedAt) {
+          <div class="pa-gtable__row">
+            <div class="pa-gtable__cell pa-cell-primary">{{ row.customer }}</div>
+            <div class="pa-gtable__cell pa-cell-sub">{{ row.vendor }}</div>
+            <div class="pa-gtable__cell pa-cell-sub">{{ row.product }}</div>
+            <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ row.amount | naira }}</div>
+            <div class="pa-gtable__cell pa-cell-sub">{{ row.status }}</div>
+            <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ row.requestedAt | date: 'MMM d, h:mm a' }}</div>
           </div>
         }
       </div>
-    </article>
+    </div>
+  </article>
 
-    <article class="panel">
+  <article class="panel panel--wide">
+    <div class="panel__title-row">
       <h3 class="panel__title">Loan status breakdown</h3>
-      <div class="status-bar" role="img" aria-label="Loan status breakdown, sample data">
-        @for (s of loanStatusBreakdown; track s.label) {
-          <div class="status-bar__slice" [style.width.%]="s.pct" [style.background]="s.color"></div>
-        }
-      </div>
-      <ul class="status-legend">
-        @for (s of loanStatusBreakdown; track s.label) {
-          <li class="status-legend__item">
-            <span class="status-legend__dot" [style.background]="s.color" aria-hidden="true"></span>
-            <span class="status-legend__label">{{ s.label }}</span>
-            <span class="status-legend__value">{{ s.value }}</span>
-          </li>
-        }
-      </ul>
-    </article>
+      <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Loan status breakdown', 'How every loan on the platform currently splits across active, paid off, overdue, and pending-disbursement status.')">
+        <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+      </button>
+    </div>
+    <div class="status-bar" role="img" aria-label="Loan status breakdown, sample data">
+      @for (s of loanStatusBreakdown; track s.label) {
+        <div class="status-bar__slice" [style.width.%]="s.pct" [style.background]="s.color"></div>
+      }
+    </div>
+    <ul class="status-legend status-legend--row">
+      @for (s of loanStatusBreakdown; track s.label) {
+        <li class="status-legend__item">
+          <span class="status-legend__dot" [style.background]="s.color" aria-hidden="true"></span>
+          <span class="status-legend__label">{{ s.label }}</span>
+          <span class="status-legend__value">{{ s.value }}</span>
+        </li>
+      }
+    </ul>
+  </article>
 
+  <div class="reports__grid">
     <article class="panel">
-      <h3 class="panel__title">Top vendors by volume</h3>
+      <div class="panel__title-row">
+        <h3 class="panel__title">Top vendors by volume</h3>
+        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Top vendors by volume', 'The five vendors that have moved the most loan-funded volume through the platform.')">
+          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+      </div>
       <ul class="leaderboard">
         @for (v of topVendors; track v.name) {
           <li class="leaderboard__item">
@@ -177,7 +230,12 @@
     </article>
 
     <article class="panel">
-      <h3 class="panel__title">Failed payments</h3>
+      <div class="panel__title-row">
+        <h3 class="panel__title">Failed payments</h3>
+        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Failed payments', 'Recent customer payments that didn\'t go through, along with the reason each one failed.')">
+          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+      </div>
       <ul class="failed-list">
         @for (f of failedPayments; track f.customer + f.date) {
           <li class="failed-list__item">
@@ -193,7 +251,12 @@
     </article>
 
     <article class="panel">
-      <h3 class="panel__title">Top customers by amount</h3>
+      <div class="panel__title-row">
+        <h3 class="panel__title">Top customers by amount</h3>
+        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Top customers by amount', 'The five customers with the highest total loan-funded spend across all vendors.')">
+          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+      </div>
       <ul class="leaderboard">
         @for (c of topCustomers; track c.name) {
           <li class="leaderboard__item">
@@ -208,7 +271,12 @@
     </article>
 
     <article class="panel">
-      <h3 class="panel__title">Top categories</h3>
+      <div class="panel__title-row">
+        <h3 class="panel__title">Top categories</h3>
+        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Top categories', 'The item categories moving the most volume, based on the line of business of the vendors selling them — there\'s no category field on individual items yet.')">
+          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+      </div>
       <ul class="leaderboard">
         @for (cat of topCategories; track cat.name) {
           <li class="leaderboard__item">
@@ -225,7 +293,12 @@
 
   <article class="panel panel--wide money-movement">
     <div class="money-movement__head">
-      <h3 class="panel__title">Money movement</h3>
+      <div class="panel__title-row">
+        <h3 class="panel__title">Money movement</h3>
+        <button type="button" class="panel__info-btn" aria-label="What is this?" (click)="openPanelInfo('Money movement', 'Money in (customer repayments and settlements received) versus money out (vendor payouts), broken down by month with each side\'s top contributors.')">
+          <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+      </div>
       <div class="money-movement__nav">
         <button type="button" class="money-movement__nav-btn" [disabled]="!canGoPrevMonth()" (click)="goPrevMonth()" aria-label="Previous month">
           <hugeicons-icon [icon]="backIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
