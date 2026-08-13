@@ -81,7 +81,7 @@
 .pa-btn--danger { background: #e51c00; color: #fff; }
 .pa-btn--danger:hover { background: #c91a00; }
 
-.pa-btn--primary-outline { background: #fff; color: var(--color-primary-hex); border-color: color-mix(in srgb, var(--color-primary-hex) 40%, #fff); }
+.pa-btn--primary-outline { background: #fff; color: var(--color-primary-text-hex); border-color: color-mix(in srgb, var(--color-primary-hex) 40%, #fff); }
 .pa-btn--primary-outline:hover { background: rgba(0, 179, 255, 0.06); }
 
 .pa-btn--danger-outline { background: #fff; color: #dc2626; border-color: #fecaca; }
@@ -382,7 +382,7 @@
 .pa-filter--active {
   background: var(--color-primary-active-hex);
   border-color: var(--color-primary-hex);
-  color: var(--color-primary-hex);
+  color: var(--color-primary-text-hex);
   font-weight: 600;
 }
 
@@ -412,8 +412,8 @@
 .pa-cell-sub { display: block; font-size: 12px; color: var(--ca-text-muted); margin-top: 2px; }
 .pa-cell-link { display: block; font-weight: 500; color: var(--ca-text); text-decoration: none; }
 .pa-cell-link::after { content: ""; position: absolute; inset: 0; }
-.pa-cell-link:focus-visible { outline: none; text-decoration: underline; color: var(--color-primary-hex); }
-.pa-row:focus-within .pa-cell-link { color: var(--color-primary-hex); }
+.pa-cell-link:focus-visible { outline: none; text-decoration: underline; color: var(--color-primary-text-hex); }
+.pa-row:focus-within .pa-cell-link { color: var(--color-primary-text-hex); }
 .pa-mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
 .pa-amount { font-weight: 600; font-variant-numeric: tabular-nums; }
 

@@ -109,7 +109,7 @@
 
 .wizard__step--active .wizard__step-dot {
   border-color: var(--color-primary-hex);
-  color: var(--color-primary-hex);
+  color: var(--color-primary-text-hex);
 }
 
 .wizard__step--done .wizard__step-dot {
@@ -266,7 +266,8 @@
   color: var(--ca-text);
   cursor: pointer;
 }
-.wizard__bank-option:hover { background: var(--ca-card-bg); }
+.wizard__bank-option:hover,
+.wizard__bank-option--active { background: var(--ca-card-bg); }
 
 .wizard__bank-empty {
   padding: 12px;

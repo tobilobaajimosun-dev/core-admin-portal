@@ -5,7 +5,7 @@
 .detail-loading {
   padding: 60px 0;
   text-align: center;
-  color: #64748b;
+  color: var(--ca-text-muted);
   font-size: 14px;
 }
 
@@ -14,13 +14,13 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #6a7178;
+  color: var(--ca-text-muted);
   text-decoration: none;
   margin-bottom: 16px;
 }
 
 .breadcrumb:hover {
-  color: #121212;
+  color: var(--ca-text);
 }
 
 /* ── Header ── */
@@ -46,7 +46,7 @@
   height: 48px;
   border-radius: 12px;
   background: var(--color-primary-active-hex);
-  color: var(--color-primary-hex);
+  color: var(--color-primary-text-hex);
   font-size: 20px;
   font-weight: 700;
 }
@@ -54,7 +54,7 @@
 .detail-head__name {
   font-size: 20px;
   font-weight: 700;
-  color: #121212;
+  color: var(--ca-text);
   margin: 0 0 4px;
 }
 
@@ -70,7 +70,7 @@
 }
 
 .detail-head__muted {
-  color: #6a7178;
+  color: var(--ca-text-muted);
 }
 
 .detail-head__actions {
@@ -120,13 +120,13 @@
 .card__title {
   font-size: 14px;
   font-weight: 600;
-  color: #121212;
+  color: var(--ca-text);
   margin: 0 0 14px;
 }
 
 .card__empty {
   font-size: 13px;
-  color: #64748b;
+  color: var(--ca-text-muted);
   margin: 0;
 }
 
@@ -147,13 +147,13 @@
 
 .kv dt {
   font-size: 12px;
-  color: #64748b;
+  color: var(--ca-text-muted);
   margin: 0;
 }
 
 .kv dd {
   font-size: 13px;
-  color: #121212;
+  color: var(--ca-text);
   margin: 0;
   word-break: break-word;
 }
@@ -189,7 +189,7 @@
   height: 34px;
   border-radius: 8px;
   background: #f1f5f9;
-  color: #64748b;
+  color: var(--ca-text-muted);
   flex-shrink: 0;
 }
 
@@ -202,7 +202,7 @@
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-primary-hex);
+  color: var(--color-primary-text-hex);
   text-decoration: none;
 }
 
@@ -213,7 +213,7 @@
 .doc__date {
   display: block;
   font-size: 12px;
-  color: #64748b;
+  color: var(--ca-text-muted);
   margin-top: 2px;
 }
 
@@ -221,7 +221,7 @@
 .dialog-text {
   font-size: 13px;
   line-height: 1.6;
-  color: #475569;
+  color: var(--ca-text-muted);
   margin: 0 0 12px;
 }
 
@@ -288,10 +288,10 @@
 .assign-item__name {
   font-size: 13px;
   font-weight: 500;
-  color: #101828;
+  color: var(--ca-text);
 }
 
 .assign-item__code {
   font-size: 12px;
-  color: #667085;
+  color: var(--ca-text-muted);
 }

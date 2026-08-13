@@ -10,6 +10,7 @@ import { Customer } from '../../shared/models/customer.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { statusTone } from '../../shared/utils/status-tone';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/detail-skeleton/detail-skeleton.component';
 
 /** Masks all but the last 4 chars of a sensitive value. */
 function mask(value: string | null | undefined): string {
@@ -20,12 +21,12 @@ function mask(value: string | null | undefined): string {
 
 @Component({
   selector: 'app-customer-detail',
-  imports: [DatePipe, RouterLink, HugeiconsIconComponent, StatusBadgeComponent, ErrorStateComponent],
+  imports: [DatePipe, RouterLink, HugeiconsIconComponent, StatusBadgeComponent, ErrorStateComponent, DetailSkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-4 sm:p-6">
     @if (loading()) {
-      <div class="c-loading">Loading customer…</div>
+      <app-detail-skeleton label="Loading customer" />
     } @else if (loadError()) {
       <app-error-state message="Couldn't load this customer. Check your connection and try again." (retry)="retry()" />
     } @else if (!customer()) {
@@ -70,15 +71,15 @@ function mask(value: string | null | undefined): string {
   styles: [
     `
       :host { display: block; }
-      .c-loading { padding: 60px 0; text-align: center; color: #64748b; font-size: 14px; }
-      .breadcrumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #667085; text-decoration: none; margin-bottom: 16px; }
-      .breadcrumb:hover { color: #101828; }
+      .c-loading { padding: 60px 0; text-align: center; color: var(--ca-text-muted); font-size: 14px; }
+      .breadcrumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ca-text-muted); text-decoration: none; margin-bottom: 16px; }
+      .breadcrumb:hover { color: var(--ca-text); }
       .c-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-      .c-avatar { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: var(--color-primary-active-hex); color: var(--color-primary-hex); font-size: 18px; font-weight: 700; }
-      .c-name { font-size: 20px; font-weight: 700; color: #101828; margin: 0 0 4px; }
+      .c-avatar { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: var(--color-primary-active-hex); color: var(--color-primary-text-hex); font-size: 18px; font-weight: 700; }
+      .c-name { font-size: 20px; font-weight: 700; color: var(--ca-text); margin: 0 0 4px; }
       .c-meta { display: flex; align-items: center; gap: 8px; font-size: 13px; }
       .c-sep { color: #cbd5e1; }
-      .c-muted { color: #667085; }
+      .c-muted { color: var(--ca-text-muted); }
       .c-card { max-width: 560px; }
     `,
   ],

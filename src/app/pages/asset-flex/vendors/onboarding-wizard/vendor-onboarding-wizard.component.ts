@@ -145,6 +145,31 @@ export class VendorOnboardingWizardComponent {
     if (!q) return all;
     return all.filter((b) => b.name.toLowerCase().includes(q));
   });
+  protected readonly bankActiveIndex = signal(-1);
+
+  protected onBankSearchKeydown(event: KeyboardEvent): void {
+    const results = this.bankResults();
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!this.bankListOpen()) {
+        this.bankListOpen.set(true);
+        return;
+      }
+      this.bankActiveIndex.update((i) => Math.min(i + 1, results.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.bankActiveIndex.update((i) => Math.max(i - 1, 0));
+    } else if (event.key === 'Enter') {
+      const active = results[this.bankActiveIndex()];
+      if (active) {
+        event.preventDefault();
+        this.selectBank(active);
+      }
+    } else if (event.key === 'Escape' && this.bankListOpen()) {
+      event.stopPropagation();
+      this.bankListOpen.set(false);
+    }
+  }
 
   protected readonly acctStatus = signal<VerifyStatus>('idle');
   protected readonly resolvedAccountName = signal<string | null>(null);
@@ -306,6 +331,7 @@ export class VendorOnboardingWizardComponent {
     this.settlementForm.controls.bankCode.setValue(bank.bank_code);
     this.bankQuery.set('');
     this.bankListOpen.set(false);
+    this.bankActiveIndex.set(-1);
     this.acctStatus.set('idle');
     this.resolvedAccountName.set(null);
   }

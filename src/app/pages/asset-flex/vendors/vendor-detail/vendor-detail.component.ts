@@ -16,6 +16,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 import { statusTone } from '../../shared/utils/status-tone';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/detail-skeleton/detail-skeleton.component';
 
 type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
 
@@ -29,6 +30,7 @@ type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
     StatusBadgeComponent,
     ModalShellComponent,
     ErrorStateComponent,
+    DetailSkeletonComponent,
   ],
   templateUrl: './vendor-detail.component.html',
   styleUrl: './vendor-detail.component.scss',

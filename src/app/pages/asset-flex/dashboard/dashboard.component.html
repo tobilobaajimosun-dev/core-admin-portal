@@ -42,7 +42,7 @@
 <ng-template #statBody let-stat>
   <div class="stat__label-row">
     <span class="stat__label">{{ stat.label }}</span>
-    <hugeicons-icon [icon]="stat.icon" [size]="14" [strokeWidth]="1.75" color="currentColor" class="stat__icon" />
+    <hugeicons-icon [icon]="stat.icon" [size]="14" [strokeWidth]="1.75" [color]="stat.accent" class="stat__icon" />
     <button
       type="button"
       class="stat__info-btn"

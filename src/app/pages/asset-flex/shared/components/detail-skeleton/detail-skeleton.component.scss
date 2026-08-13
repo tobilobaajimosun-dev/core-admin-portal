@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.detail-skeleton__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.detail-skeleton__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.detail-skeleton__head-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-skeleton__card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 480px;
+}

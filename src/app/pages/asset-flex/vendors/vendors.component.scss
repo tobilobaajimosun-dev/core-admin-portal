@@ -26,7 +26,9 @@
   height: 32px;
   border-radius: 9px;
   background: var(--color-primary-active-hex);
-  color: var(--color-primary-hex);
+  /* The primary blue (even the darkened text variant) doesn't clear 4.5:1 on
+     this light tinted background — a solid dark neutral does, easily. */
+  color: var(--ca-text);
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;

@@ -44,6 +44,7 @@ Read each of these files if they exist before making changes:
 3. Secrets are never hardcoded — no API keys, tokens, passwords, or credentials in source code.
 4. Validate all input — every endpoint, every form, every external data source.
 5. Follow the principle of least privilege — only request the permissions you need.
+6. NEVER run `security dump-keychain` (or any other full-keychain-dump command) under any circumstances. It exports every credential on the machine, including unrelated accounts' OAuth tokens and PII, not just the one secret you need. To read a single credential, use `security find-generic-password -s <exact-service-name> -w` or `security find-internet-password -s <exact-service-name> -w` with the precise service name — never a broad dump or enumeration.
 
 # UI Design System
 

@@ -118,7 +118,7 @@
               </div>
               @if (bvnPendingOtp()) {
                 <div class="wizard__verify-row wizard__otp-row">
-                  <input class="pa-input" type="text" inputmode="numeric" [formControl]="bvnOtp" placeholder="Enter the OTP sent to the BVN-registered phone" />
+                  <input class="pa-input" type="text" inputmode="numeric" [formControl]="bvnOtp" aria-label="One-time passcode" placeholder="Enter the OTP sent to the BVN-registered phone" />
                   <button type="button" class="pa-btn pa-btn--primary pa-btn--sm wizard__verify-btn" [disabled]="bvnStatus() === 'checking' || !bvnOtp.value" (click)="submitBvnOtp()">Confirm OTP</button>
                 </div>
               }
@@ -184,21 +184,33 @@
                   id="w-bank"
                   class="pa-input wizard__bank-search-input"
                   type="text"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-controls="wizard-bank-listbox"
+                  [attr.aria-expanded]="bankListOpen()"
                   [value]="settlementForm.controls.bankName.value || bankQuery()"
                   placeholder="Search for a bank…"
                   autocomplete="off"
                   (focus)="bankListOpen.set(true)"
-                  (input)="bankQuery.set($any($event.target).value); settlementForm.controls.bankName.setValue(''); bankListOpen.set(true)"
+                  (input)="bankQuery.set($any($event.target).value); settlementForm.controls.bankName.setValue(''); bankListOpen.set(true); bankActiveIndex.set(-1)"
+                  (keydown)="onBankSearchKeydown($event)"
                 />
                 @if (bankListOpen()) {
-                  <div class="wizard__bank-menu" (clickOutside)="bankListOpen.set(false)">
+                  <div id="wizard-bank-listbox" class="wizard__bank-menu" role="listbox" aria-label="Banks" (clickOutside)="bankListOpen.set(false)">
                     @if (banksLoading()) {
                       <div class="wizard__bank-empty">Loading banks…</div>
                     } @else if (bankResults().length === 0) {
                       <div class="wizard__bank-empty">No banks match your search.</div>
                     } @else {
-                      @for (bank of bankResults(); track bank.bank_code) {
-                        <button type="button" class="wizard__bank-option" (click)="selectBank(bank)">{{ bank.name }}</button>
+                      @for (bank of bankResults(); track bank.bank_code; let i = $index) {
+                        <button
+                          type="button"
+                          role="option"
+                          class="wizard__bank-option"
+                          [class.wizard__bank-option--active]="i === bankActiveIndex()"
+                          [attr.aria-selected]="i === bankActiveIndex()"
+                          (click)="selectBank(bank)"
+                        >{{ bank.name }}</button>
                       }
                     }
                   </div>

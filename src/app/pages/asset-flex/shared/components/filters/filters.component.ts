@@ -52,6 +52,9 @@ export type FilterSection = ChecklistFilterSection | DateRangeFilterSection | Nu
   templateUrl: './filters.component.html',
   styleUrl: './filters.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:keydown.escape)': 'onEscape()',
+  },
 })
 export class FiltersComponent {
   readonly sections = input.required<FilterSection[]>();
@@ -109,6 +112,17 @@ export class FiltersComponent {
   /** Opens a given facet's dropdown — called from elsewhere (e.g. a chip click). */
   openSection(key: string): void {
     this.openKey.set(key);
+  }
+
+  /** Escape closes the preset picker first (if open), then the pill panel
+   * itself — mirrors ModalShellComponent's Escape-to-close so keyboard-only
+   * users always have a way out without needing the mouse-only clickOutside. */
+  protected onEscape(): void {
+    if (this.presetOpen()) {
+      this.presetOpen.set(false);
+      return;
+    }
+    if (this.openKey() !== null) this.openKey.set(null);
   }
 
   protected togglePreset(): void {

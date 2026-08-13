@@ -15,6 +15,7 @@ import { statusTone } from '../../shared/utils/status-tone';
 import { formatLabel } from '../../shared/utils/format';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
+import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/detail-skeleton/detail-skeleton.component';
 
 @Component({
   selector: 'app-loan-detail',
@@ -27,6 +28,7 @@ import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-s
     NairaPipe,
     ModalShellComponent,
     ErrorStateComponent,
+    DetailSkeletonComponent,
   ],
   templateUrl: './loan-detail.component.html',
   styleUrl: './loan-detail.component.scss',

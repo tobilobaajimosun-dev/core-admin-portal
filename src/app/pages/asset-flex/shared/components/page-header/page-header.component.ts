@@ -30,12 +30,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         font-size: 22px;
         font-weight: 700;
         letter-spacing: -0.3px;
-        color: #121212;
+        color: var(--ca-text);
         margin: 0;
       }
       .ph__subtitle {
         font-size: 13px;
-        color: #64748b;
+        color: var(--ca-text-muted);
         margin: 4px 0 0;
       }
       .ph__actions:empty {

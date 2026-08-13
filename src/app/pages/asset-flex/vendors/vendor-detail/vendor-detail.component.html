@@ -1,6 +1,6 @@
 <div class="p-4 sm:p-6">
 @if (loading()) {
-  <div class="detail-loading">Loading vendor…</div>
+  <app-detail-skeleton label="Loading vendor" />
 } @else if (loadError()) {
   <app-error-state message="Couldn't load this vendor. Check your connection and try again." (retry)="retry()" />
 } @else if (!vendor()) {

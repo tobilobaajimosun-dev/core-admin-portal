@@ -49,6 +49,12 @@
   --color-primary-hex: #00b3ff;
   --color-primary-btn-hex: #00abf5;
   --color-primary-active-hex: #d0eefb;
+  /* --color-primary-hex fails WCAG AA (2.36:1) as *text* on white — this is
+     the same hue darkened enough to clear 4.5:1 on both white AND
+     --color-primary-active-hex (the light-blue "active" chip background),
+     for link/active-state text only. Keep --color-primary-hex for
+     borders/backgrounds/icons, where it's fine. */
+  --color-primary-text-hex: #006aa3;
   --color-secondary-hex: #f5f8fb;
   --color-coal-hex: #121212;
   --color-grey-hex: #495054;

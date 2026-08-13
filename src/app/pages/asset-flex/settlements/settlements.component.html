@@ -6,7 +6,7 @@
     </button>
     <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="openCutoff()">Trigger T+1 cutoff</button>
     <button class="pa-btn pa-btn--primary pa-btn--md" type="button" [disabled]="selectedCount() === 0" (click)="openMark()">
-      Mark settled@if (selectedCount() > 0) { ({{ selectedCount() }}) }
+      Mark settled{{ selectedCount() > 0 ? ' (' + selectedCount() + ')' : '' }}
     </button>
   </div>
 </app-page-header>
