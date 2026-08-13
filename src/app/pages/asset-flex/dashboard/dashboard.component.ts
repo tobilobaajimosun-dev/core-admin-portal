@@ -17,7 +17,6 @@ import {
   MoneyAdd01Icon,
   ReceiptTextIcon,
   Wallet01Icon,
-  CancelCircleIcon,
   Calendar01Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
@@ -25,6 +24,7 @@ import {
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { InfoBannerComponent } from '@pages/asset-flex/shared/components/info-banner/info-banner.component';
 import { InfoTooltipComponent } from '@pages/asset-flex/shared/components/info-tooltip/info-tooltip.component';
+import { StatusBadgeComponent, BadgeTone } from '@pages/asset-flex/shared/components/status-badge/status-badge.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
 
@@ -33,6 +33,7 @@ interface MonthBar {
   value: number;
   /** 0-100, pre-computed against the series max so the template stays pure. */
   heightPct: number;
+  vendorsServed: number;
 }
 
 interface StatusSlice {
@@ -77,14 +78,6 @@ interface PendingSettlementRow {
   dueDate: string;
 }
 
-interface FailedPaymentRow {
-  customer: string;
-  vendor: string;
-  amount: number;
-  reason: string;
-  date: string;
-}
-
 interface LoanRequestRow {
   customer: string;
   vendor: string;
@@ -117,6 +110,7 @@ interface MoneyMovementMonth {
     ErrorStateComponent,
     InfoBannerComponent,
     InfoTooltipComponent,
+    StatusBadgeComponent,
     NairaPipe,
     FiltersComponent,
   ],
@@ -129,15 +123,15 @@ export class DashboardComponent {
 
   // ── Quick actions ──────────────────────────────────────────────────────
   protected readonly quickActions: QuickAction[] = [
-    { label: 'Onboard vendor', icon: UserAdd01Icon, route: '/asset-flex/vendors', primary: true },
-    { label: 'Create loan product', icon: MoneyAdd01Icon, route: '/asset-flex/loan-products' },
+    { label: 'Onboard vendor', icon: UserAdd01Icon, route: '/asset-flex/vendors', queryParams: { add: '1' }, primary: true },
+    { label: 'Create loan product', icon: MoneyAdd01Icon, route: '/asset-flex/loan-products', queryParams: { add: '1' } },
     {
       label: 'Review pending settlements',
       icon: ReceiptTextIcon,
       route: '/asset-flex/settlements',
       queryParams: { status: 'PENDING' },
     },
-    { label: 'Add payment method', icon: Wallet01Icon, route: '/asset-flex/payment-methods' },
+    { label: 'Add payment method', icon: Wallet01Icon, route: '/asset-flex/payment-methods', queryParams: { add: '1' } },
   ];
 
   // ── Pending settlements table (sample) ─────────────────────────────────
@@ -157,6 +151,16 @@ export class DashboardComponent {
     { customer: 'Chukwuemeka Ike', vendor: 'Palm Court Appliances', product: 'Flex 30', amount: 180_000, status: 'Declined', requestedAt: '2026-08-11T14:12:00' },
     { customer: 'Halima Suleiman', vendor: 'Aro Fashion House', product: 'Flex 60', amount: 95_000, status: 'Approved', requestedAt: '2026-08-11T11:30:00' },
   ];
+
+  private static readonly LOAN_REQUEST_TONE: Record<string, BadgeTone> = {
+    Approved: 'success',
+    'Pending review': 'warning',
+    Declined: 'danger',
+  };
+
+  protected loanRequestTone(status: string): BadgeTone {
+    return DashboardComponent.LOAN_REQUEST_TONE[status] ?? 'neutral';
+  }
 
   // ── Gross payout volume + day filter ───────────────────────────────────
   protected readonly payoutIcon = Calendar01Icon;
@@ -207,32 +211,24 @@ export class DashboardComponent {
   /** All-time monthly trend behind the gross payout volume figure — sample
    * data, same reporting-endpoint gap as the rest of this section. */
   private readonly samplePayoutVolume = [
-    { label: 'Sep 25', value: 12_400_000 },
-    { label: 'Oct 25', value: 14_100_000 },
-    { label: 'Nov 25', value: 13_600_000 },
-    { label: 'Dec 25', value: 18_900_000 },
-    { label: 'Jan 26', value: 15_200_000 },
-    { label: 'Feb 26', value: 16_800_000 },
-    { label: 'Mar 26', value: 19_500_000 },
-    { label: 'Apr 26', value: 21_300_000 },
-    { label: 'May 26', value: 20_100_000 },
-    { label: 'Jun 26', value: 23_700_000 },
-    { label: 'Jul 26', value: 25_450_000 },
-    { label: 'Aug 26', value: 24_600_000 },
+    { label: 'Sep 2025', value: 12_400_000, vendorsServed: 18 },
+    { label: 'Oct 2025', value: 14_100_000, vendorsServed: 21 },
+    { label: 'Nov 2025', value: 13_600_000, vendorsServed: 20 },
+    { label: 'Dec 2025', value: 18_900_000, vendorsServed: 26 },
+    { label: 'Jan 2026', value: 15_200_000, vendorsServed: 22 },
+    { label: 'Feb 2026', value: 16_800_000, vendorsServed: 24 },
+    { label: 'Mar 2026', value: 19_500_000, vendorsServed: 27 },
+    { label: 'Apr 2026', value: 21_300_000, vendorsServed: 29 },
+    { label: 'May 2026', value: 20_100_000, vendorsServed: 28 },
+    { label: 'Jun 2026', value: 23_700_000, vendorsServed: 32 },
+    { label: 'Jul 2026', value: 25_450_000, vendorsServed: 34 },
+    { label: 'Aug 2026', value: 24_600_000, vendorsServed: 33 },
   ];
 
   protected readonly payoutVolumeBars: MonthBar[] = (() => {
     const max = Math.max(...this.samplePayoutVolume.map((m) => m.value));
     return this.samplePayoutVolume.map((m) => ({ ...m, heightPct: Math.round((m.value / max) * 100) }));
   })();
-
-  // ── Failed payments / top customers / top categories (sample) ─────────
-  protected readonly failedIcon = CancelCircleIcon;
-  protected readonly failedPayments: FailedPaymentRow[] = [
-    { customer: 'Kelechi Nwosu', vendor: 'Bluewave Electronics', amount: 210_000, reason: 'Insufficient funds', date: '2026-08-11' },
-    { customer: 'Bisi Fashola', vendor: 'Northgate Retail', amount: 95_000, reason: 'Card declined', date: '2026-08-10' },
-    { customer: 'Emeka Okoro', vendor: 'Aro Fashion House', amount: 58_000, reason: 'Mandate not authorized', date: '2026-08-09' },
-  ];
 
   protected readonly topCustomers: VendorLeader[] = (() => {
     const raw = [

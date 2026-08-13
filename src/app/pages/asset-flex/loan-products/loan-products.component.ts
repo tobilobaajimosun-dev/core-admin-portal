@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { PlusSignIcon, PencilEdit02Icon, Delete02Icon } from '@hugeicons-pro/core-stroke-rounded';
@@ -34,6 +35,7 @@ export class LoanProductsComponent {
   private readonly service = inject(LoanProductService);
   private readonly toast = inject(PsToastService);
   private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly addIcon = PlusSignIcon;
   protected readonly editIcon = PencilEdit02Icon;
@@ -64,6 +66,7 @@ export class LoanProductsComponent {
 
   constructor() {
     this.load();
+    if (this.route.snapshot.queryParamMap.get('add') === '1') this.openCreate();
   }
 
   protected catalogLabel(item: CaltosCatalogItem): string {

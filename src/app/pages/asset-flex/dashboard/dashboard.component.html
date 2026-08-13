@@ -113,6 +113,11 @@
     <div class="bar-chart bar-chart--payout" role="img" aria-label="Gross payout volume, last 12 months, sample data">
       @for (m of payoutVolumeBars; track m.label) {
         <div class="bar-chart__col">
+          <div class="bar-chart__tooltip" role="tooltip">
+            <strong>{{ m.label }}</strong>
+            <span>{{ m.value | naira }} disbursed</span>
+            <span>{{ m.vendorsServed }} vendors served</span>
+          </div>
           <div class="bar-chart__track">
             <div class="bar-chart__bar" [style.height.%]="m.heightPct"></div>
           </div>
@@ -146,7 +151,7 @@
             <div class="pa-gtable__cell pa-cell-sub">{{ row.vendor }}</div>
             <div class="pa-gtable__cell pa-cell-sub">{{ row.product }}</div>
             <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ row.amount | naira }}</div>
-            <div class="pa-gtable__cell pa-cell-sub">{{ row.status }}</div>
+            <div class="pa-gtable__cell"><app-status-badge [tone]="loanRequestTone(row.status)" [text]="row.status" /></div>
             <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ row.requestedAt | date: 'MMM d, h:mm a' }}</div>
           </div>
         }
@@ -189,25 +194,6 @@
               <div class="leaderboard__bar" [style.width.%]="v.pct"></div>
             </div>
             <span class="leaderboard__amount">{{ v.amount | naira }}</span>
-          </li>
-        }
-      </ul>
-    </article>
-
-    <article class="panel">
-      <div class="panel__title-row">
-        <h3 class="panel__title">Failed payments</h3>
-        <app-info-tooltip text="Recent customer payments that didn't go through, along with the reason each one failed." />
-      </div>
-      <ul class="failed-list">
-        @for (f of failedPayments; track f.customer + f.date) {
-          <li class="failed-list__item">
-            <hugeicons-icon [icon]="failedIcon" [size]="16" [strokeWidth]="1.75" color="#dc2626" class="failed-list__icon" />
-            <span class="failed-list__body">
-              <span class="failed-list__name">{{ f.customer }} → {{ f.vendor }}</span>
-              <span class="failed-list__reason">{{ f.reason }}</span>
-            </span>
-            <span class="failed-list__amount">{{ f.amount | naira }}</span>
           </li>
         }
       </ul>
@@ -306,11 +292,4 @@
   </article>
 </section>
 
-<section class="panel">
-  <h2 class="panel__title">Getting started</h2>
-  <p class="panel__text">
-    Use the sidebar to review vendor KYB submissions, manage admin users, and configure roles &amp;
-    permissions. Summary metrics above are wired to the Asset Flex admin API.
-  </p>
-</section>
 </div>

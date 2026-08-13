@@ -79,6 +79,7 @@ export class VendorsComponent {
     this.activeStatuses.set((qp.get('status')?.split(',').filter(Boolean) as VendorStatus[]) ?? []);
     this.page.set(Number(qp.get('page')) || 1);
     this.searchControl.setValue(qp.get('search') ?? '', { emitEvent: false });
+    if (qp.get('add') === '1') this.openAdd();
 
     this.searchControl.valueChanges
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed())

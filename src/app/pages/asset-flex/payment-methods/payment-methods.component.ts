@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Add01Icon } from '@hugeicons-pro/core-stroke-rounded';
 import { PaymentMethodService } from '../shared/services/payment-method.service';
@@ -27,6 +28,7 @@ import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-s
 })
 export class PaymentMethodsComponent {
   private readonly service = inject(PaymentMethodService);
+  private readonly route = inject(ActivatedRoute);
   protected readonly methods = signal<PaymentMethod[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
@@ -50,6 +52,7 @@ export class PaymentMethodsComponent {
 
   constructor() {
     this.load();
+    if (this.route.snapshot.queryParamMap.get('add') === '1') this.openAdd();
   }
 
   protected retry(): void {

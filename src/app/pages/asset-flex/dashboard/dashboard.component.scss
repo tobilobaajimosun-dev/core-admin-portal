@@ -168,13 +168,6 @@ h2, h3, h4 {
   margin-bottom: 6px;
 }
 
-.panel__text {
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--ca-text-muted);
-  margin: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .stat__value-skeleton { animation: none; }
 }
@@ -200,12 +193,46 @@ h2, h3, h4 {
 }
 
 .bar-chart__col {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   flex: 1;
   height: 100%;
+}
+
+.bar-chart__tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  max-width: 180px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid var(--ca-border);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 16px 40px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+  color: var(--ca-text-muted);
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 130ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bar-chart__tooltip strong { color: var(--ca-text); font-size: 13px; }
+
+.bar-chart__col:hover .bar-chart__tooltip,
+.bar-chart__col:focus-within .bar-chart__tooltip {
+  opacity: 1;
 }
 
 .bar-chart__track {
@@ -352,7 +379,7 @@ h2, h3, h4 {
   gap: 8px;
   height: 32px;
   padding: 0 16px;
-  border: 1px solid var(--ca-border-strong);
+  border: 1px dotted var(--ca-border-strong);
   border-radius: 999px;
   background: #fff;
   color: var(--ca-text-muted);
@@ -398,7 +425,7 @@ h2, h3, h4 {
 
 .panel__big-value {
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--ca-text);
   margin: 4px 0 0;
   font-variant-numeric: tabular-nums;
@@ -426,40 +453,6 @@ h2, h3, h4 {
   gap: 8px;
   margin-top: 20px;
 }
-
-/* ── Failed payments list ── */
-.failed-list {
-  list-style: none;
-  margin: 16px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.failed-list__item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px;
-  margin: 0 -8px;
-  border-radius: 8px;
-  transition: background 130ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.failed-list__item:hover { background: #fef2f2; }
-.failed-list__icon { flex-shrink: 0; }
-
-.failed-list__body {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-
-.failed-list__name { font-size: 12px; color: var(--ca-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.failed-list__reason { font-size: 11px; color: var(--ca-text-muted); }
-.failed-list__amount { font-size: 12px; font-weight: 600; color: #dc2626; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* ── Money movement (Mercury-style) ── */
 .money-movement__head {

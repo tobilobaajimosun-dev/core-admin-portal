@@ -19,7 +19,7 @@
   border-radius: 999px;
   background: #fff;
   color: var(--ca-text-muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -66,8 +66,8 @@
 
 .filter-pill__body:hover { background: var(--ca-card-bg); }
 
-.filter-pill__label { font-size: 13px; font-weight: 500; color: var(--ca-text-muted); white-space: nowrap; }
-.filter-pill__value { font-size: 13px; font-weight: 600; color: var(--ca-text); white-space: nowrap; }
+.filter-pill__label { font-size: 12px; font-weight: 500; color: var(--ca-text-muted); white-space: nowrap; }
+.filter-pill__value { font-size: 12px; font-weight: 600; color: var(--ca-text); white-space: nowrap; }
 
 .filter-pill__body hugeicons-icon { flex-shrink: 0; opacity: 0.6; transition: transform 130ms cubic-bezier(0.22, 1, 0.36, 1); }
 .filter-pill__chevron--open { transform: rotate(180deg); }
@@ -78,7 +78,7 @@
   border: 0;
   background: transparent;
   color: var(--color-primary-text-hex);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
