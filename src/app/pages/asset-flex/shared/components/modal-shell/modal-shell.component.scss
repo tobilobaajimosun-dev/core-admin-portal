@@ -42,18 +42,19 @@
 .ms-close {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border: 0;
   border-radius: 999px;
-  background: #f3f4f6;
-  color: var(--ca-text);
+  background: transparent;
+  color: var(--ca-text-muted);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .ms-close:hover {
-  background: #e5e7eb;
+  background: #f3f4f6;
+  color: var(--ca-text);
 }
 
 .ms-close:disabled {
@@ -62,7 +63,7 @@
 }
 
 .ms-close:disabled:hover {
-  background: #f3f4f6;
+  background: transparent;
 }
 
 .ms-close:focus-visible {

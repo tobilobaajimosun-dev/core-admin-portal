@@ -1,0 +1,12 @@
+@if (!dismissed()) {
+  <div class="info-banner" role="status">
+    <hugeicons-icon [icon]="ideaIcon" [size]="20" [strokeWidth]="1.75" color="currentColor" class="info-banner__icon" />
+    <p class="info-banner__message">{{ message() }}</p>
+    @if (ctaLabel()) {
+      <button type="button" class="info-banner__cta" (click)="ctaClick.emit()">{{ ctaLabel() }}</button>
+    }
+    <button type="button" class="info-banner__close" (click)="dismiss()" aria-label="Dismiss">
+      <hugeicons-icon [icon]="closeIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+    </button>
+  </div>
+}

@@ -1,0 +1,141 @@
+<div class="filters" (clickOutside)="close()">
+  <button
+    type="button"
+    class="pa-filter"
+    [class.pa-filter--active]="activeCount() > 0"
+    [attr.aria-expanded]="open()"
+    aria-haspopup="true"
+    (click)="toggle()"
+  >
+    {{ triggerLabel() }}
+    <hugeicons-icon [icon]="arrowIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+  </button>
+
+  @if (open()) {
+    <div class="filters__panel">
+      <div class="filters__rail" role="tablist" aria-label="Filter sections">
+        @for (s of sections(); track s.key) {
+          <button
+            type="button"
+            role="tab"
+            class="filters__rail-item"
+            [class.filters__rail-item--active]="activeSection()?.key === s.key"
+            [attr.aria-selected]="activeSection()?.key === s.key"
+            (click)="selectSection(s.key)"
+          >
+            <hugeicons-icon [icon]="s.icon" [size]="16" [strokeWidth]="1.75" color="currentColor" style="flex-shrink: 0" />
+            <span class="filters__rail-label">{{ s.label }}</span>
+            @if (sectionCount(s) > 0) {
+              <span class="filters__rail-count">{{ sectionCount(s) }}</span>
+            }
+            <hugeicons-icon [icon]="chevronIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" class="filters__rail-chevron" />
+          </button>
+        }
+        @if (activeCount() > 0) {
+          <button type="button" class="filters__clear" (click)="clear()">Clear all</button>
+        }
+      </div>
+
+      <div class="filters__content">
+        @if (activeSection(); as section) {
+          @if (section.kind === 'checklist') {
+            @for (o of asChecklist(section).options; track o.value) {
+              <label class="filters__option">
+                <input
+                  class="pa-checkbox"
+                  type="checkbox"
+                  [checked]="isChecked(asChecklist(section), o.value)"
+                  (change)="toggleValue(asChecklist(section), o.value)"
+                />
+                <span>{{ o.label }}</span>
+              </label>
+            }
+          } @else if (section.kind === 'date-range') {
+            <div class="filters__date-range">
+              <div class="pa-field preset-select" (clickOutside)="closePreset()">
+                <label class="pa-field__label" [id]="section.key + '-preset-label'">Show for</label>
+                <button
+                  type="button"
+                  class="preset-select__trigger"
+                  [attr.aria-labelledby]="section.key + '-preset-label'"
+                  aria-haspopup="listbox"
+                  [attr.aria-expanded]="presetOpen()"
+                  (click)="togglePreset()"
+                >
+                  {{ presetLabel(asDateRange(section)) }}
+                  <hugeicons-icon [icon]="arrowIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+                </button>
+                @if (presetOpen()) {
+                  <div class="preset-select__menu" role="listbox">
+                    @for (preset of datePresets; track preset.key) {
+                      <button
+                        type="button"
+                        role="option"
+                        class="preset-select__option"
+                        [attr.aria-selected]="selectedPreset(asDateRange(section)) === preset.key"
+                        (click)="selectPreset(asDateRange(section), preset.key)"
+                      >
+                        {{ preset.label }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+              <div class="pa-field">
+                <label class="pa-field__label" [attr.for]="section.key + '-from'">From</label>
+                <input
+                  [id]="section.key + '-from'"
+                  class="pa-input"
+                  type="date"
+                  [value]="asDateRange(section).from"
+                  [max]="asDateRange(section).to || null"
+                  (change)="setFrom(asDateRange(section), $any($event.target).value)"
+                />
+              </div>
+              <div class="pa-field">
+                <label class="pa-field__label" [attr.for]="section.key + '-to'">To</label>
+                <input
+                  [id]="section.key + '-to'"
+                  class="pa-input"
+                  type="date"
+                  [value]="asDateRange(section).to"
+                  [min]="asDateRange(section).from || null"
+                  (change)="setTo(asDateRange(section), $any($event.target).value)"
+                />
+              </div>
+            </div>
+          } @else {
+            <div class="filters__date-range">
+              <div class="pa-field">
+                <label class="pa-field__label" [attr.for]="section.key + '-min'">
+                  Min{{ asNumberRange(section).unit ? ' (' + asNumberRange(section).unit + ')' : '' }}
+                </label>
+                <input
+                  [id]="section.key + '-min'"
+                  class="pa-input"
+                  type="number"
+                  min="0"
+                  [value]="asNumberRange(section).min"
+                  (change)="setMin(asNumberRange(section), $any($event.target).value)"
+                />
+              </div>
+              <div class="pa-field">
+                <label class="pa-field__label" [attr.for]="section.key + '-max'">
+                  Max{{ asNumberRange(section).unit ? ' (' + asNumberRange(section).unit + ')' : '' }}
+                </label>
+                <input
+                  [id]="section.key + '-max'"
+                  class="pa-input"
+                  type="number"
+                  min="0"
+                  [value]="asNumberRange(section).max"
+                  (change)="setMax(asNumberRange(section), $any($event.target).value)"
+                />
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

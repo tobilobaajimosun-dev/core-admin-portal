@@ -5,15 +5,25 @@
       Export CSV{{ selectedCount() > 0 ? ' (' + selectedCount() + ' selected)' : '' }}
     </button>
     <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="openCutoff()">Trigger T+1 cutoff</button>
-    <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" [disabled]="selectedCount() === 0" (click)="openMark()">
+    <button class="pa-btn pa-btn--primary pa-btn--md" type="button" [disabled]="selectedCount() === 0" (click)="openMark()">
       Mark settled@if (selectedCount() > 0) { ({{ selectedCount() }}) }
     </button>
   </div>
 </app-page-header>
 
 <div class="pa-toolbar">
-  <app-status-filter [options]="filterOptions" [active]="activeStatus()" (statusChange)="setStatus($event)" />
+  <div class="pa-toolbar__actions">
+    <app-filters #filtersRef [sections]="filterSections()" (checklistChange)="onChecklistChange($event)" (dateRangeChange)="onDateRangeChange($event)" (clearAll)="clearAllFilters()" />
+  </div>
 </div>
+
+<app-active-filter-chips
+  [sections]="filterSections()"
+  (checklistChange)="onChecklistChange($event)"
+  (dateRangeChange)="onDateRangeChange($event)"
+  (clearAll)="clearAllFilters()"
+  (sectionClick)="filtersRef.openSection($event)"
+/>
 
 <div class="pa-gtable-wrap">
   <div class="pa-gtable settlements-gtable">
@@ -52,9 +62,9 @@
           </div>
           <div class="pa-gtable__cell pa-mono">{{ s.settlementReference }}</div>
           <div class="pa-gtable__cell pa-cell-sub">{{ s.vendor?.businessName || '—' }}</div>
-          <div class="pa-gtable__cell">{{ s.grossOrderAmount | naira }}</div>
-          <div class="pa-gtable__cell pa-cell-sub">{{ s.platformFeeDeduction | naira }}</div>
-          <div class="pa-gtable__cell pa-cell-primary">{{ s.netSettlementAmount | naira }}</div>
+          <div class="pa-gtable__cell pa-amount">{{ s.grossOrderAmount | naira }}</div>
+          <div class="pa-gtable__cell pa-cell-sub pa-amount">{{ s.platformFeeDeduction | naira }}</div>
+          <div class="pa-gtable__cell pa-cell-primary pa-amount">{{ s.netSettlementAmount | naira }}</div>
           <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(s.status)" [text]="s.status" /></div>
           <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ s.settlementDueDate ? (s.settlementDueDate | date: 'mediumDate') : '—' }}</div>
         </div>

@@ -9,10 +9,27 @@
 
 <div class="pa-toolbar">
   <div class="pa-search">
-    <hugeicons-icon class="pa-search__icon" [icon]="searchIcon" [size]="16" [strokeWidth]="1.6" color="currentColor" />
+    <hugeicons-icon class="pa-search__icon" [icon]="searchIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
     <input class="pa-search__input" type="text" placeholder="Search customers…" aria-label="Search customers" [formControl]="searchControl" />
   </div>
+  <div class="pa-toolbar__actions">
+    <app-filters
+      #filtersRef
+      [sections]="filterSections()"
+      (checklistChange)="onChecklistChange($event)"
+      (dateRangeChange)="onDateRangeChange($event)"
+      (clearAll)="clearAllFilters()"
+    />
+  </div>
 </div>
+
+<app-active-filter-chips
+  [sections]="filterSections()"
+  (checklistChange)="onChecklistChange($event)"
+  (dateRangeChange)="onDateRangeChange($event)"
+  (clearAll)="clearAllFilters()"
+  (sectionClick)="filtersRef.openSection($event)"
+/>
 
 <div class="pa-gtable-wrap">
   <div class="pa-gtable customers-gtable">

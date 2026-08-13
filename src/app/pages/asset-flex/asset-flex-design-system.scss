@@ -33,9 +33,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 10px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 9px;
   border: 1px solid transparent;
   font-family: inherit;
   font-size: 14px;
@@ -46,12 +46,17 @@
   transition:
     background var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
+    color var(--dur-fast) var(--ease-out),
+    scale var(--dur-fast) var(--ease-out);
 }
 
 .pa-btn:focus-visible {
   outline: 2px solid var(--color-primary-hex);
   outline-offset: 2px;
+}
+
+.pa-btn:active:not(:disabled) {
+  scale: 0.96;
 }
 
 .pa-btn:disabled,
@@ -62,8 +67,10 @@
 }
 
 .pa-btn--block { width: 100%; }
-.pa-btn--sm { height: 34px; padding: 0 12px; font-size: 13px; border-radius: 9px; }
-.pa-btn--lg { height: 46px; font-size: 15px; }
+.pa-btn--sm { height: 32px; padding: 0 12px; font-size: 13px; border-radius: 9px; }
+/* Reserved for the single primary CTA in a page header — every other button on
+   the project is --sm (32px). 36px is the maximum button height, full stop. */
+.pa-btn--md { height: 36px; padding: 0 16px; font-size: 14px; border-radius: 10px; }
 
 .pa-btn--primary { background: var(--color-primary-hex); color: #fff; }
 .pa-btn--primary:hover { background: #009fe6; }
@@ -275,9 +282,17 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+}
+
+/* Trailing group (filters etc.) anchors right; search and any other leading
+   controls stay left-flowed instead of scattering across the full row. */
+.pa-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 /*
@@ -343,15 +358,16 @@
   border: 1px solid var(--ca-border-strong);
   background: #fff;
   padding: 0 14px;
-  height: 34px;
+  height: 32px;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 500;
   color: var(--ca-text-muted);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), scale var(--dur-fast) var(--ease-out);
 }
 .pa-filter:hover { background: var(--ca-card-bg); border-color: #cbd5e1; color: var(--ca-text); }
+.pa-filter:active { scale: 0.96; }
 .pa-filter:focus-visible { outline: 2px solid var(--color-primary-hex); outline-offset: 2px; }
 .pa-filter--active {
   background: var(--color-primary-active-hex);
@@ -389,6 +405,7 @@
 .pa-cell-link:focus-visible { outline: none; text-decoration: underline; color: var(--color-primary-hex); }
 .pa-row:focus-within .pa-cell-link { color: var(--color-primary-hex); }
 .pa-mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+.pa-amount { font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .pa-empty { text-align: center; padding: 44px 16px; }
 .pa-empty__title { font-size: 14px; font-weight: 600; color: var(--ca-text-muted); margin: 0 0 4px; }
@@ -415,9 +432,10 @@
   background: transparent;
   color: var(--ca-text-muted);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), scale var(--dur-fast) var(--ease-out);
 }
 .pa-icon-btn:hover { background: var(--ca-border); color: var(--ca-text); }
+.pa-icon-btn:active { scale: 0.96; }
 .pa-icon-btn--danger:hover { background: #fef2f2; color: #dc2626; }
 .pa-icon-btn:focus-visible { outline: 2px solid var(--color-primary-hex); outline-offset: 2px; }
 

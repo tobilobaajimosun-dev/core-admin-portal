@@ -9,7 +9,7 @@
   @let v = vendor()!;
 
   <a class="breadcrumb" routerLink="/asset-flex/vendors">
-    <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.6" color="currentColor" />
+    <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
     <span>Vendors</span>
   </a>
 
@@ -72,7 +72,7 @@
             @for (doc of documents(); track doc.id) {
               <li class="doc">
                 <span class="doc__icon" aria-hidden="true">
-                  <hugeicons-icon [icon]="fileIcon" [size]="18" [strokeWidth]="1.6" color="currentColor" />
+                  <hugeicons-icon [icon]="fileIcon" [size]="18" [strokeWidth]="1.75" color="currentColor" />
                 </span>
                 <div class="doc__body">
                   <a class="doc__name" [href]="doc.fileUrl" target="_blank" rel="noopener">{{ doc.documentType }}</a>

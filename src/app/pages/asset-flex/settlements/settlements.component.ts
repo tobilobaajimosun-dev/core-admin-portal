@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin, map } from 'rxjs';
 
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 import { SettlementService } from '../shared/services/settlement.service';
@@ -8,7 +9,9 @@ import { Settlement } from '../shared/models/settlement.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
-import { StatusFilterComponent } from '@pages/asset-flex/shared/components/status-filter/status-filter.component';
+import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
+import { ActiveFilterChipsComponent } from '@pages/asset-flex/shared/components/active-filter-chips/active-filter-chips.component';
+import { Tag01Icon, Calendar01Icon } from '@hugeicons-pro/core-stroke-rounded';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { statusTone } from '../shared/utils/status-tone';
 import { formatLabel } from '../shared/utils/format';
@@ -17,7 +20,7 @@ import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-s
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 
-const FILTERS = ['', 'PENDING', 'DUE', 'SETTLED', 'FAILED'];
+const FILTERS = ['PENDING', 'DUE', 'SETTLED', 'FAILED'];
 
 @Component({
   selector: 'app-settlements',
@@ -27,7 +30,8 @@ const FILTERS = ['', 'PENDING', 'DUE', 'SETTLED', 'FAILED'];
     PageHeaderComponent,
     ModalShellComponent,
     StatusBadgeComponent,
-    StatusFilterComponent,
+    FiltersComponent,
+    ActiveFilterChipsComponent,
     NairaPipe,
     ErrorStateComponent,
     EmptyStateComponent,
@@ -41,12 +45,14 @@ export class SettlementsComponent {
   private readonly toast = inject(PsToastService);
 
   protected readonly statusTone = statusTone;
-  protected readonly filterOptions = FILTERS.map((f) => ({ label: f === '' ? 'All' : formatLabel(f), value: f }));
+  protected readonly filterOptions = FILTERS.map((f) => ({ label: formatLabel(f), value: f }));
 
-  protected readonly settlements = signal<Settlement[]>([]);
+  private readonly allSettlements = signal<Settlement[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
-  protected readonly activeStatus = signal('');
+  protected readonly activeStatuses = signal<string[]>([]);
+  protected readonly fromDate = signal('');
+  protected readonly toDate = signal('');
   private loadGeneration = 0;
   protected readonly selected = signal<Set<string>>(new Set());
   protected readonly acting = signal(false);
@@ -55,6 +61,22 @@ export class SettlementsComponent {
   protected readonly batchRef = new FormControl('', {
     nonNullable: true,
     validators: [Validators.required, minTrimmedLength(3)],
+  });
+
+  /** Due-date range applies client-side — this endpoint already returns every
+   * matching row unpaginated, so filtering the already-loaded set is cheap and
+   * accurate (no partial-page risk like the multi-status merge above). */
+  protected readonly settlements = computed(() => {
+    const from = this.fromDate();
+    const to = this.toDate();
+    if (!from && !to) return this.allSettlements();
+    return this.allSettlements().filter((s) => {
+      if (!s.settlementDueDate) return false;
+      const due = s.settlementDueDate.slice(0, 10);
+      if (from && due < from) return false;
+      if (to && due > to) return false;
+      return true;
+    });
   });
 
   protected readonly selectedCount = computed(() => this.selected().size);
@@ -67,9 +89,32 @@ export class SettlementsComponent {
     this.load();
   }
 
-  protected setStatus(status: string): void {
-    if (this.activeStatus() === status) return;
-    this.activeStatus.set(status);
+  protected filterSections(): FilterSection[] {
+    return [
+      { key: 'status', label: 'Status', icon: Tag01Icon, kind: 'checklist', options: this.filterOptions, active: this.activeStatuses() },
+      { key: 'date', label: 'Due date', icon: Calendar01Icon, kind: 'date-range', from: this.fromDate(), to: this.toDate() },
+    ];
+  }
+
+  protected onChecklistChange(event: { key: string; values: string[] }): void {
+    if (event.key === 'status') this.setStatuses(event.values);
+  }
+
+  protected onDateRangeChange(event: { key: string; from: string; to: string }): void {
+    if (event.key !== 'date') return;
+    this.fromDate.set(event.from);
+    this.toDate.set(event.to);
+    this.selected.set(new Set());
+  }
+
+  protected clearAllFilters(): void {
+    this.fromDate.set('');
+    this.toDate.set('');
+    this.setStatuses([]);
+  }
+
+  protected setStatuses(statuses: string[]): void {
+    this.activeStatuses.set(statuses);
     this.selected.set(new Set());
     this.load();
   }
@@ -156,7 +201,7 @@ export class SettlementsComponent {
     const selectedIds = this.selected();
     const rows = selectedIds.size > 0 ? this.settlements().filter((s) => selectedIds.has(s.id)) : this.settlements();
     exportToCsv(
-      `settlements-${this.activeStatus() || 'all'}.csv`,
+      `settlements-${this.activeStatuses().join('_') || 'all'}.csv`,
       rows.map((s) => ({
         id: s.id,
         reference: s.settlementReference,
@@ -176,17 +221,46 @@ export class SettlementsComponent {
     this.loading.set(true);
     this.error.set(false);
     const generation = ++this.loadGeneration;
-    this.service.list(this.activeStatus() || undefined).subscribe({
-      next: (res) => {
-        if (generation !== this.loadGeneration) return;
-        this.settlements.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        if (generation !== this.loadGeneration) return;
-        this.error.set(true);
-        this.loading.set(false);
-      },
-    });
+    const statuses = this.activeStatuses();
+
+    if (statuses.length <= 1) {
+      this.service.list(statuses[0]).subscribe({
+        next: (res) => {
+          if (generation !== this.loadGeneration) return;
+          this.allSettlements.set(res.data ?? []);
+          this.loading.set(false);
+        },
+        error: () => {
+          if (generation !== this.loadGeneration) return;
+          this.error.set(true);
+          this.loading.set(false);
+        },
+      });
+      return;
+    }
+
+    // The API returns every matching row per request (no pagination here), so a
+    // multi-status filter is just one request per status, merged and deduped.
+    forkJoin(statuses.map((status) => this.service.list(status)))
+      .pipe(
+        map((responses) => {
+          const seen = new Set<string>();
+          return responses
+            .flatMap((r) => r.data ?? [])
+            .filter((s) => (seen.has(s.id) ? false : (seen.add(s.id), true)));
+        }),
+      )
+      .subscribe({
+        next: (all) => {
+          if (generation !== this.loadGeneration) return;
+          this.allSettlements.set(all);
+          this.loading.set(false);
+        },
+        error: () => {
+          if (generation !== this.loadGeneration) return;
+          this.error.set(true);
+          this.loading.set(false);
+        },
+      });
   }
 }

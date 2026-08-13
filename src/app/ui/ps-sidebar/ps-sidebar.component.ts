@@ -156,6 +156,13 @@ export class PsSidebarComponent {
     return typeof dept === 'string' ? dept : dept?.name || '';
   }
 
+  /** Compact sidebar trigger label — "Wisdom - Technology", falling back to just the name when no department is set. */
+  getSidebarLabel(): string {
+    const first = this.firstName() || this.getUserFullName();
+    const department = this.getUserDepartment();
+    return department ? `${first} - ${department}` : first;
+  }
+
   protected isNewSection(index: number): boolean {
     const list = this.menus();
     return index > 0 && list[index].section !== list[index - 1].section;

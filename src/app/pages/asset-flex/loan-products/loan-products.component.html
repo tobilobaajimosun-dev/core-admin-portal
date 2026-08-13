@@ -1,7 +1,7 @@
 <div class="p-6">
 <app-page-header title="Loan Products" subtitle="Financing products offered through vendor checkouts.">
-  <button actions class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openCreate()">
-    <hugeicons-icon [icon]="addIcon" [size]="16" [strokeWidth]="1.8" color="currentColor" />
+  <button actions class="pa-btn pa-btn--primary pa-btn--md" type="button" (click)="openCreate()">
+    <hugeicons-icon [icon]="addIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
     New product
   </button>
 </app-page-header>
@@ -55,10 +55,10 @@
           </div>
           <div class="pa-gtable__cell pa-gtable__cell--right row-actions">
             <button class="pa-icon-btn" type="button" (click)="openEdit(p)" [attr.aria-label]="'Edit ' + p.name">
-              <hugeicons-icon [icon]="editIcon" [size]="15" [strokeWidth]="1.6" color="currentColor" />
+              <hugeicons-icon [icon]="editIcon" [size]="15" [strokeWidth]="1.75" color="currentColor" />
             </button>
             <button class="pa-icon-btn pa-icon-btn--danger" type="button" (click)="deleting.set(p)" [attr.aria-label]="'Delete ' + p.name">
-              <hugeicons-icon [icon]="deleteIcon" [size]="15" [strokeWidth]="1.6" color="currentColor" />
+              <hugeicons-icon [icon]="deleteIcon" [size]="15" [strokeWidth]="1.75" color="currentColor" />
             </button>
           </div>
         </div>

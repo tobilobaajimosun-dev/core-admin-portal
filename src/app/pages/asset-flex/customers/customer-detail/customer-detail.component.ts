@@ -32,7 +32,7 @@ function mask(value: string | null | undefined): string {
       <div class="c-loading">Customer not found.</div>
     } @else {
       <a class="breadcrumb" routerLink="/asset-flex/customers">
-        <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.6" color="currentColor" />
+        <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
         <span>Customers</span>
       </a>
 

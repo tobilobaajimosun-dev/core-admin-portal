@@ -9,39 +9,29 @@
 
 <div class="pa-toolbar">
   <div class="pa-search">
-    <hugeicons-icon class="pa-search__icon" [icon]="searchIcon" [size]="16" [strokeWidth]="1.6" color="currentColor" />
+    <hugeicons-icon class="pa-search__icon" [icon]="searchIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
     <input class="pa-search__input" type="text" placeholder="Search by reference…" aria-label="Search loans" [formControl]="searchControl" />
   </div>
-  <app-status-filter [options]="filters" [active]="activeStatus()" (statusChange)="setStatus($any($event))" />
-
-  <app-dropdown placement="bottom-end" #dateDropdown>
-    <button
-      dropdownHeader
-      type="button"
-      class="pa-filter"
-      [class.pa-filter--active]="hasDateFilter()"
-    >
-      {{ dateFilterLabel() }}
-    </button>
-
-    <ng-template dropdownMenu>
-      <div class="z-20 bg-white rounded-xl border border-[#E1E6ED] shadow-[0px_3px_7px_0px_rgba(0,0,0,0.08)] w-[260px] p-3">
-        <div class="pa-field mb-2">
-          <label class="pa-field__label" for="loans-from-date">From</label>
-          <input id="loans-from-date" class="pa-input" type="date" [formControl]="fromDateControl" [max]="toDateControl.value || null" />
-        </div>
-        <div class="pa-field">
-          <label class="pa-field__label" for="loans-to-date">To</label>
-          <input id="loans-to-date" class="pa-input" type="date" [formControl]="toDateControl" [min]="fromDateControl.value || null" />
-        </div>
-        <div class="flex items-center justify-between mt-3 pt-2 border-t border-[#ECF1F5]">
-          <button type="button" class="pa-btn pa-btn--white pa-btn--sm" [disabled]="!hasDateFilter()" (click)="clearDateFilter()">Clear</button>
-          <button type="button" class="pa-btn pa-btn--primary pa-btn--sm" (click)="dateDropdown.close()">Done</button>
-        </div>
-      </div>
-    </ng-template>
-  </app-dropdown>
+  <div class="pa-toolbar__actions">
+    <app-filters
+      #filtersRef
+      [sections]="filterSections()"
+      (checklistChange)="onChecklistChange($event)"
+      (dateRangeChange)="onDateRangeChange($event)"
+      (numberRangeChange)="onNumberRangeChange($event)"
+      (clearAll)="clearAllFilters()"
+    />
+  </div>
 </div>
+
+<app-active-filter-chips
+  [sections]="filterSections()"
+  (checklistChange)="onChecklistChange($event)"
+  (dateRangeChange)="onDateRangeChange($event)"
+  (numberRangeChange)="onNumberRangeChange($event)"
+  (clearAll)="clearAllFilters()"
+  (sectionClick)="filtersRef.openSection($event)"
+/>
 
 <div class="pa-gtable-wrap">
   <div class="pa-gtable loans-gtable">
@@ -71,8 +61,8 @@
             <span class="pa-cell-sub">{{ l.loanProduct?.name || l.loanProductId }}</span>
           </div>
           <div class="pa-gtable__cell pa-cell-sub">{{ l.vendor?.businessName || '—' }}</div>
-          <div class="pa-gtable__cell">{{ l.principalAmount | naira }}</div>
-          <div class="pa-gtable__cell">{{ l.totalRepayable | naira }}</div>
+          <div class="pa-gtable__cell pa-amount">{{ l.principalAmount | naira }}</div>
+          <div class="pa-gtable__cell pa-amount">{{ l.totalRepayable | naira }}</div>
           <div class="pa-gtable__cell pa-cell-sub">{{ l.tenorMonths }} mo</div>
           <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(l.status)" [text]="l.status" /></div>
           <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ l.createdAt | date: 'mediumDate' }}</div>
