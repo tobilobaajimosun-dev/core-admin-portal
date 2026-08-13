@@ -1,66 +1,29 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Add01Icon } from '@hugeicons-pro/core-stroke-rounded';
 import { PaymentMethodService } from '../shared/services/payment-method.service';
 import { PaymentMethod } from '../shared/models/payment-method.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
+import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-payment-methods',
-  imports: [PageHeaderComponent, StatusBadgeComponent, ErrorStateComponent, EmptyStateComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="p-4 sm:p-6">
-    <app-page-header title="Payment Methods" subtitle="Collection methods available across loan products." />
-
-    <div class="pa-gtable-wrap">
-      <div class="pa-gtable" style="--gt-cols: 1.4fr 1fr 1fr 2fr">
-        <div class="pa-gtable__head">
-          <span>Method</span>
-          <span>Code</span>
-          <span>Type</span>
-          <span>Description</span>
-        </div>
-
-        @if (loading()) {
-          @for (r of [1, 2, 3]; track r) {
-            <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
-          }
-        } @else if (error()) {
-          <app-error-state message="Couldn't load payment methods. Check your connection and try again." (retry)="retry()" />
-        } @else if (methods().length === 0) {
-          <app-empty-state title="No payment methods" subtitle="Payment methods configured on your account will show up here." />
-        } @else {
-          @for (m of methods(); track m.code) {
-            <div class="pa-gtable__row">
-              <div class="pa-gtable__cell pa-cell-primary">{{ m.name }}</div>
-              <div class="pa-gtable__cell code-cell">{{ m.code }}</div>
-              <div class="pa-gtable__cell"><app-status-badge tone="info" [text]="m.paymentType" /></div>
-              <div class="pa-gtable__cell description-cell">{{ m.description || '—' }}</div>
-            </div>
-          }
-        }
-      </div>
-    </div>
-    </div>
-  `,
-  styles: [
-    `
-      /*
-       * Code and Description are peer columns here, not secondary annotations
-       * under a primary line — .pa-mono/.pa-cell-sub's smaller muted sizing is
-       * for that latter case (see loans/loan-products), so it doesn't apply.
-       * Both inherit the table's 13px base; Code keeps the monospace family only.
-       */
-      .code-cell {
-        font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      }
-      .description-cell {
-        color: var(--ca-text-muted);
-      }
-    `,
+  imports: [
+    ReactiveFormsModule,
+    HugeiconsIconComponent,
+    PageHeaderComponent,
+    ModalShellComponent,
+    StatusBadgeComponent,
+    ErrorStateComponent,
+    EmptyStateComponent,
   ],
+  templateUrl: './payment-methods.component.html',
+  styleUrl: './payment-methods.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaymentMethodsComponent {
   private readonly service = inject(PaymentMethodService);
@@ -68,12 +31,59 @@ export class PaymentMethodsComponent {
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
 
+  /**
+   * Prototype "Add payment method" flow — /admin/payment-methods is GET-only
+   * (confirmed via the live Swagger spec); admins can link an existing method
+   * to a loan product but can't create a new method type. This adds to the
+   * in-memory list only, never a real request — rows carry a "Demo" badge and
+   * vanish on reload.
+   */
+  protected readonly addIcon = Add01Icon;
+  protected readonly addOpen = signal(false);
+  protected readonly prototypeCodes = signal<Set<string>>(new Set());
+  protected readonly addForm = new FormGroup({
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    code: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    paymentType: new FormControl('Salary', { nonNullable: true }),
+    description: new FormControl('', { nonNullable: true }),
+  });
+
   constructor() {
     this.load();
   }
 
   protected retry(): void {
     this.load();
+  }
+
+  protected isPrototype(code: string): boolean {
+    return this.prototypeCodes().has(code);
+  }
+
+  protected openAdd(): void {
+    this.addForm.reset({ name: '', code: '', paymentType: 'Salary', description: '' });
+    this.addOpen.set(true);
+  }
+
+  protected closeAdd(): void {
+    this.addOpen.set(false);
+  }
+
+  protected submitAdd(): void {
+    if (this.addForm.invalid) {
+      this.addForm.markAllAsTouched();
+      return;
+    }
+    const v = this.addForm.getRawValue();
+    const method: PaymentMethod = {
+      code: v.code,
+      name: v.name,
+      description: v.description || null,
+      paymentType: v.paymentType,
+    };
+    this.prototypeCodes.update((codes) => new Set(codes).add(method.code));
+    this.methods.update((rows) => [method, ...rows]);
+    this.addOpen.set(false);
   }
 
   private load(): void {

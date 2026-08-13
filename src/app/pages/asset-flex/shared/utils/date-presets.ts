@@ -40,6 +40,8 @@ const today = () => {
 
 export const DATE_PRESETS: DatePreset[] = [
   { key: 'all', label: 'All time', range: () => ({ from: '', to: '' }) },
+  { key: 'today', label: 'Today', range: () => ({ from: iso(today()), to: iso(today()) }) },
+  { key: 'yesterday', label: 'Yesterday', range: () => ({ from: iso(daysAgo(1)), to: iso(daysAgo(1)) }) },
   { key: 'this-week', label: 'This week', range: () => ({ from: iso(startOfWeek(today())), to: iso(today()) }) },
   { key: 'this-month', label: 'This month', range: () => { const d = today(); return { from: iso(new Date(d.getFullYear(), d.getMonth(), 1)), to: iso(d) }; } },
   { key: 'this-year', label: 'This year', range: () => { const d = today(); return { from: iso(new Date(d.getFullYear(), 0, 1)), to: iso(d) }; } },

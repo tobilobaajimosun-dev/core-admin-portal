@@ -7,7 +7,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fetchAllPages } from '@pages/asset-flex/shared/utils/fetch-all-pages';
 
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Search01Icon, Tag01Icon, Calendar01Icon } from '@hugeicons-pro/core-stroke-rounded';
+import { Search01Icon, Tag01Icon, Calendar01Icon, Add01Icon } from '@hugeicons-pro/core-stroke-rounded';
 
 import { VendorService } from '../shared/services/vendor.service';
 import { Vendor, VendorStatus } from '../shared/models/vendor.model';
@@ -19,6 +19,7 @@ import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/compon
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
+import { VendorOnboardingWizardComponent } from './onboarding-wizard/vendor-onboarding-wizard.component';
 
 const STATUS_FILTERS: { label: string; value: VendorStatus }[] = [
   { label: 'Pending', value: 'PENDING_APPROVAL' },
@@ -40,6 +41,7 @@ const STATUS_FILTERS: { label: string; value: VendorStatus }[] = [
     FiltersComponent,
     ErrorStateComponent,
     EmptyStateComponent,
+    VendorOnboardingWizardComponent,
   ],
   templateUrl: './vendors.component.html',
   styleUrl: './vendors.component.scss',
@@ -67,6 +69,16 @@ export class VendorsComponent {
 
   private readonly limit = 20;
   private loadGeneration = 0;
+
+  /**
+   * Prototype "Add vendor" flow — the API has no admin create-vendor endpoint
+   * (only self-serve onboarding + approve/reject/blacklist on an existing
+   * vendor), so the wizard adds to the in-memory list only, never a real
+   * request. Rows added this way carry a "Demo" badge and vanish on reload.
+   */
+  protected readonly addIcon = Add01Icon;
+  protected readonly addOpen = signal(false);
+  protected readonly prototypeIds = signal<Set<string>>(new Set());
 
   constructor() {
     // Seed state from the URL so filters/search/page survive back-navigation.
@@ -151,6 +163,24 @@ export class VendorsComponent {
 
   protected retry(): void {
     this.load();
+  }
+
+  protected isPrototype(id: string): boolean {
+    return this.prototypeIds().has(id);
+  }
+
+  protected openAdd(): void {
+    this.addOpen.set(true);
+  }
+
+  protected closeAdd(): void {
+    this.addOpen.set(false);
+  }
+
+  protected onVendorCreated(vendor: Vendor): void {
+    this.prototypeIds.update((ids) => new Set(ids).add(vendor.id));
+    this.vendors.update((rows) => [vendor, ...rows]);
+    this.addOpen.set(false);
   }
 
   protected exportCsv(): void {

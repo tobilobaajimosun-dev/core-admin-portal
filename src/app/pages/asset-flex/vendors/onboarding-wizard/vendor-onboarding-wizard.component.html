@@ -1,0 +1,219 @@
+<div class="wizard" cdkTrapFocus cdkTrapFocusAutoCapture role="dialog" aria-modal="true" aria-label="Onboard vendor">
+  <header class="wizard__head">
+    <div class="wizard__head-title">
+      <h2>Onboard vendor</h2>
+      <span class="wizard__prototype-tag">Prototype — not saved to the server</span>
+    </div>
+    <button type="button" class="wizard__close" (click)="close()" aria-label="Close">
+      <hugeicons-icon [icon]="closeIcon" [size]="18" [strokeWidth]="1.75" color="currentColor" />
+    </button>
+  </header>
+
+  <div class="wizard__stepper" aria-hidden="true">
+    @for (step of steps; track step.key; let i = $index) {
+      <div class="wizard__step" [class.wizard__step--done]="i < stepIndex()" [class.wizard__step--active]="i === stepIndex()">
+        <button
+          type="button"
+          class="wizard__step-dot"
+          [disabled]="i >= stepIndex()"
+          (click)="goToStep(i)"
+        >
+          @if (i < stepIndex()) {
+            <hugeicons-icon [icon]="checkIcon" [size]="14" [strokeWidth]="2" color="currentColor" />
+          } @else {
+            {{ i + 1 }}
+          }
+        </button>
+        <span class="wizard__step-label">{{ step.label }}</span>
+      </div>
+      @if (i < steps.length - 1) {
+        <div class="wizard__step-line"></div>
+      }
+    }
+  </div>
+
+  <div class="wizard__body">
+    <div class="wizard__panel">
+      @switch (currentStep().key) {
+        @case ('business') {
+          <h3 class="wizard__panel-title">Business details</h3>
+          <p class="wizard__panel-hint">Tell us about the business being onboarded.</p>
+
+          <form [formGroup]="businessForm" class="wizard__form">
+            <div class="pa-field" [class.pa-field--invalid]="businessForm.controls.businessName.touched && businessForm.controls.businessName.invalid">
+              <label class="pa-field__label" for="w-biz-name">Business name<span class="pa-field__required">*</span></label>
+              <input id="w-biz-name" class="pa-input" type="text" formControlName="businessName" placeholder="Northgate Retail Ltd" />
+            </div>
+
+            <div class="pa-field" [class.pa-field--invalid]="businessForm.controls.cacNumber.touched && businessForm.controls.cacNumber.invalid">
+              <label class="pa-field__label" for="w-cac">CAC registration number<span class="pa-field__required">*</span></label>
+              <input id="w-cac" class="pa-input" type="text" formControlName="cacNumber" placeholder="RC1234567" />
+            </div>
+
+            <div class="pa-field" [class.pa-field--invalid]="businessForm.controls.address.touched && businessForm.controls.address.invalid">
+              <label class="pa-field__label" for="w-address">Business address<span class="pa-field__required">*</span></label>
+              <input id="w-address" class="pa-input" type="text" formControlName="address" placeholder="12 Admiralty Way, Lekki, Lagos" />
+            </div>
+
+            <div class="pa-field-row">
+              <div class="pa-field" [class.pa-field--invalid]="businessForm.controls.contactPhone.touched && businessForm.controls.contactPhone.invalid">
+                <label class="pa-field__label" for="w-biz-phone">Contact phone<span class="pa-field__required">*</span></label>
+                <input id="w-biz-phone" class="pa-input" type="text" formControlName="contactPhone" placeholder="+234…" />
+              </div>
+              <div class="pa-field" [class.pa-field--invalid]="businessForm.controls.contactEmail.touched && businessForm.controls.contactEmail.invalid">
+                <label class="pa-field__label" for="w-biz-email">Contact email<span class="pa-field__required">*</span></label>
+                <input id="w-biz-email" class="pa-input" type="email" formControlName="contactEmail" placeholder="ops@vendor.com" />
+              </div>
+            </div>
+          </form>
+        }
+
+        @case ('ownership') {
+          <h3 class="wizard__panel-title">Ownership details</h3>
+          <p class="wizard__panel-hint">Provide the owner's details exactly as they appear on their government ID.</p>
+
+          <form [formGroup]="ownershipForm" class="wizard__form">
+            <div class="pa-field" [class.pa-field--invalid]="ownershipForm.controls.fullName.touched && ownershipForm.controls.fullName.invalid">
+              <label class="pa-field__label" for="w-full-name">Full name (as on government ID)<span class="pa-field__required">*</span></label>
+              <input id="w-full-name" class="pa-input" type="text" formControlName="fullName" placeholder="Adaeze Okonkwo" (input)="onBvnOrNameChange()" />
+            </div>
+
+            <div class="pa-field-row">
+              <div class="pa-field" [class.pa-field--invalid]="ownershipForm.controls.email.touched && ownershipForm.controls.email.invalid">
+                <label class="pa-field__label" for="w-own-email">Email<span class="pa-field__required">*</span></label>
+                <input id="w-own-email" class="pa-input" type="email" formControlName="email" placeholder="adaeze@vendor.com" />
+              </div>
+              <div class="pa-field" [class.pa-field--invalid]="ownershipForm.controls.phone.touched && ownershipForm.controls.phone.invalid">
+                <label class="pa-field__label" for="w-own-phone">Phone<span class="pa-field__required">*</span></label>
+                <input id="w-own-phone" class="pa-input" type="text" formControlName="phone" placeholder="+234…" />
+              </div>
+            </div>
+
+            <div class="pa-field" [class.pa-field--invalid]="ownershipForm.controls.bvn.touched && ownershipForm.controls.bvn.invalid">
+              <label class="pa-field__label" for="w-bvn">Bank Verification Number (BVN)<span class="pa-field__required">*</span></label>
+              <div class="wizard__verify-row">
+                <input id="w-bvn" class="pa-input" type="text" inputmode="numeric" maxlength="11" formControlName="bvn" placeholder="11-digit BVN" (input)="onBvnOrNameChange()" />
+                <button type="button" class="pa-btn pa-btn--white pa-btn--sm wizard__verify-btn" [disabled]="bvnStatus() === 'checking'" (click)="verifyBvn()">
+                  @if (bvnStatus() === 'checking') {
+                    <hugeicons-icon [icon]="loadingIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" class="wizard__spin" />
+                    Verifying…
+                  } @else {
+                    Verify BVN
+                  }
+                </button>
+              </div>
+              @if (bvnStatus() === 'verified') {
+                <span class="wizard__verify-ok">
+                  <hugeicons-icon [icon]="checkIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+                  BVN exists and matches "{{ ownershipForm.controls.fullName.value }}"
+                </span>
+              }
+              @if (ownershipForm.controls.bvn.touched && ownershipForm.controls.bvn.invalid) {
+                <span class="pa-field__error">Enter a valid 11-digit BVN.</span>
+              }
+            </div>
+
+            <div class="pa-field-row">
+              <div class="pa-field" [class.pa-field--invalid]="ownershipForm.controls.ninNumber.touched && ownershipForm.controls.ninNumber.invalid">
+                <label class="pa-field__label" for="w-nin">NIN number<span class="pa-field__required">*</span></label>
+                <input id="w-nin" class="pa-input" type="text" inputmode="numeric" maxlength="11" formControlName="ninNumber" placeholder="11-digit NIN" />
+              </div>
+              <div class="pa-field">
+                <label class="pa-field__label" for="w-nin-image">NIN image</label>
+                <label class="wizard__upload" for="w-nin-image">
+                  <hugeicons-icon [icon]="uploadIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+                  <span>{{ ninImageName() || 'Upload image' }}</span>
+                </label>
+                <input id="w-nin-image" type="file" accept="image/*" class="wizard__upload-input" (change)="onNinImage($event)" />
+              </div>
+            </div>
+          </form>
+        }
+
+        @case ('settlement') {
+          <h3 class="wizard__panel-title">Settlement bank account</h3>
+          <p class="wizard__panel-hint">The account name must match both the business name and CAC records.</p>
+
+          <form [formGroup]="settlementForm" class="wizard__form">
+            <div class="pa-field" [class.pa-field--invalid]="settlementForm.controls.bankName.touched && settlementForm.controls.bankName.invalid">
+              <label class="pa-field__label" for="w-bank">Bank name<span class="pa-field__required">*</span></label>
+              <div class="wizard__bank-search">
+                <hugeicons-icon class="wizard__bank-search-icon" [icon]="searchIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+                <input
+                  id="w-bank"
+                  class="pa-input wizard__bank-search-input"
+                  type="text"
+                  [value]="settlementForm.controls.bankName.value || bankQuery()"
+                  placeholder="Search for a bank…"
+                  autocomplete="off"
+                  (focus)="bankListOpen.set(true)"
+                  (input)="bankQuery.set($any($event.target).value); settlementForm.controls.bankName.setValue(''); bankListOpen.set(true)"
+                />
+                @if (bankListOpen()) {
+                  <div class="wizard__bank-menu" (clickOutside)="bankListOpen.set(false)">
+                    @if (bankResults().length === 0) {
+                      <div class="wizard__bank-empty">No banks match your search.</div>
+                    } @else {
+                      @for (bank of bankResults(); track bank) {
+                        <button type="button" class="wizard__bank-option" (click)="selectBank(bank)">{{ bank }}</button>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="pa-field" [class.pa-field--invalid]="settlementForm.controls.accountNumber.touched && settlementForm.controls.accountNumber.invalid">
+              <label class="pa-field__label" for="w-acct-num">Account number<span class="pa-field__required">*</span></label>
+              <div class="wizard__verify-row">
+                <input id="w-acct-num" class="pa-input" type="text" inputmode="numeric" maxlength="10" formControlName="accountNumber" placeholder="10-digit account number" (input)="onAccountNumberChange()" />
+                <button type="button" class="pa-btn pa-btn--white pa-btn--sm wizard__verify-btn" [disabled]="acctStatus() === 'checking'" (click)="resolveAccount()">
+                  @if (acctStatus() === 'checking') {
+                    <hugeicons-icon [icon]="loadingIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" class="wizard__spin" />
+                    Resolving…
+                  } @else {
+                    Resolve name
+                  }
+                </button>
+              </div>
+              @if (acctStatus() === 'verified') {
+                <span class="wizard__verify-ok">
+                  <hugeicons-icon [icon]="checkIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+                  {{ resolvedAccountName }} — matches business name &amp; CAC records
+                </span>
+              }
+              @if (settlementForm.controls.accountNumber.touched && settlementForm.controls.accountNumber.invalid) {
+                <span class="pa-field__error">Enter a valid 10-digit account number.</span>
+              }
+            </div>
+          </form>
+        }
+      }
+    </div>
+  </div>
+
+  <footer class="wizard__foot">
+    <button type="button" class="pa-btn pa-btn--white pa-btn--sm" (click)="stepIndex() === 0 ? close() : back()">
+      @if (stepIndex() > 0) {
+        <hugeicons-icon [icon]="backIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+      }
+      {{ stepIndex() === 0 ? 'Cancel' : 'Back' }}
+    </button>
+
+    @if (currentStep().key !== 'settlement') {
+      <button type="button" class="pa-btn pa-btn--primary pa-btn--sm" (click)="next()">
+        Continue
+        <hugeicons-icon [icon]="nextIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+      </button>
+    } @else {
+      <button type="button" class="pa-btn pa-btn--primary pa-btn--sm" [disabled]="submitting()" (click)="submit()">
+        @if (submitting()) {
+          <hugeicons-icon [icon]="loadingIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" class="wizard__spin" />
+          Submitting…
+        } @else {
+          Onboard vendor
+        }
+      </button>
+    }
+  </footer>
+</div>

@@ -1,0 +1,78 @@
+<div class="p-4 sm:p-6">
+<app-page-header title="Payment Methods" subtitle="Collection methods available across loan products.">
+  <div actions>
+    <button class="pa-btn pa-btn--primary pa-btn--md" type="button" (click)="openAdd()">
+      <hugeicons-icon [icon]="addIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+      Add payment method
+    </button>
+  </div>
+</app-page-header>
+
+<div class="pa-gtable-wrap">
+  <div class="pa-gtable" style="--gt-cols: 1.4fr 1fr 1fr 2fr">
+    <div class="pa-gtable__head">
+      <span>Method</span>
+      <span>Code</span>
+      <span>Type</span>
+      <span>Description</span>
+    </div>
+
+    @if (loading()) {
+      @for (r of [1, 2, 3]; track r) {
+        <div class="pa-gtable__loading"><span class="pa-skeleton"></span></div>
+      }
+    } @else if (error()) {
+      <app-error-state message="Couldn't load payment methods. Check your connection and try again." (retry)="retry()" />
+    } @else if (methods().length === 0) {
+      <app-empty-state title="No payment methods" subtitle="Payment methods configured on your account will show up here." />
+    } @else {
+      @for (m of methods(); track m.code) {
+        <div class="pa-gtable__row">
+          <div class="pa-gtable__cell pa-cell-primary">
+            {{ m.name }}
+            @if (isPrototype(m.code)) { <span class="demo-badge">Demo</span> }
+          </div>
+          <div class="pa-gtable__cell code-cell">{{ m.code }}</div>
+          <div class="pa-gtable__cell"><app-status-badge tone="info" [text]="m.paymentType" /></div>
+          <div class="pa-gtable__cell description-cell">{{ m.description || '—' }}</div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (addOpen()) {
+  <app-modal-shell title="Add payment method" maxWidth="440px" (closed)="closeAdd()">
+    <p class="dialog-text">
+      Prototype only — the admin API doesn't have a create-payment-method endpoint yet (it can list
+      methods and link an existing one to a loan product, not add a new type). This adds to the list
+      you're viewing without saving anywhere; it'll disappear on refresh.
+    </p>
+    <form [formGroup]="addForm" (ngSubmit)="submitAdd()" novalidate class="form" id="add-method-form">
+      <div class="pa-field" [class.pa-field--invalid]="addForm.controls.name.touched && addForm.controls.name.invalid">
+        <label class="pa-field__label" for="pm-name">Method name</label>
+        <input id="pm-name" class="pa-input" type="text" formControlName="name" placeholder="Opay Direct Debit" />
+      </div>
+      <div class="pa-field" [class.pa-field--invalid]="addForm.controls.code.touched && addForm.controls.code.invalid">
+        <label class="pa-field__label" for="pm-code">Code</label>
+        <input id="pm-code" class="pa-input" type="text" formControlName="code" placeholder="OPAY_DD" />
+      </div>
+      <div class="pa-field">
+        <label class="pa-field__label" for="pm-type">Type</label>
+        <select id="pm-type" class="pa-select" formControlName="paymentType">
+          <option value="Salary">Salary</option>
+          <option value="Direct Debit">Direct Debit</option>
+        </select>
+      </div>
+      <div class="pa-field">
+        <label class="pa-field__label" for="pm-desc">Description</label>
+        <textarea id="pm-desc" class="pa-textarea" formControlName="description" rows="2"></textarea>
+      </div>
+    </form>
+    <ng-container modalFooter>
+      <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeAdd()">Cancel</button>
+      <button class="pa-btn pa-btn--primary pa-btn--sm" type="submit" form="add-method-form">Add method</button>
+    </ng-container>
+  </app-modal-shell>
+}
+</div>

@@ -1,8 +1,12 @@
 <div class="p-4 sm:p-6">
 <app-page-header title="Vendors" subtitle="Review KYB submissions and manage vendor accounts.">
-  <div actions>
+  <div actions class="head-actions">
     <button class="pa-btn pa-btn--white pa-btn--sm" type="button" [disabled]="vendors().length === 0" (click)="exportCsv()">
       Export CSV
+    </button>
+    <button class="pa-btn pa-btn--primary pa-btn--md" type="button" (click)="openAdd()">
+      <hugeicons-icon [icon]="addIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+      Add vendor
     </button>
   </div>
 </app-page-header>
@@ -52,7 +56,11 @@
           <div class="pa-gtable__cell identity">
             <span class="avatar" aria-hidden="true">{{ v.businessName.charAt(0) }}</span>
             <span class="stack">
-              <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', v.id]">{{ v.businessName }}</a>
+              @if (isPrototype(v.id)) {
+                <span class="pa-cell-primary">{{ v.businessName }}<span class="demo-badge">Demo</span></span>
+              } @else {
+                <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', v.id]">{{ v.businessName }}</a>
+              }
               <span class="pa-cell-sub">{{ v.contactPhone }}</span>
             </span>
           </div>
@@ -77,5 +85,9 @@
       <button type="button" class="pa-btn pa-btn--white pa-btn--sm" [disabled]="page() >= p.totalPages" (click)="goToPage(page() + 1)">Next</button>
     </nav>
   }
+}
+
+@if (addOpen()) {
+  <app-vendor-onboarding-wizard (closed)="closeAdd()" (created)="onVendorCreated($event)" />
 }
 </div>

@@ -4,6 +4,20 @@
   <p class="page-subtitle">Overview of Asset Flex vendors and activity.</p>
 </header>
 
+<div class="quick-actions" role="group" aria-label="Quick actions">
+  @for (a of quickActions; track a.label) {
+    <a
+      class="quick-action"
+      [class.quick-action--primary]="a.primary"
+      [routerLink]="a.route"
+      [queryParams]="a.queryParams"
+    >
+      <hugeicons-icon [icon]="a.icon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+      {{ a.label }}
+    </a>
+  }
+</div>
+
 @if (error()) {
   <app-error-state message="Couldn't load dashboard summary. Check your connection and try again." (retry)="retry()" />
 } @else {
@@ -36,6 +50,199 @@
   </div>
   <p class="stat__hint">{{ stat.hint }}</p>
 </ng-template>
+
+<section class="reports" aria-label="Reports preview">
+  <div class="reports__head">
+    <h2 class="reports__title">Reports</h2>
+  </div>
+
+  <app-info-banner
+    key="dashboard-reports-preview"
+    message="This is a preview built with sample data — the Asset Flex API doesn't have a reporting endpoint yet, so nothing here is live."
+  />
+
+  <article class="panel panel--wide">
+    <div class="panel__head-row">
+      <h3 class="panel__title">Pending settlements</h3>
+      <a class="panel__link" routerLink="/asset-flex/settlements" [queryParams]="{ status: 'PENDING' }">View all</a>
+    </div>
+    <div class="mini-table">
+      <div class="mini-table__head">
+        <span>Customer</span>
+        <span>Vendor</span>
+        <span>Item</span>
+        <span class="mini-table__cell--right">Amount</span>
+        <span class="mini-table__cell--right">Due</span>
+      </div>
+      @for (row of pendingSettlements; track row.customer + row.dueDate) {
+        <div class="mini-table__row">
+          <span class="mini-table__primary">{{ row.customer }}</span>
+          <span class="mini-table__muted">{{ row.vendor }}</span>
+          <span class="mini-table__muted">{{ row.item }}</span>
+          <span class="mini-table__amount mini-table__cell--right">{{ row.amount | naira }}</span>
+          <span class="mini-table__muted mini-table__cell--right">{{ row.dueDate | date: 'mediumDate' }}</span>
+        </div>
+      }
+    </div>
+  </article>
+
+  <article class="panel panel--wide">
+    <div class="panel__head-row">
+      <div>
+        <h3 class="panel__title">Gross payout volume</h3>
+        <p class="panel__big-value">{{ grossPayoutVolume() | naira }}</p>
+      </div>
+      <app-filters [sections]="payoutFilterSections()" (dateRangeChange)="onPayoutRangeChange($event)" />
+    </div>
+  </article>
+
+  <div class="reports__grid">
+    <article class="panel">
+      <h3 class="panel__title">Loan volume, last 6 months</h3>
+      <div class="bar-chart" role="img" aria-label="Loan volume by month, sample data">
+        @for (m of loanVolumeBars; track m.label) {
+          <div class="bar-chart__col">
+            <div class="bar-chart__track">
+              <div class="bar-chart__bar" [style.height.%]="m.heightPct"></div>
+            </div>
+            <span class="bar-chart__label">{{ m.label }}</span>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel__title">Loan status breakdown</h3>
+      <div class="status-bar" role="img" aria-label="Loan status breakdown, sample data">
+        @for (s of loanStatusBreakdown; track s.label) {
+          <div class="status-bar__slice" [style.width.%]="s.pct" [style.background]="s.color"></div>
+        }
+      </div>
+      <ul class="status-legend">
+        @for (s of loanStatusBreakdown; track s.label) {
+          <li class="status-legend__item">
+            <span class="status-legend__dot" [style.background]="s.color" aria-hidden="true"></span>
+            <span class="status-legend__label">{{ s.label }}</span>
+            <span class="status-legend__value">{{ s.value }}</span>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel__title">Top vendors by volume</h3>
+      <ul class="leaderboard">
+        @for (v of topVendors; track v.name) {
+          <li class="leaderboard__item">
+            <span class="leaderboard__name">{{ v.name }}</span>
+            <div class="leaderboard__track">
+              <div class="leaderboard__bar" [style.width.%]="v.pct"></div>
+            </div>
+            <span class="leaderboard__amount">{{ v.amount | naira }}</span>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel__title">Failed payments</h3>
+      <ul class="failed-list">
+        @for (f of failedPayments; track f.customer + f.date) {
+          <li class="failed-list__item">
+            <hugeicons-icon [icon]="failedIcon" [size]="16" [strokeWidth]="1.75" color="#dc2626" class="failed-list__icon" />
+            <span class="failed-list__body">
+              <span class="failed-list__name">{{ f.customer }} → {{ f.vendor }}</span>
+              <span class="failed-list__reason">{{ f.reason }}</span>
+            </span>
+            <span class="failed-list__amount">{{ f.amount | naira }}</span>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel__title">Top customers by amount</h3>
+      <ul class="leaderboard">
+        @for (c of topCustomers; track c.name) {
+          <li class="leaderboard__item">
+            <span class="leaderboard__name">{{ c.name }}</span>
+            <div class="leaderboard__track">
+              <div class="leaderboard__bar" [style.width.%]="c.pct"></div>
+            </div>
+            <span class="leaderboard__amount">{{ c.amount | naira }}</span>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel__title">Top categories</h3>
+      <ul class="leaderboard">
+        @for (cat of topCategories; track cat.name) {
+          <li class="leaderboard__item">
+            <span class="leaderboard__name">{{ cat.name }}</span>
+            <div class="leaderboard__track">
+              <div class="leaderboard__bar" [style.width.%]="cat.pct"></div>
+            </div>
+            <span class="leaderboard__amount">{{ cat.amount | naira }}</span>
+          </li>
+        }
+      </ul>
+    </article>
+  </div>
+
+  <article class="panel panel--wide money-movement">
+    <div class="money-movement__head">
+      <h3 class="panel__title">Money movement</h3>
+      <div class="money-movement__nav">
+        <button type="button" class="money-movement__nav-btn" [disabled]="!canGoPrevMonth()" (click)="goPrevMonth()" aria-label="Previous month">
+          <hugeicons-icon [icon]="backIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+        <span class="money-movement__month">{{ currentMonth().label }}</span>
+        <button type="button" class="money-movement__nav-btn" [disabled]="!canGoNextMonth()" (click)="goNextMonth()" aria-label="Next month">
+          <hugeicons-icon [icon]="nextIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+        </button>
+      </div>
+      <app-filters [sections]="moneyMovementFilterSections()" (dateRangeChange)="onMoneyMovementRangeChange($event)" />
+    </div>
+
+    <div class="money-movement__grid">
+      <div class="money-movement__col">
+        <p class="money-movement__label">Money in</p>
+        <p class="money-movement__value money-movement__value--in">{{ currentMonth().moneyIn | naira }}</p>
+        <p class="money-movement__sub-label">Top sources</p>
+        <ul class="party-list">
+          @for (p of currentMonth().topSources; track p.name) {
+            <li class="party-list__item">
+              <span class="party-list__avatar" aria-hidden="true">{{ p.name.charAt(0) }}</span>
+              <span class="party-list__name">{{ p.name }}</span>
+              <span class="party-list__amount">{{ p.amount | naira }}</span>
+            </li>
+          }
+        </ul>
+        <p class="money-movement__avg-label">Last 3 months average</p>
+        <p class="money-movement__avg-value">{{ avgLast3In() | naira }}</p>
+      </div>
+
+      <div class="money-movement__col">
+        <p class="money-movement__label">Money out</p>
+        <p class="money-movement__value money-movement__value--out">-{{ currentMonth().moneyOut | naira }}</p>
+        <p class="money-movement__sub-label">Top spend</p>
+        <ul class="party-list">
+          @for (p of currentMonth().topSpend; track p.name) {
+            <li class="party-list__item">
+              <span class="party-list__avatar" aria-hidden="true">{{ p.name.charAt(0) }}</span>
+              <span class="party-list__name">{{ p.name }}</span>
+              <span class="party-list__amount party-list__amount--out">-{{ p.amount | naira }}</span>
+            </li>
+          }
+        </ul>
+        <p class="money-movement__avg-label">Last 3 months average</p>
+        <p class="money-movement__avg-value">-{{ avgLast3Out() | naira }}</p>
+      </div>
+    </div>
+  </article>
+</section>
 
 <section class="panel">
   <h2 class="panel__title">Getting started</h2>

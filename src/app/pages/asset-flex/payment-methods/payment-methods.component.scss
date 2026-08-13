@@ -1,0 +1,41 @@
+/*
+ * Code and Description are peer columns here, not secondary annotations
+ * under a primary line — .pa-mono/.pa-cell-sub's smaller muted sizing is
+ * for that latter case (see loans/loan-products), so it doesn't apply.
+ * Both inherit the table's 13px base; Code keeps the monospace family only.
+ */
+.code-cell {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.description-cell {
+  color: var(--ca-text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dialog-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0 0 14px;
+}
+
+.demo-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}

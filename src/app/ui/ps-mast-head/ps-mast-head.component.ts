@@ -20,15 +20,15 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { PsModalService }     from '@pcsl-ui/ui/ps-modal/ps-modal.service';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
 import { AuthStore }          from '@core/store/auth.store';
-import { AppNotification, NotificationModalComponent } from '@shared/components/modals/notification-modal/notification-modal.component';
+import { AppNotification } from '@shared/components/modals/notification-modal/notification-modal.component';
+import { NotificationDropdownComponent } from './notification-dropdown/notification-dropdown.component';
 
 @Component({
   selector: 'ps-mast-head',
   standalone: true,
-  imports: [CommonModule, FormsModule, PsSvgIconComponent],
+  imports: [CommonModule, FormsModule, PsSvgIconComponent, NotificationDropdownComponent],
   templateUrl: './ps-mast-head.component.html',
   styleUrl: './ps-mast-head.component.scss',
 })
@@ -38,7 +38,6 @@ export class PsMastHeadComponent implements OnInit, OnDestroy {
   // ── Auth ──────────────────────────────────────────────────────────────
   authStore    = inject(AuthStore);
   router       = inject(Router);
-  modalService = inject(PsModalService);
 
   user       = this.authStore.user;
   isLoggedIn = this.authStore.isLoggedIn;
@@ -101,15 +100,18 @@ export class PsMastHeadComponent implements OnInit, OnDestroy {
 
   unreadCount = () => this.notifications().filter(n => !n.read).length;
 
-  openNotificationPanel(): void {
-    this.modalService.open(NotificationModalComponent, {
-      data: {
-        notifications: this.notifications(),
-        onMarkAllRead: () => {
-          this.notifications.update(list => list.map(n => ({ ...n, read: true })));
-        },
-      },
-    });
+  notifOpen = signal(false);
+
+  toggleNotifications(): void {
+    this.notifOpen.update(v => !v);
+  }
+
+  closeNotifications(): void {
+    this.notifOpen.set(false);
+  }
+
+  markAllNotificationsRead(): void {
+    this.notifications.update(list => list.map(n => ({ ...n, read: true })));
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────

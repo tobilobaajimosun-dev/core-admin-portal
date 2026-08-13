@@ -1,0 +1,72 @@
+<div
+  class="notif-panel flex flex-col bg-white border border-[#ECF0F3] rounded-2xl shadow-lg overflow-hidden w-[376px]"
+  role="dialog"
+  aria-label="Notifications"
+  (clickOutside)="closed.emit()"
+>
+  <!-- ── Header ── -->
+  <div class="flex items-center justify-between px-4 h-[60px] flex-shrink-0 border-b border-[#ECF0F3]">
+    <div class="flex items-center gap-2">
+      <h3 class="font-semibold text-[#060708] leading-none tracking-[-0.005em] text-base">Notifications</h3>
+
+      @if (unreadCount > 0) {
+        <span class="inline-flex items-center justify-center rounded-[3px] text-white
+                       font-semibold leading-none bg-[#B32F00] text-[11px] py-0.5 px-1 min-w-[13px]">
+          {{ unreadCount }}
+        </span>
+
+        <button
+          type="button"
+          (click)="markAllRead.emit()"
+          class="flex items-center gap-2 cursor-pointer text-[#51575B] font-medium leading-none
+                 tracking-[-0.005em] transition-opacity hover:opacity-70 text-xs
+                 border-b border-dashed border-[#51575B] py-[3px] px-1"
+        >
+          Mark all as read
+        </button>
+      }
+    </div>
+
+    <button
+      type="button"
+      (click)="closed.emit()"
+      class="size-8 inline-flex justify-center items-center rounded-full border border-transparent
+             bg-gray-100 hover:bg-gray-200 focus:outline-none focus:bg-gray-200
+             disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+      aria-label="Close"
+    >
+      <span class="sr-only">Close</span>
+      <svg class="shrink-0 w-4 h-4" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M12.6671 3.33325L3.33374 12.6666M3.33374 3.33325L12.6671 12.6666" stroke="#121212" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Body ── -->
+  @if (hasNotifications) {
+    <div class="flex flex-col overflow-y-auto max-h-[420px]
+                [scrollbar-width:thin] [scrollbar-color:#E5E7EB_transparent]
+                [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent
+                [&::-webkit-scrollbar-thumb]:bg-[#E5E7EB]
+                [&::-webkit-scrollbar-thumb]:rounded-full">
+      @for (notification of notifications(); track notification.id; let last = $last) {
+        <div class="flex items-start gap-3 px-4 py-4" [class.border-b]="!last" [class.border-[#ECF0F3]]="!last">
+          <div class="shrink-0 flex items-center justify-center rounded-full w-10 h-10 text-white" [style.background]="iconBg(notification.type)">
+            <ps-svg-icon name="money-icon" class="flex items-center justify-center w-5 h-5 text-white"></ps-svg-icon>
+          </div>
+          <div class="flex flex-col gap-1 min-w-0">
+            <p class="font-semibold text-[#131719] leading-none tracking-[-0.005em] text-sm">{{ notification.title }}</p>
+            <p class="text-[#51575B] font-normal text-[13px] leading-[140%] tracking-[-0.005em]">{{ notification.body }}</p>
+            <span class="text-[#7E868B] font-medium leading-none tracking-[-0.005em] text-xs">{{ notification.time }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="flex flex-col items-center justify-center py-16 px-8 gap-3">
+      <img src="images/message-notification.png" alt="" class="w-[68px] h-[68px]" aria-hidden="true" />
+      <p class="font-semibold text-[#131719] text-center leading-none text-sm">Nothing here</p>
+      <p class="font-normal text-[#51575B] text-center text-sm leading-none">Notifications will appear here</p>
+    </div>
+  }
+</div>
