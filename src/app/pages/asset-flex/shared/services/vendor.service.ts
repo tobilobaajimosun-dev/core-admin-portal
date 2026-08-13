@@ -11,10 +11,38 @@ import {
 
 const assetFlexApiBaseUrl = import.meta.env['NG_APP_ASSET_FLEX_API_URL'] || 'https://asset-flex-api.princeps.cloud';
 
+export interface OnboardVendorPayload {
+  business_name: string;
+  contact_email: string;
+  password: string;
+  contact_phone: string;
+  settlement_bank_code: string;
+  settlement_account_number: string;
+  settlement_account_name: string;
+  webhook_url?: string;
+  platform_fee_percentage?: number;
+}
+
+interface OnboardVendorResponseData {
+  id: string;
+  business_name: string;
+  api_key_live: string;
+  secret_key_live: string;
+  status: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class VendorService {
   private readonly http = inject(HttpClient);
   private readonly base = `${assetFlexApiBaseUrl}/api/v1/admin/vendors`;
+  private readonly onboardUrl = `${assetFlexApiBaseUrl}/api/v1/vendors/onboard`;
+
+  /** POST /api/v1/vendors/onboard — self-service or admin vendor creation.
+   * Response is a minimal snake_case subset, so callers should follow up
+   * with getOne(id) to get the full camelCase Vendor record. */
+  onboard(payload: OnboardVendorPayload): Observable<ApiResponse<OnboardVendorResponseData>> {
+    return this.http.post<ApiResponse<OnboardVendorResponseData>>(this.onboardUrl, payload);
+  }
 
   /** GET /api/v1/admin/vendors — params: status, search, page, limit. */
   list(params: PaginatedSearchParams = {}, context?: HttpContext): Observable<PaginatedResponse<Vendor>> {

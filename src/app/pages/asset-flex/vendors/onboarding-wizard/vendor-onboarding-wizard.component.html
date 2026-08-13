@@ -2,12 +2,17 @@
   <header class="wizard__head">
     <div class="wizard__head-title">
       <h2>Onboard vendor</h2>
-      <span class="wizard__prototype-tag">Prototype — not saved to the server</span>
+      <span class="wizard__prototype-tag">Partial data</span>
     </div>
     <button type="button" class="wizard__close" (click)="close()" aria-label="Close">
       <hugeicons-icon [icon]="closeIcon" [size]="18" [strokeWidth]="1.75" color="currentColor" />
     </button>
   </header>
+
+  <p class="wizard__banner">
+    This creates a real vendor. CAC number, address, and the ownership section's BVN/NIN are verified live but
+    aren't saved anywhere — the vendor API doesn't have fields for them yet.
+  </p>
 
   <div class="wizard__stepper" aria-hidden="true">
     @for (step of steps; track step.key; let i = $index) {
@@ -65,6 +70,15 @@
                 <input id="w-biz-email" class="pa-input" type="email" formControlName="contactEmail" placeholder="ops@vendor.com" />
               </div>
             </div>
+
+            <div class="pa-field" [class.pa-field--invalid]="businessForm.controls.password.touched && businessForm.controls.password.invalid">
+              <label class="pa-field__label" for="w-password">Dashboard login password<span class="pa-field__required">*</span></label>
+              <input id="w-password" class="pa-input" type="password" formControlName="password" placeholder="Minimum 8 characters" autocomplete="new-password" />
+              <span class="pa-field__hint">The vendor uses this to sign in to their own dashboard.</span>
+              @if (businessForm.controls.password.touched && businessForm.controls.password.invalid) {
+                <span class="pa-field__error">Password must be at least 8 characters.</span>
+              }
+            </div>
           </form>
         }
 
@@ -102,11 +116,20 @@
                   }
                 </button>
               </div>
+              @if (bvnPendingOtp()) {
+                <div class="wizard__verify-row wizard__otp-row">
+                  <input class="pa-input" type="text" inputmode="numeric" [formControl]="bvnOtp" placeholder="Enter the OTP sent to the BVN-registered phone" />
+                  <button type="button" class="pa-btn pa-btn--primary pa-btn--sm wizard__verify-btn" [disabled]="bvnStatus() === 'checking' || !bvnOtp.value" (click)="submitBvnOtp()">Confirm OTP</button>
+                </div>
+              }
               @if (bvnStatus() === 'verified') {
                 <span class="wizard__verify-ok">
                   <hugeicons-icon [icon]="checkIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-                  BVN exists and matches "{{ ownershipForm.controls.fullName.value }}"
+                  BVN verified{{ bvnMatchedName() ? ' — matches "' + bvnMatchedName() + '"' : '' }}
                 </span>
+              }
+              @if (bvnStatus() === 'failed' && bvnError()) {
+                <span class="pa-field__error">{{ bvnError() }}</span>
               }
               @if (ownershipForm.controls.bvn.touched && ownershipForm.controls.bvn.invalid) {
                 <span class="pa-field__error">Enter a valid 11-digit BVN.</span>
@@ -116,7 +139,25 @@
             <div class="pa-field-row">
               <div class="pa-field" [class.pa-field--invalid]="ownershipForm.controls.ninNumber.touched && ownershipForm.controls.ninNumber.invalid">
                 <label class="pa-field__label" for="w-nin">NIN number<span class="pa-field__required">*</span></label>
-                <input id="w-nin" class="pa-input" type="text" inputmode="numeric" maxlength="11" formControlName="ninNumber" placeholder="11-digit NIN" />
+                <div class="wizard__verify-row">
+                  <input id="w-nin" class="pa-input" type="text" inputmode="numeric" maxlength="11" formControlName="ninNumber" placeholder="11-digit NIN" (input)="onNinChange()" />
+                  <button type="button" class="pa-btn pa-btn--white pa-btn--sm wizard__verify-btn" [disabled]="ninStatus() === 'checking'" (click)="verifyNin()">
+                    @if (ninStatus() === 'checking') {
+                      <hugeicons-icon [icon]="loadingIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" class="wizard__spin" />
+                    } @else {
+                      Verify
+                    }
+                  </button>
+                </div>
+                @if (ninStatus() === 'verified') {
+                  <span class="wizard__verify-ok">
+                    <hugeicons-icon [icon]="checkIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+                    NIN verified{{ ninMatchedName() ? ' — ' + ninMatchedName() : '' }}
+                  </span>
+                }
+                @if (ninStatus() === 'failed' && ninError()) {
+                  <span class="pa-field__error">{{ ninError() }}</span>
+                }
               </div>
               <div class="pa-field">
                 <label class="pa-field__label" for="w-nin-image">NIN image</label>
@@ -132,7 +173,7 @@
 
         @case ('settlement') {
           <h3 class="wizard__panel-title">Settlement bank account</h3>
-          <p class="wizard__panel-hint">The account name must match both the business name and CAC records.</p>
+          <p class="wizard__panel-hint">Resolve the account number to confirm the account holder's name before submitting.</p>
 
           <form [formGroup]="settlementForm" class="wizard__form">
             <div class="pa-field" [class.pa-field--invalid]="settlementForm.controls.bankName.touched && settlementForm.controls.bankName.invalid">
@@ -151,11 +192,13 @@
                 />
                 @if (bankListOpen()) {
                   <div class="wizard__bank-menu" (clickOutside)="bankListOpen.set(false)">
-                    @if (bankResults().length === 0) {
+                    @if (banksLoading()) {
+                      <div class="wizard__bank-empty">Loading banks…</div>
+                    } @else if (bankResults().length === 0) {
                       <div class="wizard__bank-empty">No banks match your search.</div>
                     } @else {
-                      @for (bank of bankResults(); track bank) {
-                        <button type="button" class="wizard__bank-option" (click)="selectBank(bank)">{{ bank }}</button>
+                      @for (bank of bankResults(); track bank.bank_code) {
+                        <button type="button" class="wizard__bank-option" (click)="selectBank(bank)">{{ bank.name }}</button>
                       }
                     }
                   </div>
@@ -179,8 +222,11 @@
               @if (acctStatus() === 'verified') {
                 <span class="wizard__verify-ok">
                   <hugeicons-icon [icon]="checkIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
-                  {{ resolvedAccountName }} — matches business name &amp; CAC records
+                  {{ resolvedAccountName() }}
                 </span>
+              }
+              @if (acctStatus() === 'failed' && acctError()) {
+                <span class="pa-field__error">{{ acctError() }}</span>
               }
               @if (settlementForm.controls.accountNumber.touched && settlementForm.controls.accountNumber.invalid) {
                 <span class="pa-field__error">Enter a valid 10-digit account number.</span>
@@ -193,6 +239,9 @@
   </div>
 
   <footer class="wizard__foot">
+    @if (submitError(); as err) {
+      <span class="wizard__submit-error">{{ err }}</span>
+    }
     <button type="button" class="pa-btn pa-btn--white pa-btn--sm" (click)="stepIndex() === 0 ? close() : back()">
       @if (stepIndex() > 0) {
         <hugeicons-icon [icon]="backIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />

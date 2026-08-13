@@ -20,7 +20,6 @@ import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-s
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
 import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
 import { VendorOnboardingWizardComponent } from './onboarding-wizard/vendor-onboarding-wizard.component';
-import { PrototypeVendorStore } from '@pages/asset-flex/shared/services/prototype-vendor.store';
 
 const STATUS_FILTERS: { label: string; value: VendorStatus }[] = [
   { label: 'Pending', value: 'PENDING_APPROVAL' },
@@ -52,7 +51,6 @@ export class VendorsComponent {
   private readonly vendorService = inject(VendorService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly prototypeStore = inject(PrototypeVendorStore);
 
   protected readonly searchIcon = Search01Icon;
   protected readonly filters = STATUS_FILTERS;
@@ -72,15 +70,8 @@ export class VendorsComponent {
   private readonly limit = 20;
   private loadGeneration = 0;
 
-  /**
-   * Prototype "Add vendor" flow — the API has no admin create-vendor endpoint
-   * (only self-serve onboarding + approve/reject/blacklist on an existing
-   * vendor), so the wizard adds to the in-memory list only, never a real
-   * request. Rows added this way carry a "Demo" badge and vanish on reload.
-   */
   protected readonly addIcon = Add01Icon;
   protected readonly addOpen = signal(false);
-  protected readonly prototypeIds = signal<Set<string>>(new Set());
 
   constructor() {
     // Seed state from the URL so filters/search/page survive back-navigation.
@@ -167,10 +158,6 @@ export class VendorsComponent {
     this.load();
   }
 
-  protected isPrototype(id: string): boolean {
-    return this.prototypeIds().has(id);
-  }
-
   protected openAdd(): void {
     this.addOpen.set(true);
   }
@@ -180,8 +167,6 @@ export class VendorsComponent {
   }
 
   protected onVendorCreated(vendor: Vendor): void {
-    this.prototypeIds.update((ids) => new Set(ids).add(vendor.id));
-    this.prototypeStore.add(vendor);
     this.vendors.update((rows) => [vendor, ...rows]);
     this.addOpen.set(false);
   }

@@ -13,23 +13,11 @@
     <span>Vendors</span>
   </a>
 
-  @if (isPrototype()) {
-    <app-info-banner
-      key="vendor-detail-prototype"
-      message="This vendor was created through the onboarding wizard prototype. Nothing here is saved — actions below update this preview only."
-    />
-  }
-
   <header class="detail-head">
     <div class="detail-head__id">
       <span class="detail-head__avatar" aria-hidden="true">{{ v.businessName.charAt(0) }}</span>
       <div>
-        <h1 class="detail-head__name">
-          {{ v.businessName }}
-          @if (isPrototype()) {
-            <span class="demo-badge">Demo</span>
-          }
-        </h1>
+        <h1 class="detail-head__name">{{ v.businessName }}</h1>
         <div class="detail-head__meta">
           <app-status-badge [tone]="statusTone(v.status)" [text]="v.status" />
           <span class="detail-head__sep">·</span>

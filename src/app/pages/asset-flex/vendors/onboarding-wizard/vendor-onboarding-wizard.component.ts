@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { A11yModule } from '@angular/cdk/a11y';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -17,6 +17,8 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded';
 
 import { Vendor } from '@pages/asset-flex/shared/models/vendor.model';
+import { VendorService } from '@pages/asset-flex/shared/services/vendor.service';
+import { Bank, IdentityService, IdentityVerifyResult } from '@pages/asset-flex/shared/services/identity.service';
 
 interface WizardStep {
   key: 'business' | 'ownership' | 'settlement';
@@ -30,19 +32,40 @@ const STEPS: WizardStep[] = [
   { key: 'settlement', label: 'Settlement account', icon: BankIcon },
 ];
 
-/** Mock bank list — no real bank-lookup endpoint exists yet. */
-const MOCK_BANKS = [
-  'Access Bank', 'Guaranty Trust Bank', 'Zenith Bank', 'First Bank of Nigeria',
-  'United Bank for Africa', 'Fidelity Bank', 'Union Bank', 'Stanbic IBTC Bank',
-  'Sterling Bank', 'Wema Bank', 'Polaris Bank', 'Ecobank Nigeria',
-  'Providus Bank', 'Kuda Bank', 'Moniepoint MFB', 'Opay Digital Services',
-];
+type VerifyStatus = 'idle' | 'checking' | 'verified' | 'failed';
+
+/** Pull a human name out of a provider's identity payload — field names
+ * vary by provider, and the live response nests differently than the
+ * (stale) swagger doc, so check both `data` and the raw provider payload
+ * before giving up and showing "verified" with no name. */
+function extractName(...sources: (Record<string, unknown> | null | undefined)[]): string | null {
+  for (const data of sources) {
+    if (!data) continue;
+    const full = data['full_name'] ?? data['fullName'];
+    if (typeof full === 'string' && full.trim()) return full;
+    const first = data['first_name'] ?? data['firstName'];
+    const last = data['last_name'] ?? data['lastName'];
+    if (typeof first === 'string' || typeof last === 'string') {
+      const joined = [first, last].filter(Boolean).join(' ');
+      if (joined) return joined;
+    }
+    const acctName = data['account_name'] ?? data['accountName'];
+    if (typeof acctName === 'string' && acctName.trim()) return acctName;
+  }
+  return null;
+}
 
 /**
- * Full-screen 3-step vendor onboarding wizard — prototype only.
- * There's no admin create-vendor, BVN/NIN-verification, or bank-lookup
- * endpoint yet, so verification steps are simulated with a delay and every
- * submission adds a locally-held mock Vendor rather than calling the API.
+ * Full-screen 3-step vendor onboarding wizard, mirroring Mercury's step-flow
+ * KYB UI. Wired to the real Asset Flex API where it exists:
+ *  - POST /vendors/onboard creates the vendor account for real.
+ *  - GET /utilities/banks, POST /identity/account/verify,
+ *    /identity/bvn/verify and /identity/nin/verify are live identity checks.
+ * CAC number, address, and the ownership person's BVN/NIN have nowhere to
+ * be stored — the vendor API models one contact identity per business, not
+ * a separate business + owner. Those fields are still captured and verified
+ * live for KYC purposes, but aren't persisted anywhere; the banner below
+ * says so.
  */
 @Component({
   selector: 'app-vendor-onboarding-wizard',
@@ -55,6 +78,9 @@ const MOCK_BANKS = [
   },
 })
 export class VendorOnboardingWizardComponent {
+  private readonly vendorService = inject(VendorService);
+  private readonly identityService = inject(IdentityService);
+
   readonly closed = output<void>();
   readonly created = output<Vendor>();
 
@@ -77,6 +103,7 @@ export class VendorOnboardingWizardComponent {
     address: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     contactPhone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     contactEmail: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(8)] }),
   });
 
   // ── Step 2: Ownership details ───────────────────────────────────────────
@@ -89,27 +116,54 @@ export class VendorOnboardingWizardComponent {
   });
   protected readonly ninImageName = signal<string | null>(null);
 
-  protected readonly bvnStatus = signal<'idle' | 'checking' | 'verified' | 'failed'>('idle');
+  protected readonly bvnStatus = signal<VerifyStatus>('idle');
+  protected readonly bvnMatchedName = signal<string | null>(null);
+  protected readonly bvnError = signal<string | null>(null);
+  protected readonly bvnPendingOtp = signal(false);
+  protected readonly bvnOtp = new FormControl('', { nonNullable: true });
+  private bvnSessionId = '';
   private bvnCheckedFor = '';
+
+  protected readonly ninStatus = signal<VerifyStatus>('idle');
+  protected readonly ninMatchedName = signal<string | null>(null);
+  protected readonly ninError = signal<string | null>(null);
+  private ninCheckedFor = '';
 
   // ── Step 3: Settlement bank account ─────────────────────────────────────
   protected readonly settlementForm = new FormGroup({
     bankName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    bankCode: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     accountNumber: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\d{10}$/)] }),
   });
+  protected readonly banks = signal<Bank[]>([]);
+  protected readonly banksLoading = signal(true);
   protected readonly bankQuery = signal('');
   protected readonly bankListOpen = signal(false);
   protected readonly bankResults = computed(() => {
     const q = this.bankQuery().trim().toLowerCase();
-    if (!q) return MOCK_BANKS;
-    return MOCK_BANKS.filter((b) => b.toLowerCase().includes(q));
+    const all = this.banks();
+    if (!q) return all;
+    return all.filter((b) => b.name.toLowerCase().includes(q));
   });
 
-  protected readonly acctStatus = signal<'idle' | 'checking' | 'verified' | 'failed'>('idle');
+  protected readonly acctStatus = signal<VerifyStatus>('idle');
+  protected readonly resolvedAccountName = signal<string | null>(null);
+  protected readonly acctError = signal<string | null>(null);
   private acctCheckedFor = '';
 
   protected readonly submitting = signal(false);
   protected readonly submitted = signal(false);
+  protected readonly submitError = signal<string | null>(null);
+
+  constructor() {
+    this.identityService.listBanks().subscribe({
+      next: (res) => {
+        this.banks.set(res.data ?? []);
+        this.banksLoading.set(false);
+      },
+      error: () => this.banksLoading.set(false),
+    });
+  }
 
   protected onEscape(): void {
     this.close();
@@ -153,82 +207,194 @@ export class VendorOnboardingWizardComponent {
     this.ninImageName.set(input.files?.[0]?.name ?? null);
   }
 
+  private readResult(res: { data?: IdentityVerifyResult | null } | null): IdentityVerifyResult | null {
+    return res?.data ?? null;
+  }
+
   protected verifyBvn(): void {
     const bvn = this.ownershipForm.controls.bvn.value;
-    const name = this.ownershipForm.controls.fullName.value;
-    if (this.ownershipForm.controls.bvn.invalid || !name) {
+    if (this.ownershipForm.controls.bvn.invalid) {
       this.ownershipForm.controls.bvn.markAsTouched();
       return;
     }
     this.bvnCheckedFor = bvn;
     this.bvnStatus.set('checking');
-    setTimeout(() => {
-      if (this.bvnCheckedFor !== bvn) return;
+    this.bvnError.set(null);
+    this.identityService.verifyBvn(bvn).subscribe({
+      next: (res) => this.applyBvnResult(bvn, this.readResult(res)),
+      error: () => {
+        if (this.bvnCheckedFor !== bvn) return;
+        this.bvnStatus.set('failed');
+        this.bvnError.set('Could not reach the verification provider. Please try again.');
+      },
+    });
+  }
+
+  protected submitBvnOtp(): void {
+    const bvn = this.ownershipForm.controls.bvn.value;
+    const otp = this.bvnOtp.value.trim();
+    if (!otp || !this.bvnSessionId) return;
+    this.bvnStatus.set('checking');
+    this.identityService.verifyBvn(bvn, otp, this.bvnSessionId).subscribe({
+      next: (res) => this.applyBvnResult(bvn, this.readResult(res)),
+      error: () => {
+        this.bvnStatus.set('failed');
+        this.bvnError.set('OTP verification failed. Please try again.');
+      },
+    });
+  }
+
+  private applyBvnResult(bvn: string, result: IdentityVerifyResult | null): void {
+    if (this.bvnCheckedFor !== bvn || !result) return;
+    if (result.status === 'PENDING') {
+      const sessionId = result.data?.['session_id'];
+      this.bvnSessionId = typeof sessionId === 'string' ? sessionId : '';
+      this.bvnPendingOtp.set(true);
+      this.bvnStatus.set('idle');
+      return;
+    }
+    this.bvnPendingOtp.set(false);
+    if (result.status === 'SUCCESS') {
       this.bvnStatus.set('verified');
-    }, 1100);
+      this.bvnMatchedName.set(extractName(result.data, result.rawResponse));
+    } else {
+      this.bvnStatus.set('failed');
+      this.bvnError.set(result.errorMessage ?? 'This BVN could not be verified.');
+    }
   }
 
   protected onBvnOrNameChange(): void {
     if (this.bvnStatus() !== 'idle') this.bvnStatus.set('idle');
+    this.bvnPendingOtp.set(false);
   }
 
-  protected selectBank(name: string): void {
-    this.settlementForm.controls.bankName.setValue(name);
+  protected verifyNin(): void {
+    const nin = this.ownershipForm.controls.ninNumber.value;
+    if (this.ownershipForm.controls.ninNumber.invalid) {
+      this.ownershipForm.controls.ninNumber.markAsTouched();
+      return;
+    }
+    this.ninCheckedFor = nin;
+    this.ninStatus.set('checking');
+    this.ninError.set(null);
+    this.identityService.verifyNin(nin).subscribe({
+      next: (res) => {
+        const result = this.readResult(res);
+        if (this.ninCheckedFor !== nin || !result) return;
+        if (result.status === 'SUCCESS') {
+          this.ninStatus.set('verified');
+          this.ninMatchedName.set(extractName(result.data, result.rawResponse));
+        } else {
+          this.ninStatus.set('failed');
+          this.ninError.set(result.errorMessage ?? 'This NIN could not be verified.');
+        }
+      },
+      error: () => {
+        if (this.ninCheckedFor !== nin) return;
+        this.ninStatus.set('failed');
+        this.ninError.set('Could not reach the verification provider. Please try again.');
+      },
+    });
+  }
+
+  protected onNinChange(): void {
+    if (this.ninStatus() !== 'idle') this.ninStatus.set('idle');
+  }
+
+  protected selectBank(bank: Bank): void {
+    this.settlementForm.controls.bankName.setValue(bank.name);
+    this.settlementForm.controls.bankCode.setValue(bank.bank_code);
     this.bankQuery.set('');
     this.bankListOpen.set(false);
     this.acctStatus.set('idle');
+    this.resolvedAccountName.set(null);
   }
 
   protected onAccountNumberChange(): void {
-    if (this.acctStatus() !== 'idle') this.acctStatus.set('idle');
+    if (this.acctStatus() !== 'idle') {
+      this.acctStatus.set('idle');
+      this.resolvedAccountName.set(null);
+    }
   }
 
   protected resolveAccount(): void {
-    const { accountNumber, bankName } = this.settlementForm.getRawValue();
-    if (this.settlementForm.controls.accountNumber.invalid || !bankName) {
+    const { accountNumber, bankCode } = this.settlementForm.getRawValue();
+    if (this.settlementForm.controls.accountNumber.invalid || !bankCode) {
       this.settlementForm.markAllAsTouched();
       return;
     }
     this.acctCheckedFor = accountNumber;
     this.acctStatus.set('checking');
-    setTimeout(() => {
-      if (this.acctCheckedFor !== accountNumber) return;
-      this.acctStatus.set('verified');
-    }, 1100);
-  }
-
-  protected get resolvedAccountName(): string {
-    return this.businessForm.controls.businessName.value || 'Business account';
+    this.acctError.set(null);
+    this.identityService.verifyAccount(accountNumber, bankCode).subscribe({
+      next: (res) => {
+        const result = this.readResult(res);
+        if (this.acctCheckedFor !== accountNumber || !result) return;
+        if (result.status === 'SUCCESS') {
+          this.acctStatus.set('verified');
+          this.resolvedAccountName.set(
+            extractName(result.data, result.rawResponse) ?? this.businessForm.controls.businessName.value,
+          );
+        } else {
+          this.acctStatus.set('failed');
+          this.acctError.set(result.errorMessage ?? 'Could not resolve an account name for this number.');
+        }
+      },
+      error: () => {
+        if (this.acctCheckedFor !== accountNumber) return;
+        this.acctStatus.set('failed');
+        this.acctError.set('Could not reach the account-verification provider. Please try again.');
+      },
+    });
   }
 
   protected submit(): void {
-    if (this.settlementForm.invalid || this.acctStatus() !== 'verified') {
+    if (this.settlementForm.invalid || this.acctStatus() !== 'verified' || !this.resolvedAccountName()) {
       this.settlementForm.markAllAsTouched();
       return;
     }
     this.submitting.set(true);
-    setTimeout(() => {
-      const b = this.businessForm.getRawValue();
-      const s = this.settlementForm.getRawValue();
-      const id = `demo-${Date.now()}`;
-      const vendor: Vendor = {
-        id,
-        businessName: b.businessName,
-        contactEmail: b.contactEmail,
-        contactPhone: b.contactPhone,
-        status: 'PENDING_APPROVAL',
-        webhookUrl: null,
-        platformFeePercentage: '0',
-        settlementBankCode: '',
-        settlementAccountNumber: s.accountNumber,
-        settlementAccountName: this.resolvedAccountName,
-        settlementSchedule: 'T_PLUS_1',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      this.submitting.set(false);
-      this.submitted.set(true);
-      this.created.emit(vendor);
-    }, 900);
+    this.submitError.set(null);
+
+    const b = this.businessForm.getRawValue();
+    const s = this.settlementForm.getRawValue();
+
+    this.vendorService
+      .onboard({
+        business_name: b.businessName,
+        contact_email: b.contactEmail,
+        password: b.password,
+        contact_phone: b.contactPhone,
+        settlement_bank_code: s.bankCode,
+        settlement_account_number: s.accountNumber,
+        settlement_account_name: this.resolvedAccountName()!,
+      })
+      .subscribe({
+        next: (res) => {
+          const id = res.data?.id;
+          if (!id) {
+            this.submitting.set(false);
+            this.submitError.set('Vendor was created but the response was missing an ID. Refresh the vendors list to check.');
+            return;
+          }
+          this.vendorService.getOne(id).subscribe({
+            next: (full) => {
+              this.submitting.set(false);
+              this.submitted.set(true);
+              if (full.data) this.created.emit(full.data);
+              else this.close();
+            },
+            error: () => {
+              this.submitting.set(false);
+              this.submitError.set('Vendor was created, but reloading its details failed. Check the vendors list.');
+            },
+          });
+        },
+        error: (err) => {
+          this.submitting.set(false);
+          const message: string | undefined = err?.error?.message;
+          this.submitError.set(message ?? 'Could not create this vendor. Please check the details and try again.');
+        },
+      });
   }
 }

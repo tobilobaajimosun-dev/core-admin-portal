@@ -56,11 +56,7 @@
           <div class="pa-gtable__cell identity">
             <span class="avatar" aria-hidden="true">{{ v.businessName.charAt(0) }}</span>
             <span class="stack">
-              @if (isPrototype(v.id)) {
-                <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', v.id]">{{ v.businessName }}<span class="demo-badge">Demo</span></a>
-              } @else {
-                <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', v.id]">{{ v.businessName }}</a>
-              }
+              <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', v.id]">{{ v.businessName }}</a>
               <span class="pa-cell-sub">{{ v.contactPhone }}</span>
             </span>
           </div>
