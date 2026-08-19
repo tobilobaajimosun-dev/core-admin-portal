@@ -532,9 +532,7 @@
  * the row; standalone controls (checkboxes, toggles, action icons) opt back
  * into vertical centering below since they have no text baseline to align.
  */
-.pa-gtable__row { align-items: start; }
-.pa-gtable__cell--center { align-self: center; }
-.pa-gtable__cell:has(> .pa-toggle) { align-self: center; }
+.pa-gtable__row { align-items: center; }
 
 .pa-gtable__head {
   padding: 0 16px;
