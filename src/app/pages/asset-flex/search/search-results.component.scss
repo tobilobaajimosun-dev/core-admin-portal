@@ -51,76 +51,41 @@
   letter-spacing: 0;
 }
 
-.sr-list {
-  border-top: 1px solid var(--ca-border);
+/* Same column tracks as each entity's own list page, so the search rows read
+   identically to the tables the results link into. */
+.sr-gtable--customers {
+  --gt-cols: 1.6fr 1.4fr 1.2fr 0.9fr 0.9fr 1fr;
+}
+.sr-gtable--loans {
+  --gt-cols: 1.3fr 1fr 1.5fr 1fr 1fr 0.6fr 1fr 0.9fr;
+}
+.sr-gtable--vendors {
+  --gt-cols: 1.8fr 1.6fr 1.6fr 1fr 1fr;
 }
 
-.sr-item {
+.identity {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 8px;
-  border-bottom: 1px solid var(--ca-border);
-  text-decoration: none;
-  color: inherit;
-  transition: background-color 120ms ease;
+  gap: 10px;
 }
 
-.sr-item:hover {
-  background: var(--ca-card-bg, rgba(0, 0, 0, 0.02));
-}
-
-.sr-item:focus-visible {
-  outline: 2px solid var(--color-primary-hex);
-  outline-offset: -2px;
-  border-radius: 6px;
-}
-
-.sr-avatar {
-  flex-shrink: 0;
+.avatar {
+  display: grid;
+  place-items: center;
   width: 32px;
   height: 32px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--ca-border);
-  color: var(--ca-text-muted);
+  border-radius: 50%;
+  background: var(--color-primary-active-hex);
+  color: var(--ca-text);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
-.sr-item__main {
+.stack {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   min-width: 0;
-  flex: 1;
-}
-
-.sr-item__name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ca-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sr-item__meta {
-  font-size: 12px;
-  color: var(--ca-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sr-amount {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ca-text);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 .sr-empty {

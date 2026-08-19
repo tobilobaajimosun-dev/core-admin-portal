@@ -1,0 +1,11 @@
+/* Global nav search reuses the shared .pa-search field. Fix its width in the
+   header so it doesn't stretch to fill the right-hand cluster. */
+.af-nav-search {
+  flex: 0 0 340px;
+  max-width: 340px;
+}
+
+.af-nav-search--mobile {
+  max-width: none;
+  width: 100%;
+}

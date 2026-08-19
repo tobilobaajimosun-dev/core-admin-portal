@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -15,7 +16,7 @@ import { fetchAllPages } from '@pages/asset-flex/shared/utils/fetch-all-pages';
 
 @Component({
   selector: 'app-search-results',
-  imports: [RouterLink, StatusBadgeComponent, CategoryChipComponent, NairaPipe],
+  imports: [DatePipe, RouterLink, StatusBadgeComponent, CategoryChipComponent, NairaPipe],
   templateUrl: './search-results.component.html',
   styleUrl: './search-results.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

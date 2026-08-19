@@ -18,17 +18,40 @@
   @if (customers().length) {
     <section class="sr-group">
       <h2 class="sr-group__title">Customers <span class="sr-count">{{ customers().length }}</span></h2>
-      <div class="sr-list">
-        @for (c of customers(); track c.id) {
-          <a class="sr-item" [routerLink]="['/asset-flex/customers', c.id]">
-            <span class="sr-avatar" aria-hidden="true">{{ initials(fullName(c)) }}</span>
-            <span class="sr-item__main">
-              <span class="sr-item__name">{{ fullName(c) }}</span>
-              <span class="sr-item__meta">{{ c.email }} · {{ c.referredByVendor?.businessName || '—' }}</span>
-            </span>
-            <app-status-badge [tone]="c.isTriadVerified ? 'success' : 'neutral'" [text]="c.isTriadVerified ? 'VERIFIED' : 'UNVERIFIED'" />
-          </a>
-        }
+      <div class="pa-gtable-wrap">
+        <div class="pa-gtable sr-gtable--customers">
+          <div class="pa-gtable__head">
+            <span>Name</span>
+            <span>Contact</span>
+            <span>Vendor</span>
+            <span>Verified</span>
+            <span>Status</span>
+            <span class="pa-gtable__cell--right">Joined</span>
+          </div>
+          @for (c of customers(); track c.id) {
+            <div class="pa-gtable__row">
+              <div class="pa-gtable__cell identity">
+                <span class="avatar" aria-hidden="true">{{ initials(fullName(c)) }}</span>
+                <span class="stack">
+                  <a class="pa-cell-link" [routerLink]="['/asset-flex/customers', c.id]">{{ fullName(c) }}</a>
+                  @if (c.internalCustomerId) {
+                    <span class="pa-cell-sub">{{ c.internalCustomerId }}</span>
+                  }
+                </span>
+              </div>
+              <div class="pa-gtable__cell">
+                <span class="pa-cell-primary">{{ c.email || '—' }}</span>
+                <span class="pa-cell-sub">{{ c.phoneNumber }}</span>
+              </div>
+              <div class="pa-gtable__cell pa-cell-sub">{{ c.referredByVendor?.businessName || '—' }}</div>
+              <div class="pa-gtable__cell">
+                <app-status-badge [tone]="c.isTriadVerified ? 'success' : 'neutral'" [text]="c.isTriadVerified ? 'VERIFIED' : 'UNVERIFIED'" />
+              </div>
+              <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(c.status)" [text]="c.status" /></div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ c.createdAt | date: 'mediumDate' }}</div>
+            </div>
+          }
+        </div>
       </div>
     </section>
   }
@@ -36,18 +59,34 @@
   @if (loans().length) {
     <section class="sr-group">
       <h2 class="sr-group__title">Loans <span class="sr-count">{{ loans().length }}</span></h2>
-      <div class="sr-list">
-        @for (l of loans(); track l.id) {
-          <a class="sr-item" [routerLink]="['/asset-flex/loans', l.id]">
-            <span class="sr-item__main">
-              <span class="sr-item__name">{{ l.loanReference }}</span>
-              <span class="sr-item__meta">{{ l.itemDescription || l.loanProduct?.name }} · {{ l.vendor?.businessName }}</span>
-            </span>
-            @if (l.category) { <af-category-chip [category]="l.category" /> }
-            <span class="sr-amount">{{ l.principalAmount | naira }}</span>
-            <app-status-badge [tone]="statusTone(l.status)" [text]="l.status" />
-          </a>
-        }
+      <div class="pa-gtable-wrap">
+        <div class="pa-gtable sr-gtable--loans">
+          <div class="pa-gtable__head">
+            <span>Reference</span>
+            <span>Vendor</span>
+            <span>Category</span>
+            <span>Principal</span>
+            <span>Repayable</span>
+            <span>Tenor</span>
+            <span>Status</span>
+            <span class="pa-gtable__cell--right">Created</span>
+          </div>
+          @for (l of loans(); track l.id) {
+            <div class="pa-gtable__row">
+              <div class="pa-gtable__cell">
+                <a class="pa-cell-link" [routerLink]="['/asset-flex/loans', l.id]">{{ l.loanReference }}</a>
+                <span class="pa-cell-sub">{{ l.itemDescription || l.loanProduct?.name || l.loanProductId }}</span>
+              </div>
+              <div class="pa-gtable__cell pa-cell-sub">{{ l.vendor?.businessName || '—' }}</div>
+              <div class="pa-gtable__cell"><af-category-chip [category]="l.category" /></div>
+              <div class="pa-gtable__cell pa-amount">{{ l.principalAmount | naira }}</div>
+              <div class="pa-gtable__cell pa-amount">{{ l.totalRepayable | naira }}</div>
+              <div class="pa-gtable__cell pa-cell-sub">{{ l.tenorMonths }} mo</div>
+              <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(l.status)" [text]="l.status" /></div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ l.createdAt | date: 'mediumDate' }}</div>
+            </div>
+          }
+        </div>
       </div>
     </section>
   }
@@ -55,17 +94,34 @@
   @if (vendors().length) {
     <section class="sr-group">
       <h2 class="sr-group__title">Businesses <span class="sr-count">{{ vendors().length }}</span></h2>
-      <div class="sr-list">
-        @for (v of vendors(); track v.id) {
-          <a class="sr-item" [routerLink]="['/asset-flex/vendors', v.id]">
-            <span class="sr-avatar" aria-hidden="true">{{ v.businessName.charAt(0) }}</span>
-            <span class="sr-item__main">
-              <span class="sr-item__name">{{ v.businessName }}</span>
-              <span class="sr-item__meta">{{ v.industry || '—' }}</span>
-            </span>
-            <app-status-badge [tone]="statusTone(v.status)" [text]="v.status" />
-          </a>
-        }
+      <div class="pa-gtable-wrap">
+        <div class="pa-gtable sr-gtable--vendors">
+          <div class="pa-gtable__head">
+            <span>Business</span>
+            <span>Contact</span>
+            <span>Settlement</span>
+            <span>Status</span>
+            <span class="pa-gtable__cell--right">Onboarded</span>
+          </div>
+          @for (v of vendors(); track v.id) {
+            <div class="pa-gtable__row">
+              <div class="pa-gtable__cell identity">
+                <span class="avatar" aria-hidden="true">{{ v.businessName.charAt(0) }}</span>
+                <span class="stack">
+                  <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', v.id]">{{ v.businessName }}</a>
+                  <span class="pa-cell-sub">{{ v.contactPhone }}</span>
+                </span>
+              </div>
+              <div class="pa-gtable__cell pa-cell-sub">{{ v.contactEmail }}</div>
+              <div class="pa-gtable__cell">
+                <span class="pa-cell-primary">{{ v.settlementAccountName || '—' }}</span>
+                <span class="pa-cell-sub">{{ v.settlementAccountNumber }}</span>
+              </div>
+              <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(v.status)" [text]="v.status" /></div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ v.createdAt | date: 'mediumDate' }}</div>
+            </div>
+          }
+        </div>
       </div>
     </section>
   }

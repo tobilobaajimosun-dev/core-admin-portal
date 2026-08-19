@@ -399,6 +399,23 @@
   appearance: none;
 }
 .pa-search__input::placeholder { color: #8792a2; }
+
+.pa-search__clear {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8792a2;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.pa-search__clear:hover { background: #e3e8ee; color: var(--ca-text); }
+.pa-search__clear:focus-visible { outline: 2px solid var(--color-primary-hex); outline-offset: 1px; }
 .pa-search__input::-webkit-search-decoration,
 .pa-search__input::-webkit-search-cancel-button,
 .pa-search__input::-webkit-search-results-button,
