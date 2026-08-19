@@ -158,11 +158,7 @@
     <app-modal-shell title="Update loan status" [dismissable]="!saving()" maxWidth="420px" (closed)="closeDialog()">
       <div class="pa-field">
         <label class="pa-field__label" for="loan-status">Status</label>
-        <select id="loan-status" class="pa-select" [formControl]="statusControl">
-          @for (s of otherNextStatuses(); track s) {
-            <option [value]="s">{{ label(s) }}</option>
-          }
-        </select>
+        <af-select [formControl]="statusControl" [options]="statusOptions()" placeholder="Select status" />
       </div>
       <ng-container modalFooter>
         <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDialog()" [disabled]="saving()">Cancel</button>
@@ -200,13 +196,7 @@
       </div>
       <div class="pa-field">
         <label class="pa-field__label" for="rp-method">Method</label>
-        <select id="rp-method" class="pa-select" [formControl]="repayMethod">
-          <option value="Cash">Cash</option>
-          <option value="Bank transfer">Bank transfer</option>
-          <option value="Card">Card</option>
-          <option value="Remita salary deduction">Remita salary deduction</option>
-          <option value="Mono direct debit">Mono direct debit</option>
-        </select>
+        <af-select [formControl]="repayMethod" [options]="repayMethodOptions" placeholder="Select method" />
       </div>
       <div class="pa-field">
         <label class="pa-field__label" for="rp-ref">Reference (optional)</label>

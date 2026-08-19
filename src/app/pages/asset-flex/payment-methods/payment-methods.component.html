@@ -59,10 +59,7 @@
       </div>
       <div class="pa-field">
         <label class="pa-field__label" for="pm-type">Type</label>
-        <select id="pm-type" class="pa-select" formControlName="paymentType">
-          <option value="Salary">Salary</option>
-          <option value="Direct Debit">Direct Debit</option>
-        </select>
+        <af-select formControlName="paymentType" [options]="typeOptions" placeholder="Select type" />
       </div>
       <div class="pa-field">
         <label class="pa-field__label" for="pm-desc">Description</label>

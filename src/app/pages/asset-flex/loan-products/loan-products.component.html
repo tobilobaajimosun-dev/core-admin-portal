@@ -78,12 +78,7 @@
       <form [formGroup]="createForm" (ngSubmit)="save()" novalidate class="form" id="lp-create">
         <div class="pa-field">
           <label class="pa-field__label" for="caltos">Caltos product</label>
-          <select id="caltos" class="pa-select" formControlName="caltos_product_id">
-            <option value="" disabled>Select from catalog</option>
-            @for (item of catalog(); track item.id) {
-              <option [value]="item.id">{{ catalogLabel(item) }}</option>
-            }
-          </select>
+          <af-select formControlName="caltos_product_id" [options]="catalogOptions()" placeholder="Select from catalog" />
         </div>
         <div class="pa-field">
           <label class="pa-field__label" for="code">Product code</label>

@@ -10,6 +10,7 @@ import { LoanProductService } from '../shared/services/loan-product.service';
 import { CaltosCatalogItem, LoanProduct } from '../shared/models/loan-product.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { SelectComponent } from '@pages/asset-flex/shared/components/select/select.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
@@ -23,6 +24,7 @@ import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-s
     RouterLink,
     PageHeaderComponent,
     ModalShellComponent,
+    SelectComponent,
     StatusBadgeComponent,
     NairaPipe,
     ErrorStateComponent,
@@ -53,6 +55,9 @@ export class LoanProductsComponent {
   protected readonly deleting = signal<LoanProduct | null>(null);
 
   protected readonly dialogOpen = computed(() => this.mode() !== null);
+  protected readonly catalogOptions = computed(() =>
+    (Array.isArray(this.catalog()) ? this.catalog() : []).map((item) => ({ label: this.catalogLabel(item), value: item.id })),
+  );
 
   protected readonly createForm = this.fb.nonNullable.group({
     caltos_product_id: ['', Validators.required],
@@ -79,7 +84,7 @@ export class LoanProductsComponent {
     this.editingId.set(null);
     this.createForm.reset({ caltos_product_id: '', code: '' });
     if (this.catalog().length === 0) {
-      this.service.caltosCatalog().subscribe({ next: (res) => this.catalog.set(res.data ?? []) });
+      this.service.caltosCatalog().subscribe({ next: (res) => this.catalog.set(Array.isArray(res.data) ? res.data : []) });
     }
   }
 

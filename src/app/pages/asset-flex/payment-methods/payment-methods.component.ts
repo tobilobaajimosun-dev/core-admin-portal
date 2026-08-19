@@ -7,6 +7,7 @@ import { PaymentMethodService } from '../shared/services/payment-method.service'
 import { PaymentMethod } from '../shared/models/payment-method.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { SelectComponent } from '@pages/asset-flex/shared/components/select/select.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-state/empty-state.component';
@@ -18,6 +19,7 @@ import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-s
     HugeiconsIconComponent,
     PageHeaderComponent,
     ModalShellComponent,
+    SelectComponent,
     StatusBadgeComponent,
     ErrorStateComponent,
     EmptyStateComponent,
@@ -49,6 +51,10 @@ export class PaymentMethodsComponent {
     paymentType: new FormControl('Salary', { nonNullable: true }),
     description: new FormControl('', { nonNullable: true }),
   });
+  protected readonly typeOptions = [
+    { label: 'Salary', value: 'Salary' },
+    { label: 'Direct Debit', value: 'Direct Debit' },
+  ];
 
   constructor() {
     this.load();

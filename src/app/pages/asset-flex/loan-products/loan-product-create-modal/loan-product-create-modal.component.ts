@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 
 import { LoanProductService } from '../../shared/services/loan-product.service';
 import { CaltosCatalogItem, LoanProduct } from '../../shared/models/loan-product.model';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { SelectComponent } from '@pages/asset-flex/shared/components/select/select.component';
 
 /**
  * Standalone "create loan product" modal — hostable anywhere (e.g. the dashboard
@@ -13,19 +14,14 @@ import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-s
  */
 @Component({
   selector: 'af-loan-product-create-modal',
-  imports: [ReactiveFormsModule, ModalShellComponent],
+  imports: [ReactiveFormsModule, ModalShellComponent, SelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-modal-shell title="New loan product" [dismissable]="!saving()" maxWidth="460px" (closed)="closed.emit()">
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="form" id="lp-create-modal">
         <div class="pa-field">
           <label class="pa-field__label" for="lpc-caltos">Caltos product</label>
-          <select id="lpc-caltos" class="pa-select" formControlName="caltos_product_id">
-            <option value="" disabled>Select from catalog</option>
-            @for (item of catalog(); track item.id) {
-              <option [value]="item.id">{{ catalogLabel(item) }}</option>
-            }
-          </select>
+          <af-select formControlName="caltos_product_id" [options]="catalogOptions()" placeholder="Select from catalog" />
         </div>
         <div class="pa-field">
           <label class="pa-field__label" for="lpc-code">Product code</label>
@@ -51,6 +47,9 @@ export class LoanProductCreateModalComponent {
 
   protected readonly saving = signal(false);
   protected readonly catalog = signal<CaltosCatalogItem[]>([]);
+  protected readonly catalogOptions = computed(() =>
+    this.catalog().map((item) => ({ label: this.catalogLabel(item), value: item.id })),
+  );
   protected readonly form = this.fb.nonNullable.group({
     caltos_product_id: ['', Validators.required],
     code: ['', Validators.required],

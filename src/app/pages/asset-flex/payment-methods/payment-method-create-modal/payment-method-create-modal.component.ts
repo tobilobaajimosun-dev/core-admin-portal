@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { PaymentMethod } from '../../shared/models/payment-method.model';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { SelectComponent } from '@pages/asset-flex/shared/components/select/select.component';
 
 /**
  * Standalone "add payment method" modal — hostable on the dashboard. Prototype
@@ -11,7 +12,7 @@ import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-s
  */
 @Component({
   selector: 'af-payment-method-create-modal',
-  imports: [ReactiveFormsModule, ModalShellComponent],
+  imports: [ReactiveFormsModule, ModalShellComponent, SelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-modal-shell title="Add payment method" maxWidth="440px" (closed)="closed.emit()">
@@ -26,10 +27,7 @@ import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-s
         </div>
         <div class="pa-field">
           <label class="pa-field__label" for="pmc-type">Type</label>
-          <select id="pmc-type" class="pa-select" formControlName="paymentType">
-            <option value="Salary">Salary</option>
-            <option value="Direct Debit">Direct Debit</option>
-          </select>
+          <af-select formControlName="paymentType" [options]="typeOptions" placeholder="Select type" />
         </div>
         <div class="pa-field">
           <label class="pa-field__label" for="pmc-desc">Description</label>
@@ -51,6 +49,10 @@ export class PaymentMethodCreateModalComponent {
   readonly closed = output<void>();
   readonly created = output<PaymentMethod>();
 
+  protected readonly typeOptions = [
+    { label: 'Salary', value: 'Salary' },
+    { label: 'Direct Debit', value: 'Direct Debit' },
+  ];
   protected readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
     code: ['', Validators.required],

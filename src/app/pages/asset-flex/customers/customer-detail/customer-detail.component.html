@@ -22,13 +22,14 @@
         @if (c.isTriadVerified) { <app-status-badge tone="success" text="VERIFIED" /> }
       </div>
     </div>
-    <div class="c-stats">
-      <div class="c-stat"><span class="c-stat__label">Borrowed</span><span class="c-stat__value">{{ totalBorrowed() | naira }}</span></div>
-      <div class="c-stat"><span class="c-stat__label">Outstanding</span><span class="c-stat__value">{{ outstanding() | naira }}</span></div>
-      <div class="c-stat"><span class="c-stat__label">On-time</span><span class="c-stat__value">{{ onTimeRate() }}%</span></div>
-    </div>
-    <button class="pa-btn pa-btn--white pa-btn--sm c-notify-btn" type="button" (click)="openNotify()">Notify customer</button>
+    <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="openNotify()">Notify customer</button>
   </header>
+
+  <div class="c-stat-strip">
+    <div class="c-stat"><span class="c-stat__label">Borrowed</span><span class="c-stat__value">{{ totalBorrowed() | naira }}</span></div>
+    <div class="c-stat"><span class="c-stat__label">Outstanding</span><span class="c-stat__value">{{ outstanding() | naira }}</span></div>
+    <div class="c-stat"><span class="c-stat__label">On-time</span><span class="c-stat__value">{{ onTimeRate() }}%</span></div>
+  </div>
 
   <div class="af-detail-layout">
     <div class="af-detail-main">

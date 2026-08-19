@@ -15,6 +15,7 @@ import { NairaPipe } from '../../shared/pipes/naira.pipe';
 import { statusTone } from '../../shared/utils/status-tone';
 import { formatLabel } from '../../shared/utils/format';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
+import { SelectComponent } from '@pages/asset-flex/shared/components/select/select.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/detail-skeleton/detail-skeleton.component';
 
@@ -29,6 +30,7 @@ import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/det
     CategoryChipComponent,
     NairaPipe,
     ModalShellComponent,
+    SelectComponent,
     ErrorStateComponent,
     DetailSkeletonComponent,
   ],
@@ -61,6 +63,14 @@ export class LoanDetailComponent {
 
   /** Statuses offered by the generic "Update status" dialog — DISBURSED is handled by its own scoped action. */
   protected readonly otherNextStatuses = computed(() => this.allowedNextStatuses().filter((s) => s !== 'DISBURSED'));
+  protected readonly statusOptions = computed(() => this.otherNextStatuses().map((s) => ({ label: this.label(s), value: s })));
+  protected readonly repayMethodOptions = [
+    { label: 'Cash', value: 'Cash' },
+    { label: 'Bank transfer', value: 'Bank transfer' },
+    { label: 'Card', value: 'Card' },
+    { label: 'Remita salary deduction', value: 'Remita salary deduction' },
+    { label: 'Mono direct debit', value: 'Mono direct debit' },
+  ];
 
   protected readonly canDisburse = computed(
     () => this.loan()?.status === 'PENDING_DISBURSEMENT' && this.allowedNextStatuses().includes('DISBURSED'),
