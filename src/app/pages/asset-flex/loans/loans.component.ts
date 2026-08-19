@@ -11,6 +11,8 @@ import { Search01Icon, Tag01Icon, Calendar01Icon, Coins01Icon, TimeQuarterPassIc
 
 import { LoanService } from '../shared/services/loan.service';
 import { Loan, LoanStatus, LOAN_STATUSES } from '../shared/models/loan.model';
+import { LoanCategory, LOAN_CATEGORIES } from '../shared/models/category.model';
+import { CategoryChipComponent } from '../shared/components/category-chip/category-chip.component';
 import { PaginationMeta } from '@pages/asset-flex/shared/models/generic.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge/status-badge.component';
@@ -31,6 +33,7 @@ import { exportToCsv } from '@pages/asset-flex/shared/utils/csv-export';
     HugeiconsIconComponent,
     PageHeaderComponent,
     StatusBadgeComponent,
+    CategoryChipComponent,
     FiltersComponent,
     NairaPipe,
     ErrorStateComponent,
@@ -55,6 +58,8 @@ export class LoansComponent {
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
   protected readonly activeStatuses = signal<LoanStatus[]>([]);
+  protected readonly activeCategories = signal<LoanCategory[]>([]);
+  protected readonly categoryOptions = LOAN_CATEGORIES.map((c) => ({ label: c.label, value: c.value }));
   protected readonly page = signal(1);
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   protected readonly fromDateControl = new FormControl('', { nonNullable: true });
@@ -107,6 +112,7 @@ export class LoansComponent {
   protected filterSections(): FilterSection[] {
     return [
       { key: 'status', label: 'Status', icon: Tag01Icon, kind: 'checklist', options: this.filters, active: this.activeStatuses() },
+      { key: 'category', label: 'Category', icon: Tag01Icon, kind: 'checklist', options: this.categoryOptions, active: this.activeCategories() },
       { key: 'date', label: 'Date', icon: Calendar01Icon, kind: 'date-range', from: this.fromDateControl.value, to: this.toDateControl.value },
       { key: 'tenor', label: 'Tenor', icon: TimeQuarterPassIcon, kind: 'number-range', min: this.tenorMin(), max: this.tenorMax(), unit: 'months' },
       { key: 'principal', label: 'Principal', icon: Coins01Icon, kind: 'number-range', min: this.principalMin(), max: this.principalMax(), unit: '₦' },
@@ -116,11 +122,31 @@ export class LoansComponent {
   /** Tenor/principal have no server-side filter param — filtering them means the
    * fetch-all path below runs even for 0/1 selected statuses, not just 2+. */
   private hasClientOnlyFilter(): boolean {
-    return !!(this.tenorMin() || this.tenorMax() || this.principalMin() || this.principalMax());
+    return !!(this.tenorMin() || this.tenorMax() || this.principalMin() || this.principalMax()) || this.activeCategories().length > 0;
+  }
+
+  /** Drives the empty-state copy: a filtered-empty list should offer an exit,
+   * a genuinely-empty list should orient. Plain method for the same reason as
+   * filterSections() — searchControl.value isn't a signal. */
+  protected hasActiveFilters(): boolean {
+    return (
+      !!this.searchControl.value ||
+      this.activeStatuses().length > 0 ||
+      !!this.fromDateControl.value ||
+      !!this.toDateControl.value ||
+      this.hasClientOnlyFilter()
+    );
   }
 
   protected onChecklistChange(event: { key: string; values: string[] }): void {
     if (event.key === 'status') this.setStatuses(event.values);
+    else if (event.key === 'category') this.setCategories(event.values);
+  }
+
+  protected setCategories(categories: string[]): void {
+    this.activeCategories.set(categories as LoanCategory[]);
+    this.page.set(1);
+    this.load();
   }
 
   protected onDateRangeChange(event: { key: string; from: string; to: string }): void {
@@ -209,6 +235,7 @@ export class LoansComponent {
     if (this.tenorMax() && l.tenorMonths > tenorMax) return false;
     if (this.principalMin() && principalAmount < principalMin) return false;
     if (this.principalMax() && principalAmount > principalMax) return false;
+    if (this.activeCategories().length > 0 && !this.activeCategories().includes(l.category as LoanCategory)) return false;
     return true;
   }
 

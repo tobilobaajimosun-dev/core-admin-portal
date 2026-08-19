@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { PlusSignIcon, PencilEdit02Icon, Delete02Icon } from '@hugeicons-pro/core-stroke-rounded';
@@ -20,6 +20,7 @@ import { EmptyStateComponent } from '@pages/asset-flex/shared/components/empty-s
   imports: [
     ReactiveFormsModule,
     HugeiconsIconComponent,
+    RouterLink,
     PageHeaderComponent,
     ModalShellComponent,
     StatusBadgeComponent,

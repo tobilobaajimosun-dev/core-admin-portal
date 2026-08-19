@@ -1,0 +1,98 @@
+<div class="p-4 sm:p-6">
+  <app-page-header title="Notifications" subtitle="Send an update to your onboarded businesses — in their dashboard, by email, or both." />
+
+  <div class="notif-grid">
+    <!-- Compose -->
+    <section class="pa-card">
+      <h2 class="pa-card__title">Compose</h2>
+
+      <div class="pa-field">
+        <label class="pa-field__label">Recipients</label>
+        <label class="notif-all">
+          <input class="pa-checkbox" type="checkbox" [checked]="allBusinesses()" (change)="toggleAll($any($event.target).checked)" />
+          <span>All businesses <span class="notif-muted">({{ vendors().length }})</span></span>
+        </label>
+        @if (!allBusinesses()) {
+          <div class="notif-search">
+            <input class="pa-input" type="text" [formControl]="search" placeholder="Search businesses…" aria-label="Search businesses" />
+          </div>
+          <div class="notif-recipients">
+            @for (v of filteredVendors(); track v.id) {
+              <label class="notif-recipient">
+                <input class="pa-checkbox" type="checkbox" [checked]="isSelected(v.id)" (change)="toggleVendor(v.id, $any($event.target).checked)" />
+                <span>{{ v.businessName }}</span>
+              </label>
+            } @empty {
+              <p class="notif-empty">No businesses match.</p>
+            }
+          </div>
+        }
+        <p class="notif-count">{{ recipientCount() }} selected</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="send()" novalidate>
+        <div class="pa-field">
+          <label class="pa-field__label" for="n-subject">Subject</label>
+          <input id="n-subject" class="pa-input" type="text" formControlName="subject" placeholder="e.g. Settlement schedule update" />
+        </div>
+        <div class="pa-field">
+          <label class="pa-field__label" for="n-body">Message</label>
+          <textarea id="n-body" class="pa-textarea" rows="4" formControlName="body" placeholder="Write your message to the business…"></textarea>
+        </div>
+        <div class="notif-cta">
+          <div class="pa-field">
+            <label class="pa-field__label" for="n-cta-label">CTA label (optional)</label>
+            <input id="n-cta-label" class="pa-input" type="text" formControlName="ctaLabel" placeholder="View settlements" />
+          </div>
+          <div class="pa-field">
+            <label class="pa-field__label" for="n-cta-url">CTA link (optional)</label>
+            <input id="n-cta-url" class="pa-input" type="text" formControlName="ctaUrl" placeholder="/asset-flex/settlements" />
+          </div>
+        </div>
+
+        <div class="pa-field">
+          <label class="pa-field__label">Delivery channel</label>
+          <div class="notif-channels">
+            <label class="notif-channel">
+              <input class="pa-checkbox" type="checkbox" [checked]="dashboardChannel()" (change)="dashboardChannel.set($any($event.target).checked)" />
+              <span>Dashboard</span>
+            </label>
+            <label class="notif-channel">
+              <input class="pa-checkbox" type="checkbox" [checked]="emailChannel()" (change)="emailChannel.set($any($event.target).checked)" />
+              <span>Email</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="pa-btn pa-btn--primary pa-btn--md" type="submit">Send notification</button>
+      </form>
+    </section>
+
+    <!-- Sent log -->
+    <section class="pa-card">
+      <h2 class="pa-card__title">Sent</h2>
+      @if (sentLog().length) {
+        <ul class="notif-log">
+          @for (n of sentLog(); track n.id) {
+            <li class="notif-log__item">
+              <div class="notif-log__head">
+                <span class="notif-log__subject">{{ n.subject }}</span>
+                <span class="notif-log__date">{{ n.sentAt | date: 'MMM d, h:mm a' }}</span>
+              </div>
+              <p class="notif-log__body">{{ n.body }}</p>
+              <div class="notif-log__meta">
+                <span class="notif-tag">{{ n.recipientCount }} recipient{{ n.recipientCount === 1 ? '' : 's' }}</span>
+                @for (c of n.channels; track c) {
+                  <span class="notif-tag notif-tag--channel">{{ c }}</span>
+                }
+                <span class="notif-log__by">by {{ n.sentBy }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="notif-empty">No notifications sent yet.</p>
+      }
+    </section>
+  </div>
+</div>

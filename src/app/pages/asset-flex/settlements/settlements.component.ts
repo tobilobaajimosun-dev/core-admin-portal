@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin, map } from 'rxjs';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 import { SettlementService } from '../shared/services/settlement.service';
@@ -29,6 +30,7 @@ const FILTERS = ['PENDING', 'DUE', 'SETTLED', 'FAILED'];
     PageHeaderComponent,
     ModalShellComponent,
     StatusBadgeComponent,
+    RouterLink,
     FiltersComponent,
     NairaPipe,
     ErrorStateComponent,
@@ -84,6 +86,9 @@ export class SettlementsComponent {
   });
 
   constructor() {
+    // Pre-filter from the dashboard "Review pending settlements" quick action.
+    const status = inject(ActivatedRoute).snapshot.queryParamMap.get('status');
+    if (status) this.activeStatuses.set(status.split(',').filter(Boolean));
     this.load();
   }
 

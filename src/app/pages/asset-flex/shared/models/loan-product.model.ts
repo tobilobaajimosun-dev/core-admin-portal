@@ -5,11 +5,14 @@ export interface ProviderRule {
   priority_order: number;
 }
 
+import { LoanCategory } from './category.model';
+
 export interface LoanProduct {
   id: string;
   code: string;
   caltosProductId: string;
   name: string;
+  category?: LoanCategory | null;
   description: string | null;
   tenorMonths: number;
   interestRatePercentage: string;

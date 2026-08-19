@@ -69,3 +69,33 @@
   .loan-grid { grid-template-columns: 1fr 1fr; align-items: start; }
 }
 
+.loan-grid--spaced { margin-top: 16px; }
+.loan-card--spaced { margin-top: 16px; }
+
+.pa-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.pa-card__title-row .pa-card__title { margin: 0; }
+
+.repay-summary { font-size: 13px; color: var(--ca-text-muted); }
+
+.repay-gtable { --gt-cols: 0.4fr 1.2fr 1fr 1fr 1fr; }
+.rpy-gtable { --gt-cols: 1.4fr 1fr 1.4fr 1.2fr 1fr; }
+
+.rpy-manual {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary-text-hex);
+  background: color-mix(in srgb, var(--color-primary-hex) 12%, #fff);
+  padding: 1px 6px;
+  border-radius: 6px;
+  margin-right: 6px;
+}
+
+.loan-empty-note { font-size: 13px; color: var(--ca-text-muted); margin: 4px 0 0; }
+

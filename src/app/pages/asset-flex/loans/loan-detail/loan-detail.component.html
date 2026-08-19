@@ -18,15 +18,17 @@
       <h1 class="loan-head__ref">{{ l.loanReference }}</h1>
       <div class="loan-head__meta">
         <app-status-badge [tone]="statusTone(l.status)" [text]="l.status" />
+        @if (l.category) { <af-category-chip [category]="l.category" /> }
         <span class="loan-head__sep">·</span>
         <span class="loan-head__muted">{{ l.vendor?.businessName || l.vendorId }}</span>
       </div>
     </div>
     <div class="loan-head__actions">
       @if (canDisburse()) {
-        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openDisburseDialog()">
-          Disburse loan
-        </button>
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openDisburseDialog()">Disburse loan</button>
+      }
+      @if (canLogRepay()) {
+        <button class="pa-btn pa-btn--primary-outline pa-btn--sm" type="button" (click)="openRepay()">Log repayment</button>
       }
       <button
         class="pa-btn pa-btn--white pa-btn--sm"
@@ -44,28 +46,117 @@
     <section class="pa-card">
       <h2 class="pa-card__title">Loan terms</h2>
       <dl class="pa-kv">
-        <div class="pa-kv__row"><dt>Principal</dt><dd>{{ l.principalAmount | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Item</dt><dd>{{ l.itemDescription || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Amount applied</dt><dd>{{ (l.amountApplied || l.principalAmount) | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Amount disbursed</dt><dd>{{ l.amountDisbursed ? (l.amountDisbursed | naira) : '—' }}</dd></div>
         <div class="pa-kv__row"><dt>Total interest</dt><dd>{{ l.totalInterest | naira }}</dd></div>
         <div class="pa-kv__row"><dt>Total repayable</dt><dd>{{ l.totalRepayable | naira }}</dd></div>
         <div class="pa-kv__row"><dt>Monthly installment</dt><dd>{{ l.monthlyInstallment | naira }}</dd></div>
-        <div class="pa-kv__row"><dt>Tenor</dt><dd>{{ l.tenorMonths }} months</dd></div>
+        <div class="pa-kv__row"><dt>Tenor</dt><dd>{{ l.tenorMonths }} {{ l.tenorMonths === 1 ? 'month' : 'months' }}</dd></div>
         <div class="pa-kv__row"><dt>Product</dt><dd>{{ l.loanProduct?.name || l.loanProductId }}</dd></div>
       </dl>
     </section>
 
     <section class="pa-card">
-      <h2 class="pa-card__title">Collection &amp; parties</h2>
+      <h2 class="pa-card__title">Parties &amp; dates</h2>
       <dl class="pa-kv">
-        <div class="pa-kv__row"><dt>Vendor</dt><dd>{{ l.vendor?.businessName || l.vendorId }}</dd></div>
-        <div class="pa-kv__row"><dt>Customer</dt><dd>{{ (l.customer?.firstName || '') + ' ' + (l.customer?.lastName || '') || l.customerId }}</dd></div>
-        <div class="pa-kv__row"><dt>Salary provider</dt><dd>{{ l.salaryProviderUsed || '—' }}</dd></div>
-        <div class="pa-kv__row"><dt>Direct debit</dt><dd>{{ l.directDebitProvider || '—' }}</dd></div>
-        <div class="pa-kv__row"><dt>Mandate ref</dt><dd class="pa-mono">{{ l.mandateReference || '—' }}</dd></div>
+        <div class="pa-kv__row">
+          <dt>Customer</dt>
+          <dd><a class="pa-cell-link" [routerLink]="['/asset-flex/customers', l.customerId]">{{ ((l.customer?.firstName || '') + ' ' + (l.customer?.lastName || '')).trim() || l.customerId }}</a></dd>
+        </div>
+        <div class="pa-kv__row">
+          <dt>Vendor</dt>
+          <dd><a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', l.vendorId]">{{ l.vendor?.businessName || l.vendorId }}</a></dd>
+        </div>
+        <div class="pa-kv__row"><dt>Applied</dt><dd>{{ (l.appliedAt || l.createdAt) | date: 'medium' }}</dd></div>
         <div class="pa-kv__row"><dt>Disbursed</dt><dd>{{ l.disbursedAt ? (l.disbursedAt | date: 'medium') : '—' }}</dd></div>
-        <div class="pa-kv__row"><dt>Created</dt><dd>{{ l.createdAt | date: 'medium' }}</dd></div>
+        <div class="pa-kv__row"><dt>Disbursed by</dt><dd>{{ l.disbursedBy || '—' }}</dd></div>
       </dl>
     </section>
   </div>
+
+  <div class="loan-grid loan-grid--spaced">
+    <section class="pa-card">
+      <h2 class="pa-card__title">Mandate &amp; collection</h2>
+      <dl class="pa-kv">
+        <div class="pa-kv__row"><dt>Salary provider</dt><dd>{{ l.salaryProviderUsed || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Direct debit</dt><dd>{{ l.directDebitProvider || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Mandate ref</dt><dd class="pa-mono">{{ l.mandateReference || '—' }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="pa-card">
+      <h2 class="pa-card__title">Vendor payout</h2>
+      @if (l.vendorPayout) {
+        <dl class="pa-kv">
+          <div class="pa-kv__row"><dt>Account name</dt><dd>{{ l.vendorPayout.accountName }}</dd></div>
+          <div class="pa-kv__row"><dt>Account number</dt><dd class="pa-mono">{{ l.vendorPayout.accountNumber }}</dd></div>
+          <div class="pa-kv__row"><dt>Bank</dt><dd>{{ l.vendorPayout.bankCode }}</dd></div>
+          <div class="pa-kv__row"><dt>Payout reference</dt><dd class="pa-mono">{{ l.vendorPayout.reference || '—' }}</dd></div>
+          <div class="pa-kv__row"><dt>Paid at</dt><dd>{{ l.vendorPayout.paidAt ? (l.vendorPayout.paidAt | date: 'medium') : '—' }}</dd></div>
+        </dl>
+      } @else {
+        <p class="loan-empty-note">Not yet disbursed to the vendor.</p>
+      }
+    </section>
+  </div>
+
+  @if (schedule().length) {
+    <section class="pa-card loan-card--spaced">
+      <div class="pa-card__title-row">
+        <h2 class="pa-card__title">Repayment schedule</h2>
+        <span class="repay-summary">{{ totalRepaid() | naira }} repaid of {{ l.totalRepayable | naira }}</span>
+      </div>
+      <div class="pa-gtable-wrap">
+        <div class="pa-gtable repay-gtable">
+          <div class="pa-gtable__head">
+            <span>#</span><span>Due date</span><span class="pa-gtable__cell--right">Amount</span><span>Status</span><span class="pa-gtable__cell--right">Paid</span>
+          </div>
+          @for (inst of schedule(); track inst.number) {
+            <div class="pa-gtable__row">
+              <div class="pa-gtable__cell">{{ inst.number }}</div>
+              <div class="pa-gtable__cell pa-cell-sub">{{ inst.dueDate | date: 'mediumDate' }}</div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ inst.amount | naira }}</div>
+              <div class="pa-gtable__cell"><app-status-badge [tone]="installmentTone(inst.status)" [text]="inst.status" /></div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ inst.paidAt ? (inst.paidAt | date: 'mediumDate') : '—' }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <section class="pa-card loan-card--spaced">
+    <div class="pa-card__title-row">
+      <h2 class="pa-card__title">Repayment history</h2>
+      @if (canLogRepay()) {
+        <button class="pa-btn pa-btn--primary-outline pa-btn--sm" type="button" (click)="openRepay()">Log manual repayment</button>
+      }
+    </div>
+    @if (allRepayments().length) {
+      <div class="pa-gtable-wrap">
+        <div class="pa-gtable rpy-gtable">
+          <div class="pa-gtable__head">
+            <span>Date</span><span class="pa-gtable__cell--right">Amount</span><span>Method</span><span>Reference</span><span>Logged by</span>
+          </div>
+          @for (r of allRepayments(); track r.id) {
+            <div class="pa-gtable__row">
+              <div class="pa-gtable__cell pa-cell-sub">{{ r.date | date: 'medium' }}</div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ r.amount | naira }}</div>
+              <div class="pa-gtable__cell pa-cell-sub">{{ r.method }}</div>
+              <div class="pa-gtable__cell pa-cell-sub pa-mono">{{ r.reference }}</div>
+              <div class="pa-gtable__cell pa-cell-sub">
+                @if (r.manual) { <span class="rpy-manual">Manual</span> }
+                {{ r.loggedBy || 'Auto' }}
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <p class="loan-empty-note">No repayments recorded yet.</p>
+    }
+  </section>
 
   @if (dialogOpen()) {
     <app-modal-shell title="Update loan status" [dismissable]="!saving()" maxWidth="420px" (closed)="closeDialog()">
@@ -96,6 +187,39 @@
         <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeDisburseDialog()" [disabled]="disbursing()">Cancel</button>
         <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="confirmDisburse()" [disabled]="disbursing()">
           {{ disbursing() ? 'Disbursing…' : 'Disburse loan' }}
+        </button>
+      </ng-container>
+    </app-modal-shell>
+  }
+
+  @if (repayDialogOpen()) {
+    <app-modal-shell title="Log manual repayment" [dismissable]="!loggingRepay()" maxWidth="440px" (closed)="closeRepay()">
+      <div class="pa-field">
+        <label class="pa-field__label" for="rp-amount">Amount</label>
+        <input id="rp-amount" class="pa-input" type="number" [formControl]="repayAmount" placeholder="0" />
+      </div>
+      <div class="pa-field">
+        <label class="pa-field__label" for="rp-date">Date received</label>
+        <input id="rp-date" class="pa-input" type="date" [formControl]="repayDate" />
+      </div>
+      <div class="pa-field">
+        <label class="pa-field__label" for="rp-method">Method</label>
+        <select id="rp-method" class="pa-select" [formControl]="repayMethod">
+          <option value="Cash">Cash</option>
+          <option value="Bank transfer">Bank transfer</option>
+          <option value="Card">Card</option>
+          <option value="Remita salary deduction">Remita salary deduction</option>
+          <option value="Mono direct debit">Mono direct debit</option>
+        </select>
+      </div>
+      <div class="pa-field">
+        <label class="pa-field__label" for="rp-ref">Reference (optional)</label>
+        <input id="rp-ref" class="pa-input" type="text" [formControl]="repayReference" placeholder="e.g. teller no." />
+      </div>
+      <ng-container modalFooter>
+        <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeRepay()" [disabled]="loggingRepay()">Cancel</button>
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="submitRepay()" [disabled]="loggingRepay()">
+          {{ loggingRepay() ? 'Saving…' : 'Log repayment' }}
         </button>
       </ng-container>
     </app-modal-shell>

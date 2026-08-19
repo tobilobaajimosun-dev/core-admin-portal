@@ -7,6 +7,7 @@ import { routes } from './app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { jwtInterceptor } from '@core/interceptors/jwt.interceptor';
+import { demoModeInterceptor } from '@core/interceptors/demo-mode.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,7 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
-      withInterceptors([jwtInterceptor])
+      withInterceptors([demoModeInterceptor, jwtInterceptor])
     ),
     importProvidersFrom(OverlayModule),
     provideServiceWorker('ngsw-worker.js', {

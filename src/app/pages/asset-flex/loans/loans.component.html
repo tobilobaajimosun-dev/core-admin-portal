@@ -27,6 +27,7 @@
     <div class="pa-gtable__head">
       <span>Reference</span>
       <span>Vendor</span>
+      <span>Category</span>
       <span>Principal</span>
       <span>Repayable</span>
       <span>Tenor</span>
@@ -41,15 +42,20 @@
     } @else if (error()) {
       <app-error-state message="Couldn't load loans. Check your connection and try again." (retry)="retry()" />
     } @else if (loans().length === 0) {
-      <app-empty-state title="No loans found" subtitle="Try a different search, status, or date range filter." />
+      @if (hasActiveFilters()) {
+        <app-empty-state title="No loans match your filters" subtitle="Try a different search, status, or date range." />
+      } @else {
+        <app-empty-state title="No loans yet" subtitle="Loans from vendor checkouts will appear here." />
+      }
     } @else {
       @for (l of loans(); track l.id) {
         <div class="pa-gtable__row">
           <div class="pa-gtable__cell">
             <a class="pa-cell-link" [routerLink]="['/asset-flex/loans', l.id]">{{ l.loanReference }}</a>
-            <span class="pa-cell-sub">{{ l.loanProduct?.name || l.loanProductId }}</span>
+            <span class="pa-cell-sub">{{ l.itemDescription || l.loanProduct?.name || l.loanProductId }}</span>
           </div>
           <div class="pa-gtable__cell pa-cell-sub">{{ l.vendor?.businessName || '—' }}</div>
+          <div class="pa-gtable__cell"><af-category-chip [category]="l.category" /></div>
           <div class="pa-gtable__cell pa-amount">{{ l.principalAmount | naira }}</div>
           <div class="pa-gtable__cell pa-amount">{{ l.totalRepayable | naira }}</div>
           <div class="pa-gtable__cell pa-cell-sub">{{ l.tenorMonths }} mo</div>

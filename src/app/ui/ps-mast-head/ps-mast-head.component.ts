@@ -22,6 +22,7 @@ import {
 } from 'rxjs';
 import { PsSvgIconComponent } from '@pcsl-ui/ui/ps-svg-icon/ps-svg-icon.component';
 import { AuthStore }          from '@core/store/auth.store';
+import { DemoModeService } from '@core/services/demo-mode.service';
 import { AppNotification } from '@shared/components/modals/notification-modal/notification-modal.component';
 import { NotificationDropdownComponent } from './notification-dropdown/notification-dropdown.component';
 
@@ -41,6 +42,16 @@ export class PsMastHeadComponent implements OnInit, OnDestroy {
 
   user       = this.authStore.user;
   isLoggedIn = this.authStore.isLoggedIn;
+
+  // ── Demo data mode ────────────────────────────────────────────────────
+  demoMode = inject(DemoModeService);
+
+  /** Flip demo mode and reload so already-loaded pages refetch through the
+   * interceptor with (or without) fixture data. */
+  toggleDemo(): void {
+    this.demoMode.toggle();
+    window.location.reload();
+  }
 
   // ── Search ────────────────────────────────────────────────────────────
   showMobileSearch   = false;

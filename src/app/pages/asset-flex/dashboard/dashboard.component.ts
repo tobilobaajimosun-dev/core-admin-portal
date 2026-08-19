@@ -1,7 +1,8 @@
 import { HttpContext } from '@angular/common/http';
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 import { forkJoin } from 'rxjs';
 import { VendorService } from '../shared/services/vendor.service';
 import { VendorStatus } from '../shared/models/vendor.model';
@@ -26,7 +27,13 @@ import { InfoBannerComponent } from '@pages/asset-flex/shared/components/info-ba
 import { InfoTooltipComponent } from '@pages/asset-flex/shared/components/info-tooltip/info-tooltip.component';
 import { StatusBadgeComponent, BadgeTone } from '@pages/asset-flex/shared/components/status-badge/status-badge.component';
 import { NairaPipe } from '../shared/pipes/naira.pipe';
+import { LoanCategory, LOAN_CATEGORIES } from '../shared/models/category.model';
 import { FiltersComponent, FilterSection } from '@pages/asset-flex/shared/components/filters/filters.component';
+import { AreaChartComponent } from '@pages/asset-flex/shared/components/charts/area-chart.component';
+import { DonutChartComponent } from '@pages/asset-flex/shared/components/charts/donut-chart.component';
+import { VendorOnboardingWizardComponent } from '../vendors/onboarding-wizard/vendor-onboarding-wizard.component';
+import { LoanProductCreateModalComponent } from '../loan-products/loan-product-create-modal/loan-product-create-modal.component';
+import { PaymentMethodCreateModalComponent } from '../payment-methods/payment-method-create-modal/payment-method-create-modal.component';
 
 interface MonthBar {
   label: string;
@@ -65,9 +72,7 @@ interface StatCard {
 interface QuickAction {
   label: string;
   icon: IconSvgObject;
-  route: string;
-  queryParams?: Record<string, string>;
-  primary?: boolean;
+  action: 'onboard' | 'createProduct' | 'addPayment' | 'settlements';
 }
 
 interface PendingSettlementRow {
@@ -113,6 +118,11 @@ interface MoneyMovementMonth {
     StatusBadgeComponent,
     NairaPipe,
     FiltersComponent,
+    AreaChartComponent,
+    DonutChartComponent,
+    VendorOnboardingWizardComponent,
+    LoanProductCreateModalComponent,
+    PaymentMethodCreateModalComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -120,19 +130,54 @@ interface MoneyMovementMonth {
 })
 export class DashboardComponent {
   private readonly vendorService = inject(VendorService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(PsToastService);
 
   // ── Quick actions ──────────────────────────────────────────────────────
   protected readonly quickActions: QuickAction[] = [
-    { label: 'Onboard vendor', icon: UserAdd01Icon, route: '/asset-flex/vendors', queryParams: { add: '1' }, primary: true },
-    { label: 'Create loan product', icon: MoneyAdd01Icon, route: '/asset-flex/loan-products', queryParams: { add: '1' } },
-    {
-      label: 'Review pending settlements',
-      icon: ReceiptTextIcon,
-      route: '/asset-flex/settlements',
-      queryParams: { status: 'PENDING' },
-    },
-    { label: 'Add payment method', icon: Wallet01Icon, route: '/asset-flex/payment-methods', queryParams: { add: '1' } },
+    { label: 'Onboard vendor', icon: UserAdd01Icon, action: 'onboard' },
+    { label: 'Create loan product', icon: MoneyAdd01Icon, action: 'createProduct' },
+    { label: 'Review pending settlements', icon: ReceiptTextIcon, action: 'settlements' },
+    { label: 'Add payment method', icon: Wallet01Icon, action: 'addPayment' },
   ];
+
+  // ── On-dashboard action modals ─────────────────────────────────────────
+  protected readonly wizardOpen = signal(false);
+  protected readonly createProductOpen = signal(false);
+  protected readonly addPaymentOpen = signal(false);
+
+  protected runAction(action: QuickAction['action']): void {
+    switch (action) {
+      case 'onboard':
+        this.wizardOpen.set(true);
+        break;
+      case 'createProduct':
+        this.createProductOpen.set(true);
+        break;
+      case 'addPayment':
+        this.addPaymentOpen.set(true);
+        break;
+      case 'settlements':
+        this.router.navigate(['/asset-flex/settlements'], { queryParams: { status: 'PENDING' } });
+        break;
+    }
+  }
+
+  protected onVendorCreated(): void {
+    this.wizardOpen.set(false);
+    this.toast.success('Vendor onboarded.');
+    this.loadSummary();
+  }
+
+  protected onProductCreated(): void {
+    this.createProductOpen.set(false);
+    this.toast.success('Loan product created.');
+  }
+
+  protected onPaymentAdded(): void {
+    this.addPaymentOpen.set(false);
+    this.toast.success('Payment method added (prototype).');
+  }
 
   // ── Pending settlements table (sample) ─────────────────────────────────
   protected readonly pendingSettlements: PendingSettlementRow[] = [
@@ -229,6 +274,11 @@ export class DashboardComponent {
     const max = Math.max(...this.samplePayoutVolume.map((m) => m.value));
     return this.samplePayoutVolume.map((m) => ({ ...m, heightPct: Math.round((m.value / max) * 100) }));
   })();
+
+  // Derived series for the Mercury-style area chart.
+  protected readonly payoutCategories = this.samplePayoutVolume.map((m) => m.label);
+  protected readonly payoutValues = this.samplePayoutVolume.map((m) => m.value);
+  protected readonly payoutMeta = this.samplePayoutVolume.map((m) => `${m.vendorsServed} vendors served`);
 
   protected readonly topCustomers: VendorLeader[] = (() => {
     const raw = [
@@ -378,6 +428,22 @@ export class DashboardComponent {
     const total = raw.reduce((sum, s) => sum + s.value, 0);
     return raw.map((s) => ({ ...s, pct: Math.round((s.value / total) * 1000) / 10 }));
   })();
+
+  // Derived series for the loan-status donut (kept in sync with the legend).
+  protected readonly statusValues = this.loanStatusBreakdown.map((s) => s.value);
+  protected readonly statusLabels = this.loanStatusBreakdown.map((s) => s.label);
+  protected readonly statusColors = this.loanStatusBreakdown.map((s) => s.color);
+
+  // Loans by category (sample) — same reporting-endpoint gap as the rest.
+  protected readonly loanCategoryBreakdown = (() => {
+    const counts: Record<LoanCategory, number> = {
+      GADGETS: 268, AUTOMOTIVE: 96, HOME: 142, FASHION: 118, FOOD: 74, SERVICES: 35,
+    };
+    return LOAN_CATEGORIES.map((c) => ({ label: c.label, value: counts[c.value], color: c.color }));
+  })();
+  protected readonly categoryValues = this.loanCategoryBreakdown.map((c) => c.value);
+  protected readonly categoryLabels = this.loanCategoryBreakdown.map((c) => c.label);
+  protected readonly categoryColors = this.loanCategoryBreakdown.map((c) => c.color);
 
   protected readonly topVendors: VendorLeader[] = (() => {
     const raw = [

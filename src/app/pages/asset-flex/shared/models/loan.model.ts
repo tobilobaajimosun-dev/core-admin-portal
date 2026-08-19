@@ -1,3 +1,5 @@
+import { LoanCategory } from './category.model';
+
 export type LoanStatus =
   | 'ACTIVE'
   | 'APPROVED'
@@ -34,6 +36,35 @@ export const LOAN_STATUS_TRANSITIONS: Record<LoanStatus, LoanStatus[]> = {
   REJECTED: [],
 };
 
+/** One scheduled repayment installment. */
+export interface RepaymentInstallment {
+  number: number;
+  dueDate: string;
+  amount: string;
+  status: 'PAID' | 'DUE' | 'UPCOMING' | 'OVERDUE';
+  paidAt?: string | null;
+}
+
+/** A recorded repayment (auto-collected or manually logged by an admin). */
+export interface RepaymentRecord {
+  id: string;
+  date: string;
+  amount: string;
+  method: string;
+  reference: string;
+  loggedBy?: string | null;
+  manual?: boolean;
+}
+
+/** Where and how the vendor was paid out for this loan-funded order. */
+export interface VendorPayout {
+  accountName: string;
+  accountNumber: string;
+  bankCode: string;
+  reference: string | null;
+  paidAt: string | null;
+}
+
 export interface Loan {
   id: string;
   loanReference: string;
@@ -41,6 +72,15 @@ export interface Loan {
   vendorId: string;
   customerId: string;
   internalCustomerId: string | null;
+  category?: LoanCategory | null;
+  itemDescription?: string | null;
+  appliedAt?: string | null;
+  disbursedBy?: string | null;
+  amountApplied?: string | null;
+  amountDisbursed?: string | null;
+  vendorPayout?: VendorPayout | null;
+  repaymentSchedule?: RepaymentInstallment[];
+  repayments?: RepaymentRecord[];
   loanProductId: string;
   principalAmount: string;
   totalInterest: string;

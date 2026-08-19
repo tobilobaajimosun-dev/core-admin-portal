@@ -1,0 +1,52 @@
+<div class="p-4 sm:p-6">
+@if (loading()) {
+  <app-detail-skeleton label="Loading product" />
+} @else if (loadError()) {
+  <app-error-state message="Couldn't load this loan product. Check your connection and try again." (retry)="retry()" />
+} @else if (!product()) {
+  <div class="detail-empty">Loan product not found.</div>
+} @else {
+  @let p = product()!;
+
+  <a class="breadcrumb" routerLink="/asset-flex/loan-products">
+    <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+    <span>Loan products</span>
+  </a>
+
+  <header class="detail-head">
+    <div>
+      <h1 class="detail-head__name">{{ p.name }}</h1>
+      <div class="detail-head__meta">
+        <app-status-badge [tone]="p.isActive ? 'success' : 'neutral'" [text]="p.isActive ? 'Active' : 'Inactive'" />
+        <span class="detail-head__sep">·</span>
+        <span class="detail-head__muted pa-mono">{{ p.code }}</span>
+      </div>
+      @if (p.description) {
+        <p class="detail-head__desc">{{ p.description }}</p>
+      }
+    </div>
+  </header>
+
+  <div class="detail-grid">
+    <section class="pa-card">
+      <h2 class="pa-card__title">Product terms</h2>
+      <dl class="pa-kv">
+        <div class="pa-kv__row"><dt>Interest rate</dt><dd>{{ p.interestRatePercentage }}%</dd></div>
+        <div class="pa-kv__row"><dt>Tenor</dt><dd>{{ p.tenorMonths }} {{ p.tenorMonths === 1 ? 'month' : 'months' }}</dd></div>
+        <div class="pa-kv__row"><dt>Minimum principal</dt><dd>{{ p.minPrincipalAmount | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Maximum principal</dt><dd>{{ p.maxPrincipalAmount | naira }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="pa-card">
+      <h2 class="pa-card__title">Configuration</h2>
+      <dl class="pa-kv">
+        <div class="pa-kv__row"><dt>Product code</dt><dd class="pa-mono">{{ p.code }}</dd></div>
+        <div class="pa-kv__row"><dt>Caltos product ID</dt><dd class="pa-mono">{{ p.caltosProductId }}</dd></div>
+        <div class="pa-kv__row"><dt>Auto-disburse</dt><dd>{{ p.autoDisburse ? 'On' : 'Off' }}</dd></div>
+        <div class="pa-kv__row"><dt>Created</dt><dd>{{ p.createdAt | date: 'medium' }}</dd></div>
+      </dl>
+    </section>
+  </div>
+}
+</div>

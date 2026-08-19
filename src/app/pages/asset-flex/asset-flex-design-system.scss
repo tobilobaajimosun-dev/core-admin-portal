@@ -66,6 +66,32 @@
   pointer-events: none;
 }
 
+/* Filled buttons must read as clearly inert when disabled — a 55%-opacity
+   saturated fill still looks active, so mute the fill to a neutral grey. */
+.pa-btn--primary:disabled,
+.pa-btn--primary[disabled],
+.pa-btn--danger:disabled,
+.pa-btn--danger[disabled] {
+  opacity: 1;
+  background: var(--ca-border-strong);
+  color: var(--ca-text-faint);
+}
+
+/* ── Charts (ApexCharts, Mercury-clean) ── */
+.af-chart { width: 100%; }
+.af-chart--donut { max-width: 320px; margin-inline: auto; }
+
+.apexcharts-tooltip.apexcharts-theme-light {
+  border: 1px solid var(--ca-border) !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.08) !important;
+  border-radius: 10px !important;
+}
+
+.af-tt { display: grid; gap: 2px; padding: 8px 10px; font-family: inherit; }
+.af-tt strong { font-size: 12px; color: var(--ca-text); }
+.af-tt > span { font-size: 13px; font-weight: 600; color: var(--ca-text); }
+.af-tt .af-tt__sub { font-size: 11px; font-weight: 400; color: var(--ca-text-faint); }
+
 .pa-btn--block { width: 100%; }
 .pa-btn--sm { height: 32px; padding: 0 12px; font-size: 13px; border-radius: 9px; }
 /* Reserved for the single primary CTA in a page header — every other button on

@@ -1,0 +1,53 @@
+<div class="p-4 sm:p-6">
+@if (loading()) {
+  <app-detail-skeleton label="Loading settlement" />
+} @else if (loadError()) {
+  <app-error-state message="Couldn't load this settlement. Check your connection and try again." (retry)="retry()" />
+} @else if (!settlement()) {
+  <div class="detail-empty">Settlement not found.</div>
+} @else {
+  @let s = settlement()!;
+
+  <a class="breadcrumb" routerLink="/asset-flex/settlements">
+    <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+    <span>Settlements</span>
+  </a>
+
+  <header class="detail-head">
+    <div>
+      <h1 class="detail-head__ref">{{ s.settlementReference }}</h1>
+      <div class="detail-head__meta">
+        <app-status-badge [tone]="statusTone(s.status)" [text]="s.status" />
+        <span class="detail-head__sep">·</span>
+        <span class="detail-head__muted">{{ s.vendor?.businessName || s.vendorId }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="detail-grid">
+    <section class="pa-card">
+      <h2 class="pa-card__title">Payout amounts</h2>
+      <dl class="pa-kv">
+        <div class="pa-kv__row"><dt>Gross order amount</dt><dd>{{ s.grossOrderAmount | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Platform fee</dt><dd>{{ s.platformFeeDeduction | naira }}</dd></div>
+        <div class="pa-kv__row"><dt>Net settlement</dt><dd class="detail-strong">{{ s.netSettlementAmount | naira }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="pa-card">
+      <h2 class="pa-card__title">Ledger &amp; parties</h2>
+      <dl class="pa-kv">
+        <div class="pa-kv__row"><dt>Vendor</dt><dd>{{ s.vendor?.businessName || s.vendorId }}</dd></div>
+        <div class="pa-kv__row">
+          <dt>Loan</dt>
+          <dd><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', s.loanId]">{{ s.loan?.loanReference || s.loanId }}</a></dd>
+        </div>
+        <div class="pa-kv__row"><dt>Due date</dt><dd>{{ s.settlementDueDate ? (s.settlementDueDate | date: 'medium') : '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Settled</dt><dd>{{ s.settledAt ? (s.settledAt | date: 'medium') : '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Batch reference</dt><dd class="pa-mono">{{ s.batchPayoutReference || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Created</dt><dd>{{ s.createdAt | date: 'medium' }}</dd></div>
+      </dl>
+    </section>
+  </div>
+}
+</div>

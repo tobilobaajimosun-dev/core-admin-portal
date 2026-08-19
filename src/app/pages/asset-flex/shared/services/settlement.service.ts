@@ -17,6 +17,10 @@ export class SettlementService {
     return this.http.get<ApiResponse<Settlement[]>>(this.base, { params });
   }
 
+  getOne(id: string): Observable<ApiResponse<Settlement>> {
+    return this.http.get<ApiResponse<Settlement>>(`${this.base}/${id}`);
+  }
+
   markSettled(payload: MarkSettledPayload): Observable<ApiResponse<MarkSettledResult>> {
     return this.http.post<ApiResponse<MarkSettledResult>>(`${this.base}/mark-settled`, payload);
   }

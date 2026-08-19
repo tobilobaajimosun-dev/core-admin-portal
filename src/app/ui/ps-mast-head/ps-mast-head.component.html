@@ -21,6 +21,20 @@
     <!-- Right side: Search + Notifications -->
     <div class="flex items-center gap-2 md:gap-4">
 
+      <!-- Demo data toggle -->
+      <button
+        type="button"
+        (click)="toggleDemo()"
+        [attr.aria-pressed]="demoMode.enabled()"
+        title="Toggle Asset Flex demo data"
+        class="hidden sm:flex items-center gap-2 rounded-full border h-8 px-3 text-xs font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        [class]="demoMode.enabled() ? 'border-primary text-primary' : 'border-[#D2DBE1] text-[#6B7280]'"
+      >
+        <span class="w-1.5 h-1.5 rounded-full"
+          [style.background]="demoMode.enabled() ? 'var(--color-primary-hex, #00b3ff)' : '#C9CED4'"></span>
+        Demo data
+      </button>
+
       <!-- Search — full input from md up -->
       <div class="relative hidden md:block">
         <input

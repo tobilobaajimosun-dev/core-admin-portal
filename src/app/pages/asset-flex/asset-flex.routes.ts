@@ -37,13 +37,27 @@ export const ASSET_FLEX_ROUTES: Routes = [
       import('./loan-products/loan-products.component').then((m) => m.LoanProductsComponent),
   },
   {
+    path: 'loan-products/:id',
+    loadComponent: () =>
+      import('./loan-products/loan-product-detail/loan-product-detail.component').then((m) => m.LoanProductDetailComponent),
+  },
+  {
     path: 'settlements',
     loadComponent: () => import('./settlements/settlements.component').then((m) => m.SettlementsComponent),
+  },
+  {
+    path: 'settlements/:id',
+    loadComponent: () =>
+      import('./settlements/settlement-detail/settlement-detail.component').then((m) => m.SettlementDetailComponent),
   },
   {
     path: 'payment-methods',
     loadComponent: () =>
       import('./payment-methods/payment-methods.component').then((m) => m.PaymentMethodsComponent),
+  },
+  {
+    path: 'notifications',
+    loadComponent: () => import('./notifications/notifications.component').then((m) => m.NotificationsComponent),
   },
   {
     path: 'identity-providers',

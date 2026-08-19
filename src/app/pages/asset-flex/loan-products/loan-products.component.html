@@ -30,7 +30,7 @@
       @for (p of products(); track p.id) {
         <div class="pa-gtable__row">
           <div class="pa-gtable__cell">
-            <span class="pa-cell-primary">{{ p.name }}</span>
+            <a class="pa-cell-link" [routerLink]="['/asset-flex/loan-products', p.id]">{{ p.name }}</a>
             <span class="pa-cell-sub pa-mono">{{ p.code }}</span>
           </div>
           <div class="pa-gtable__cell pa-cell-sub">{{ p.tenorMonths }} mo</div>

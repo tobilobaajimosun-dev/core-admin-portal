@@ -1,0 +1,90 @@
+:host { display: block; }
+
+.notif-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 900px) {
+  .notif-grid { grid-template-columns: 1.1fr 0.9fr; align-items: start; }
+}
+
+.notif-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.notif-muted { color: var(--ca-text-faint); }
+
+.notif-search { margin-bottom: 8px; }
+
+.notif-recipients {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--ca-border);
+  border-radius: 10px;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+}
+.notif-recipient {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.notif-recipient:hover { background: var(--ca-card-bg); }
+
+.notif-count { font-size: 12px; color: var(--ca-text-muted); margin: 8px 0 0; }
+
+.notif-cta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.notif-channels { display: flex; gap: 20px; }
+.notif-channel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.notif-empty { font-size: 13px; color: var(--ca-text-muted); margin: 8px 0 0; }
+
+.notif-log { display: grid; gap: 12px; }
+.notif-log__item {
+  border: 1px solid var(--ca-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.notif-log__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.notif-log__subject { font-weight: 600; font-size: 14px; color: var(--ca-text); }
+.notif-log__date { font-size: 12px; color: var(--ca-text-faint); white-space: nowrap; }
+.notif-log__body { font-size: 13px; color: var(--ca-text-muted); margin: 6px 0 10px; line-height: 1.5; }
+.notif-log__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.notif-log__by { font-size: 12px; color: var(--ca-text-faint); }
+
+.notif-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ca-text-muted);
+  background: var(--ca-card-bg);
+  border: 1px solid var(--ca-border);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.notif-tag--channel { text-transform: capitalize; color: var(--color-primary-text-hex); border-color: color-mix(in srgb, var(--color-primary-hex) 30%, #fff); }

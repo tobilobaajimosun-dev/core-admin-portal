@@ -6,15 +6,10 @@
 
 <div class="quick-actions" role="group" aria-label="Quick actions">
   @for (a of quickActions; track a.label) {
-    <a
-      class="quick-action"
-      [class.quick-action--primary]="a.primary"
-      [routerLink]="a.route"
-      [queryParams]="a.queryParams"
-    >
+    <button type="button" class="quick-action" (click)="runAction(a.action)">
       <hugeicons-icon [icon]="a.icon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
       {{ a.label }}
-    </a>
+    </button>
   }
 </div>
 
@@ -110,20 +105,14 @@
       </div>
       <app-filters [sections]="payoutFilterSections()" (dateRangeChange)="onPayoutRangeChange($event)" />
     </div>
-    <div class="bar-chart bar-chart--payout" role="img" aria-label="Gross payout volume, last 12 months, sample data">
-      @for (m of payoutVolumeBars; track m.label) {
-        <div class="bar-chart__col">
-          <div class="bar-chart__tooltip" role="tooltip">
-            <strong>{{ m.label }}</strong>
-            <span>{{ m.value | naira }} disbursed</span>
-            <span>{{ m.vendorsServed }} vendors served</span>
-          </div>
-          <div class="bar-chart__track">
-            <div class="bar-chart__bar" [style.height.%]="m.heightPct"></div>
-          </div>
-          <span class="bar-chart__label">{{ m.label }}</span>
-        </div>
-      }
+    <div class="af-chart" role="img" aria-label="Gross payout volume, last 12 months, sample data">
+      <af-area-chart
+        [categories]="payoutCategories"
+        [values]="payoutValues"
+        [meta]="payoutMeta"
+        seriesName="Payout volume"
+        [height]="220"
+      />
     </div>
   </article>
 
@@ -164,10 +153,14 @@
       <h3 class="panel__title">Loan status breakdown</h3>
       <app-info-tooltip text="How every loan on the platform currently splits across active, paid off, overdue, and pending-disbursement status." />
     </div>
-    <div class="status-bar" role="img" aria-label="Loan status breakdown, sample data">
-      @for (s of loanStatusBreakdown; track s.label) {
-        <div class="status-bar__slice" [style.width.%]="s.pct" [style.background]="s.color"></div>
-      }
+    <div class="af-chart af-chart--donut" role="img" aria-label="Loan status breakdown, sample data">
+      <af-donut-chart
+        [values]="statusValues"
+        [labels]="statusLabels"
+        [colors]="statusColors"
+        centerLabel="Loans"
+        [height]="220"
+      />
     </div>
     <ul class="status-legend status-legend--row">
       @for (s of loanStatusBreakdown; track s.label) {
@@ -175,6 +168,31 @@
           <span class="status-legend__dot" [style.background]="s.color" aria-hidden="true"></span>
           <span class="status-legend__label">{{ s.label }}</span>
           <span class="status-legend__value">{{ s.value }}</span>
+        </li>
+      }
+    </ul>
+  </article>
+
+  <article class="panel panel--wide">
+    <div class="panel__title-row">
+      <h3 class="panel__title">Loans by category</h3>
+      <app-info-tooltip text="How loan volume splits across the categories businesses finance — gadgets, automotive, home, fashion, food, and services." />
+    </div>
+    <div class="af-chart af-chart--donut" role="img" aria-label="Loans by category, sample data">
+      <af-donut-chart
+        [values]="categoryValues"
+        [labels]="categoryLabels"
+        [colors]="categoryColors"
+        centerLabel="Loans"
+        [height]="220"
+      />
+    </div>
+    <ul class="status-legend status-legend--row">
+      @for (c of loanCategoryBreakdown; track c.label) {
+        <li class="status-legend__item">
+          <span class="status-legend__dot" [style.background]="c.color" aria-hidden="true"></span>
+          <span class="status-legend__label">{{ c.label }}</span>
+          <span class="status-legend__value">{{ c.value }}</span>
         </li>
       }
     </ul>
@@ -291,5 +309,15 @@
     </div>
   </article>
 </section>
+
+@if (wizardOpen()) {
+  <app-vendor-onboarding-wizard (closed)="wizardOpen.set(false)" (created)="onVendorCreated()" />
+}
+@if (createProductOpen()) {
+  <af-loan-product-create-modal (closed)="createProductOpen.set(false)" (created)="onProductCreated()" />
+}
+@if (addPaymentOpen()) {
+  <af-payment-method-create-modal (closed)="addPaymentOpen.set(false)" (created)="onPaymentAdded()" />
+}
 
 </div>

@@ -46,7 +46,9 @@
             <span class="avatar" aria-hidden="true">{{ initials(c) }}</span>
             <span class="stack">
               <a class="pa-cell-link" [routerLink]="['/asset-flex/customers', c.id]">{{ fullName(c) }}</a>
-              <span class="pa-cell-sub">{{ c.internalCustomerId || c.id }}</span>
+              @if (c.internalCustomerId) {
+                <span class="pa-cell-sub">{{ c.internalCustomerId }}</span>
+              }
             </span>
           </div>
           <div class="pa-gtable__cell">

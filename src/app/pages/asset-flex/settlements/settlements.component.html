@@ -52,7 +52,7 @@
               (change)="toggle(s.id, $any($event.target).checked)"
             />
           </div>
-          <div class="pa-gtable__cell pa-mono">{{ s.settlementReference }}</div>
+          <div class="pa-gtable__cell"><a class="pa-cell-link pa-mono" [routerLink]="['/asset-flex/settlements', s.id]">{{ s.settlementReference }}</a></div>
           <div class="pa-gtable__cell pa-cell-sub">{{ s.vendor?.businessName || '—' }}</div>
           <div class="pa-gtable__cell pa-amount">{{ s.grossOrderAmount | naira }}</div>
           <div class="pa-gtable__cell pa-cell-sub pa-amount">{{ s.platformFeeDeduction | naira }}</div>
