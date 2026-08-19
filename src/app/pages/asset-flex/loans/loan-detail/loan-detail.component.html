@@ -24,6 +24,7 @@
       </div>
     </div>
     <div class="loan-head__actions">
+      <a class="pa-btn pa-btn--white pa-btn--sm" [routerLink]="['/asset-flex/customers', l.customerId]">View customer</a>
       @if (canDisburse()) {
         <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openDisburseDialog()">Disburse loan</button>
       }

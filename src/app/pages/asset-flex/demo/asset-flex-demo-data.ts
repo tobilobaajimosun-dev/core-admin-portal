@@ -181,6 +181,11 @@ export const DEMO_SETTLEMENTS: Settlement[] = DEMO_LOANS
       batchPayoutReference: settled ? `REMITA-BULK-PAY-${99100 + i}` : null,
       createdAt: isoDaysAgo(i * 2 + 1),
       updatedAt: due,
+      orderItem: l.itemDescription,
+      category: l.category,
+      customer: { id: l.customerId, name: `${l.customer?.firstName ?? ''} ${l.customer?.lastName ?? ''}`.trim() },
+      settlementBankCode: `${BANKS[i % BANKS.length].name} · ${BANKS[i % BANKS.length].code}`,
+      settlementAccountNumber: `0${234567890 + (i % VENDORS.length)}`,
       vendor: { id: l.vendorId, businessName: l.vendor?.businessName },
       loan: { id: l.id, loanReference: l.loanReference },
     };
@@ -207,12 +212,15 @@ export const DEMO_CUSTOMERS: Customer[] = CUSTOMERS.map((c, i) => {
   const created = isoDaysAgo(30 + i * 5);
   const verifiedAt = isoDaysAgo(29 + i * 5);
   const dob = `199${i % 8}-0${(i % 8) + 1}-1${i % 8}`;
-  const idCheck = (provider: string): IdVerification => ({
-    status: 'SUCCESS',
-    matchedName: `${c.firstName} ${c.lastName}`,
+  // Vary verification so risk levels spread: customer 3 fails NIN, customer 6 fails both.
+  const bvnOk = i !== 6;
+  const ninOk = i !== 3 && i !== 6;
+  const idCheck = (provider: string, ok: boolean): IdVerification => ({
+    status: ok ? 'SUCCESS' : 'FAILED',
+    matchedName: ok ? `${c.firstName} ${c.lastName}` : null,
     dateOfBirth: dob,
     provider,
-    verifiedAt,
+    verifiedAt: ok ? verifiedAt : null,
   });
   const work: WorkDetails = {
     employer: job.employer,
@@ -234,13 +242,14 @@ export const DEMO_CUSTOMERS: Customer[] = CUSTOMERS.map((c, i) => {
     bvn: `221${pad(i)}45${pad(i + 3)}88`,
     nin: `${10000000000 + i * 111}`,
     dateOfBirth: dob,
-    isTriadVerified: true,
+    isTriadVerified: bvnOk && ninOk,
     firstName: c.firstName,
     lastName: c.lastName,
     status: 'ACTIVE',
     createdAt: created,
     updatedAt: created,
     homeAddress: `${12 + i} ${['Bourdillon Rd, Ikoyi', 'Admiralty Way, Lekki', 'Adeola Odeku, Victoria Island', 'Opebi Rd, Ikeja', 'Ozumba Mbadiwe, Victoria Island'][i % 5]}, Lagos`,
+    referredByVendor: { id: VENDORS[i % VENDORS.length].id, businessName: VENDORS[i % VENDORS.length].businessName },
     work,
     salaryPartner: {
       provider: ['Remita', 'WACS Payroll', 'Dedukt'][i % 3],
@@ -248,10 +257,38 @@ export const DEMO_CUSTOMERS: Customer[] = CUSTOMERS.map((c, i) => {
       staffId: `STF-${1000 + i}`,
       accountNumber: `0${345678900 + i}`,
     },
-    bvnVerification: idCheck('Mono BVN'),
-    ninVerification: idCheck('Prembly NIN'),
+    bvnVerification: idCheck('Mono BVN', bvnOk),
+    ninVerification: idCheck('Prembly NIN', ninOk),
     documents,
   };
+});
+
+// A newly-onboarded customer with no loan history — demonstrates the
+// "New — limited history" risk state (can't score repayments they don't have).
+DEMO_CUSTOMERS.push({
+  id: 'cus_new',
+  internalCustomerId: 'AF-CUST-00501',
+  phoneNumber: '+2348091234500',
+  email: 'kelvin.osei@gmail.com',
+  bvn: '22190045688',
+  nin: '10000000900',
+  dateOfBirth: '1996-05-14',
+  isTriadVerified: true,
+  firstName: 'Kelvin',
+  lastName: 'Osei',
+  status: 'ACTIVE',
+  createdAt: isoDaysAgo(4),
+  updatedAt: isoDaysAgo(4),
+  homeAddress: '9 Freedom Way, Lekki Phase 1, Lagos',
+  referredByVendor: { id: VENDORS[3].id, businessName: VENDORS[3].businessName },
+  work: { employer: 'Flutterwave', jobTitle: 'Software Engineer', monthlyIncome: '780000', employmentType: 'Full-time', workEmail: 'kelvin@flutterwave.com' },
+  salaryPartner: { provider: 'Remita', employer: 'Flutterwave', staffId: 'STF-2001', accountNumber: '0345679000' },
+  bvnVerification: { status: 'SUCCESS', matchedName: 'Kelvin Osei', dateOfBirth: '1996-05-14', provider: 'Mono BVN', verifiedAt: isoDaysAgo(4) },
+  ninVerification: { status: 'SUCCESS', matchedName: 'Kelvin Osei', dateOfBirth: '1996-05-14', provider: 'Prembly NIN', verifiedAt: isoDaysAgo(4) },
+  documents: [
+    { id: 'doc_new_1', name: 'Government ID (NIN slip)', type: 'Identity', uploadedAt: isoDaysAgo(4), status: 'VERIFIED' },
+    { id: 'doc_new_2', name: 'Proof of address', type: 'Address', uploadedAt: isoDaysAgo(4), status: 'PENDING' },
+  ],
 });
 
 export function findDemoCustomer(id: string): Customer | undefined {

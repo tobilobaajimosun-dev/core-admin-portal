@@ -20,8 +20,6 @@
       <div class="c-meta">
         <app-status-badge [tone]="statusTone(c.status)" [text]="c.status" />
         @if (c.isTriadVerified) { <app-status-badge tone="success" text="VERIFIED" /> }
-        <span class="c-sep">·</span>
-        <span class="c-muted">{{ c.email || c.phoneNumber }}</span>
       </div>
     </div>
     <div class="c-stats">
@@ -29,6 +27,7 @@
       <div class="c-stat"><span class="c-stat__label">Outstanding</span><span class="c-stat__value">{{ outstanding() | naira }}</span></div>
       <div class="c-stat"><span class="c-stat__label">On-time</span><span class="c-stat__value">{{ onTimeRate() }}%</span></div>
     </div>
+    <button class="pa-btn pa-btn--white pa-btn--sm c-notify-btn" type="button" (click)="openNotify()">Notify customer</button>
   </header>
 
   <div class="af-detail-layout">
@@ -131,6 +130,10 @@
           <div class="pa-kv__row"><dt>Phone</dt><dd>{{ c.phoneNumber }}</dd></div>
           <div class="pa-kv__row"><dt>Email</dt><dd>{{ c.email || '—' }}</dd></div>
           <div class="pa-kv__row"><dt>Home address</dt><dd>{{ c.homeAddress || '—' }}</dd></div>
+          <div class="pa-kv__row">
+            <dt>Onboarded via</dt>
+            <dd>@if (c.referredByVendor) { <a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', c.referredByVendor.id]">{{ c.referredByVendor.businessName }}</a> } @else { — }</dd>
+          </div>
           <div class="pa-kv__row"><dt>BVN</dt><dd class="pa-mono">{{ maskedBvn() }}</dd></div>
           <div class="pa-kv__row"><dt>NIN</dt><dd class="pa-mono">{{ maskedNin() }}</dd></div>
           <div class="pa-kv__row"><dt>Date of birth</dt><dd>{{ c.dateOfBirth || '—' }}</dd></div>
@@ -189,5 +192,29 @@
       </section>
     </aside>
   </div>
+
+  @if (notifyOpen()) {
+    <app-modal-shell [title]="'Notify ' + fullName()" maxWidth="480px" (closed)="closeNotify()">
+      <div class="pa-field">
+        <label class="pa-field__label" for="cn-subject">Subject</label>
+        <input id="cn-subject" class="pa-input" type="text" [formControl]="$any(notifyForm.controls.subject)" placeholder="e.g. Your repayment is due soon" />
+      </div>
+      <div class="pa-field">
+        <label class="pa-field__label" for="cn-body">Message</label>
+        <textarea id="cn-body" class="pa-textarea" rows="4" [formControl]="$any(notifyForm.controls.body)" placeholder="Write your message to the customer…"></textarea>
+      </div>
+      <div class="pa-field">
+        <label class="pa-field__label">Delivery channel</label>
+        <div class="cn-channels">
+          <button type="button" class="cn-chip" [class.cn-chip--on]="notifyDashboard()" [attr.aria-pressed]="notifyDashboard()" (click)="notifyDashboard.set(!notifyDashboard())">Dashboard</button>
+          <button type="button" class="cn-chip" [class.cn-chip--on]="notifyEmail()" [attr.aria-pressed]="notifyEmail()" (click)="notifyEmail.set(!notifyEmail())">Email</button>
+        </div>
+      </div>
+      <ng-container modalFooter>
+        <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeNotify()">Cancel</button>
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="sendNotify()">Send notification</button>
+      </ng-container>
+    </app-modal-shell>
+  }
 }
 </div>

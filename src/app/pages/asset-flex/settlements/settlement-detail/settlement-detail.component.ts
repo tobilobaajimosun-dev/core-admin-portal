@@ -8,8 +8,10 @@ import { ArrowLeft01Icon } from '@hugeicons-pro/core-stroke-rounded';
 import { SettlementService } from '../../shared/services/settlement.service';
 import { Settlement } from '../../shared/models/settlement.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { CategoryChipComponent } from '../../shared/components/category-chip/category-chip.component';
 import { NairaPipe } from '../../shared/pipes/naira.pipe';
 import { statusTone } from '../../shared/utils/status-tone';
+import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/detail-skeleton/detail-skeleton.component';
 
@@ -20,7 +22,9 @@ import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/det
     RouterLink,
     HugeiconsIconComponent,
     StatusBadgeComponent,
+    CategoryChipComponent,
     NairaPipe,
+    ModalShellComponent,
     ErrorStateComponent,
     DetailSkeletonComponent,
   ],
@@ -39,6 +43,14 @@ export class SettlementDetailComponent {
   protected readonly settlement = signal<Settlement | null>(null);
   protected readonly loading = signal(true);
   protected readonly loadError = signal(false);
+  protected readonly receiptOpen = signal(false);
+
+  protected openReceipt(): void {
+    this.receiptOpen.set(true);
+  }
+  protected closeReceipt(): void {
+    this.receiptOpen.set(false);
+  }
 
   constructor() {
     effect(() => {

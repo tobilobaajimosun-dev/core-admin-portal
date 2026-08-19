@@ -26,6 +26,7 @@
     <div class="pa-gtable__head">
       <span>Name</span>
       <span>Contact</span>
+      <span>Vendor</span>
       <span>Verified</span>
       <span>Status</span>
       <span class="pa-gtable__cell--right">Joined</span>
@@ -55,6 +56,7 @@
             <span class="pa-cell-primary">{{ c.email || '—' }}</span>
             <span class="pa-cell-sub">{{ c.phoneNumber }}</span>
           </div>
+          <div class="pa-gtable__cell pa-cell-sub">{{ c.referredByVendor?.businessName || '—' }}</div>
           <div class="pa-gtable__cell">
             <app-status-badge [tone]="c.isTriadVerified ? 'success' : 'neutral'" [text]="c.isTriadVerified ? 'VERIFIED' : 'UNVERIFIED'" />
           </div>

@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   margin-bottom: 8px;
 }
@@ -36,7 +36,7 @@
   gap: 8px;
   padding: 6px 8px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
 }
 .notif-recipient:hover { background: var(--ca-card-bg); }
@@ -51,8 +51,9 @@
 
 .notif-channels { display: flex; gap: 10px; }
 .notif-chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   height: 38px;
   padding: 0 16px;
@@ -99,7 +100,7 @@
   justify-content: space-between;
   gap: 12px;
 }
-.notif-log__subject { font-weight: 600; font-size: 14px; color: var(--ca-text); }
+.notif-log__subject { font-weight: 600; font-size: 13px; color: var(--ca-text); }
 .notif-log__date { font-size: 12px; color: var(--ca-text-faint); white-space: nowrap; }
 .notif-log__body { font-size: 13px; color: var(--ca-text-muted); margin: 6px 0 10px; line-height: 1.5; }
 .notif-log__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -115,3 +116,12 @@
   border-radius: 999px;
 }
 .notif-tag--channel { text-transform: capitalize; color: var(--color-primary-text-hex); border-color: color-mix(in srgb, var(--color-primary-hex) 30%, #fff); }
+
+/* Composer spacing — kept on the 4/8 scale */
+.pa-card > .pa-field,
+.pa-card form .pa-field { margin-bottom: 16px; }
+.notif-cta { margin-bottom: 16px; }
+.notif-cta .pa-field { margin-bottom: 0; }
+.pa-card form .pa-btn--block { margin-top: 16px; }
+/* Delivery channel fills the field width like the inputs above it */
+.notif-channels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 0; }

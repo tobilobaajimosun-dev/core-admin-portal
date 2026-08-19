@@ -98,3 +98,20 @@
 .c-risk__dot--negative { background: #dc2626; }
 .c-risk__flabel { font-size: 13px; color: var(--ca-text); }
 .c-risk__fdetail { font-size: 12px; color: var(--ca-text-muted); }
+
+/* Notify-customer button + channel chips */
+.c-notify-btn { align-self: center; }
+.cn-channels { display: flex; gap: 10px; }
+.cn-chip {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--ca-border-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ca-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 130ms cubic-bezier(0.22, 1, 0.36, 1), color 130ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cn-chip--on { border-color: var(--color-primary-hex); color: var(--color-primary-text-hex); }

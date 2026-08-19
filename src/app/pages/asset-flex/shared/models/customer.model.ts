@@ -45,6 +45,8 @@ export interface Customer {
   createdAt: string;
   updatedAt: string;
   homeAddress?: string | null;
+  /** Customers onboard through a vendor's checkout — the referring business. */
+  referredByVendor?: { id: string; businessName: string } | null;
   work?: WorkDetails | null;
   salaryPartner?: SalaryPartner | null;
   bvnVerification?: IdVerification | null;

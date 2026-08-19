@@ -18,14 +18,27 @@
       <h1 class="detail-head__ref">{{ s.settlementReference }}</h1>
       <div class="detail-head__meta">
         <app-status-badge [tone]="statusTone(s.status)" [text]="s.status" />
+        @if (s.category) { <af-category-chip [category]="s.category" /> }
         <span class="detail-head__sep">·</span>
         <span class="detail-head__muted">{{ s.vendor?.businessName || s.vendorId }}</span>
       </div>
     </div>
+    <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="openReceipt()">View receipt</button>
   </header>
 
   <div class="af-detail-layout">
     <div class="af-detail-main">
+      <section class="pa-card">
+        <h2 class="pa-card__title">Order</h2>
+        <dl class="pa-kv">
+          <div class="pa-kv__row"><dt>Item financed</dt><dd>{{ s.orderItem || '—' }}</dd></div>
+          <div class="pa-kv__row"><dt>Category</dt><dd>@if (s.category) { <af-category-chip [category]="s.category" /> } @else { — }</dd></div>
+          <div class="pa-kv__row"><dt>Customer</dt><dd>@if (s.customer) { <a class="pa-cell-link" [routerLink]="['/asset-flex/customers', s.customer.id]">{{ s.customer.name }}</a> } @else { — }</dd></div>
+          <div class="pa-kv__row"><dt>Vendor</dt><dd><a class="pa-cell-link" [routerLink]="['/asset-flex/vendors', s.vendorId]">{{ s.vendor?.businessName || s.vendorId }}</a></dd></div>
+          <div class="pa-kv__row"><dt>Loan</dt><dd><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', s.loanId]">{{ s.loan?.loanReference || s.loanId }}</a></dd></div>
+        </dl>
+      </section>
+
       <section class="pa-card">
         <h2 class="pa-card__title">Payout amounts</h2>
         <dl class="pa-kv">
@@ -73,7 +86,44 @@
           <div class="pa-kv__row"><dt>Created</dt><dd>{{ s.createdAt | date: 'mediumDate' }}</dd></div>
         </dl>
       </section>
+
+      <section class="pa-card">
+        <h2 class="pa-card__title">Payout destination</h2>
+        <dl class="pa-kv">
+          <div class="pa-kv__row"><dt>Account name</dt><dd>{{ s.vendor?.businessName || '—' }}</dd></div>
+          <div class="pa-kv__row"><dt>Account number</dt><dd class="pa-mono">{{ s.settlementAccountNumber || '—' }}</dd></div>
+          <div class="pa-kv__row"><dt>Bank</dt><dd>{{ s.settlementBankCode || '—' }}</dd></div>
+        </dl>
+      </section>
     </aside>
   </div>
+
+  @if (receiptOpen()) {
+    <app-modal-shell title="Payout receipt" maxWidth="420px" (closed)="closeReceipt()">
+      <div class="receipt">
+        <div class="receipt__head">
+          <span class="receipt__brand">Asset Flex · Vendor payout</span>
+          <app-status-badge [tone]="statusTone(s.status)" [text]="s.status" />
+        </div>
+        <div class="receipt__amount">{{ s.netSettlementAmount | naira }}</div>
+        <div class="receipt__sub">Net settlement to {{ s.vendor?.businessName }}</div>
+        <div class="receipt__divider"></div>
+        <dl class="receipt__rows">
+          <div><dt>Reference</dt><dd class="pa-mono">{{ s.settlementReference }}</dd></div>
+          <div><dt>Item financed</dt><dd>{{ s.orderItem || '—' }}</dd></div>
+          <div><dt>Customer</dt><dd>{{ s.customer?.name || '—' }}</dd></div>
+          <div><dt>Gross</dt><dd>{{ s.grossOrderAmount | naira }}</dd></div>
+          <div><dt>Platform fee</dt><dd>−{{ s.platformFeeDeduction | naira }}</dd></div>
+          <div><dt>Net paid</dt><dd class="receipt__strong">{{ s.netSettlementAmount | naira }}</dd></div>
+          <div><dt>Bank</dt><dd>{{ s.settlementBankCode || '—' }}</dd></div>
+          <div><dt>Account</dt><dd class="pa-mono">{{ s.settlementAccountNumber || '—' }}</dd></div>
+          <div><dt>Batch ref</dt><dd class="pa-mono">{{ s.batchPayoutReference || '—' }}</dd></div>
+          <div><dt>Date</dt><dd>{{ (s.settledAt || s.settlementDueDate) ? ((s.settledAt || s.settlementDueDate) | date: 'medium') : 'Pending' }}</dd></div>
+        </dl>
+        <div class="receipt__divider receipt__divider--dashed"></div>
+        <p class="receipt__foot">Princeps Credit Systems Limited</p>
+      </div>
+    </app-modal-shell>
+  }
 }
 </div>

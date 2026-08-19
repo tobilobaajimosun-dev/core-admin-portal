@@ -1,9 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { ArrowLeft01Icon } from '@hugeicons-pro/core-stroke-rounded';
+import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
+import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 
 import { CustomerService } from '../../shared/services/customer.service';
 import { LoanService } from '../../shared/services/loan.service';
@@ -33,6 +36,8 @@ function mask(value: string | null | undefined): string {
     StatusBadgeComponent,
     CategoryChipComponent,
     NairaPipe,
+    ReactiveFormsModule,
+    ModalShellComponent,
     ErrorStateComponent,
     DetailSkeletonComponent,
   ],
@@ -43,6 +48,39 @@ function mask(value: string | null | undefined): string {
 export class CustomerDetailComponent {
   private readonly customerService = inject(CustomerService);
   private readonly loanService = inject(LoanService);
+  private readonly toast = inject(PsToastService);
+
+  // ── Notify this customer ────────────────────────────────────────────────
+  protected readonly notifyOpen = signal(false);
+  protected readonly notifyDashboard = signal(true);
+  protected readonly notifyEmail = signal(false);
+  protected readonly notifyForm = new FormGroup({
+    subject: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    body: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+  });
+
+  protected openNotify(): void {
+    this.notifyForm.reset({ subject: '', body: '' });
+    this.notifyDashboard.set(true);
+    this.notifyEmail.set(false);
+    this.notifyOpen.set(true);
+  }
+  protected closeNotify(): void {
+    this.notifyOpen.set(false);
+  }
+  protected sendNotify(): void {
+    if (this.notifyForm.invalid) {
+      this.notifyForm.markAllAsTouched();
+      return;
+    }
+    if (!this.notifyDashboard() && !this.notifyEmail()) {
+      this.toast.error('Pick at least one delivery channel.');
+      return;
+    }
+    // Demo: no customer-notification endpoint yet.
+    this.toast.success(`Notification sent to ${this.fullName()}.`);
+    this.notifyOpen.set(false);
+  }
 
   readonly id = input<string>('');
   protected readonly backIcon = ArrowLeft01Icon;
@@ -95,29 +133,35 @@ export class CustomerDetailComponent {
     const income = Number(this.customer()?.work?.monthlyIncome || 0);
     return income > 0 && this.outstanding() <= income * 3;
   });
+  /** A customer with no scheduled repayments has no repayment behaviour to score. */
+  protected readonly hasHistory = computed(() => this.loans().some((l) => (l.repaymentSchedule ?? []).length > 0));
   protected readonly riskScore = computed(() => {
     if (!this.customer()) return 50;
     let score = 50;
-    score += (this.onTimeRate() - 50) / 2; // ±25 from repayment behaviour
+    if (this.hasHistory()) score += (this.onTimeRate() - 50) / 2; // ±25 from repayment behaviour
     score += this.verified() ? 15 : -15; // identity verification
     score += Number(this.customer()?.work?.monthlyIncome || 0) > 0 ? (this.dtiOk() ? 12 : -12) : 0;
-    score += this.loans().length > 0 ? 8 : -5; // credit history
+    score += this.loans().length > 0 ? 8 : 0; // credit history (no penalty for new)
     return Math.max(0, Math.min(100, Math.round(score)));
   });
-  protected readonly riskBand = computed(() =>
-    this.riskScore() >= 70 ? 'Low risk' : this.riskScore() >= 45 ? 'Medium risk' : 'High risk',
-  );
-  protected readonly riskTone = computed<BadgeTone>(() =>
-    this.riskScore() >= 70 ? 'success' : this.riskScore() >= 45 ? 'warning' : 'danger',
-  );
-  protected readonly riskColor = computed(() =>
-    this.riskScore() >= 70 ? '#16a34a' : this.riskScore() >= 45 ? '#d97706' : '#dc2626',
-  );
+  protected readonly riskBand = computed(() => {
+    if (!this.hasHistory()) return 'New — limited history';
+    return this.riskScore() >= 70 ? 'Low risk' : this.riskScore() >= 45 ? 'Medium risk' : 'High risk';
+  });
+  protected readonly riskTone = computed<BadgeTone>(() => {
+    if (!this.hasHistory()) return 'neutral';
+    return this.riskScore() >= 70 ? 'success' : this.riskScore() >= 45 ? 'warning' : 'danger';
+  });
+  protected readonly riskColor = computed(() => {
+    if (!this.hasHistory()) return '#8792a2';
+    return this.riskScore() >= 70 ? '#16a34a' : this.riskScore() >= 45 ? '#d97706' : '#dc2626';
+  });
   protected readonly riskFactors = computed(() => {
     if (!this.customer()) return [];
     const rate = this.onTimeRate();
+    const hist = this.hasHistory();
     return [
-      { label: 'On-time repayments', detail: `${rate}% paid on time`, impact: rate >= 70 ? 'positive' : rate >= 40 ? 'neutral' : 'negative' },
+      { label: 'On-time repayments', detail: hist ? `${rate}% paid on time` : 'No repayment history yet', impact: !hist ? 'neutral' : rate >= 70 ? 'positive' : rate >= 40 ? 'neutral' : 'negative' },
       { label: 'Identity verification', detail: this.verified() ? 'BVN & NIN verified' : 'Not fully verified', impact: this.verified() ? 'positive' : 'negative' },
       { label: 'Debt-to-income', detail: this.dtiOk() ? 'Within 3× monthly income' : 'Above 3× monthly income', impact: this.dtiOk() ? 'positive' : 'negative' },
       { label: 'Credit history', detail: `${this.loans().length} loan(s) on record`, impact: this.loans().length > 0 ? 'positive' : 'neutral' },
