@@ -87,6 +87,43 @@ export class CustomerDetailComponent {
     return denom ? Math.round((paid / denom) * 100) : 100;
   });
 
+  // ── Risk assessment (0–100; higher = safer) ─────────────────────────────
+  private readonly verified = computed(
+    () => this.customer()?.bvnVerification?.status === 'SUCCESS' && this.customer()?.ninVerification?.status === 'SUCCESS',
+  );
+  private readonly dtiOk = computed(() => {
+    const income = Number(this.customer()?.work?.monthlyIncome || 0);
+    return income > 0 && this.outstanding() <= income * 3;
+  });
+  protected readonly riskScore = computed(() => {
+    if (!this.customer()) return 50;
+    let score = 50;
+    score += (this.onTimeRate() - 50) / 2; // ±25 from repayment behaviour
+    score += this.verified() ? 15 : -15; // identity verification
+    score += Number(this.customer()?.work?.monthlyIncome || 0) > 0 ? (this.dtiOk() ? 12 : -12) : 0;
+    score += this.loans().length > 0 ? 8 : -5; // credit history
+    return Math.max(0, Math.min(100, Math.round(score)));
+  });
+  protected readonly riskBand = computed(() =>
+    this.riskScore() >= 70 ? 'Low risk' : this.riskScore() >= 45 ? 'Medium risk' : 'High risk',
+  );
+  protected readonly riskTone = computed<BadgeTone>(() =>
+    this.riskScore() >= 70 ? 'success' : this.riskScore() >= 45 ? 'warning' : 'danger',
+  );
+  protected readonly riskColor = computed(() =>
+    this.riskScore() >= 70 ? '#16a34a' : this.riskScore() >= 45 ? '#d97706' : '#dc2626',
+  );
+  protected readonly riskFactors = computed(() => {
+    if (!this.customer()) return [];
+    const rate = this.onTimeRate();
+    return [
+      { label: 'On-time repayments', detail: `${rate}% paid on time`, impact: rate >= 70 ? 'positive' : rate >= 40 ? 'neutral' : 'negative' },
+      { label: 'Identity verification', detail: this.verified() ? 'BVN & NIN verified' : 'Not fully verified', impact: this.verified() ? 'positive' : 'negative' },
+      { label: 'Debt-to-income', detail: this.dtiOk() ? 'Within 3× monthly income' : 'Above 3× monthly income', impact: this.dtiOk() ? 'positive' : 'negative' },
+      { label: 'Credit history', detail: `${this.loans().length} loan(s) on record`, impact: this.loans().length > 0 ? 'positive' : 'neutral' },
+    ];
+  });
+
   protected verificationTone(status: string | undefined): BadgeTone {
     return status === 'SUCCESS' ? 'success' : status === 'FAILED' ? 'danger' : 'warning';
   }

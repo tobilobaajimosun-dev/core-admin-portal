@@ -8,10 +8,13 @@ import {
   DEMO_SETTLEMENTS,
   DEMO_CUSTOMERS,
   DEMO_PRODUCTS,
+  DEMO_VENDORS,
   findDemoLoan,
   findDemoSettlement,
   findDemoCustomer,
   findDemoProduct,
+  findDemoVendor,
+  demoVendorDocuments,
 } from '@pages/asset-flex/demo/asset-flex-demo-data';
 import { Loan } from '@pages/asset-flex/shared/models/loan.model';
 
@@ -64,6 +67,26 @@ export const demoModeInterceptor: HttpInterceptorFn = (req, next) => {
     let rows = DEMO_LOANS;
     if (statuses.length) rows = rows.filter((l) => statuses.includes(l.status));
     if (search) rows = rows.filter((l) => l.loanReference.toLowerCase().includes(search));
+    return ok(paginate(rows, page, limit));
+  }
+
+  // ── Vendors ────────────────────────────────────────────────────────────────
+  const vendorDocsMatch = path.match(/\/api\/v1\/admin\/vendors\/([^/]+)\/documents$/);
+  if (vendorDocsMatch && method === 'GET') {
+    return ok({ message: 'OK', data: demoVendorDocuments(vendorDocsMatch[1]) });
+  }
+  const vendorDetailMatch = path.match(/\/api\/v1\/admin\/vendors\/([^/]+)$/);
+  if (vendorDetailMatch && method === 'GET' && !/vendors$/.test(path)) {
+    return ok({ message: 'OK', data: findDemoVendor(vendorDetailMatch[1]) ?? null });
+  }
+  if (/\/api\/v1\/admin\/vendors$/.test(path) && method === 'GET') {
+    const statusParam = req.params.get('status');
+    const search = (req.params.get('search') ?? '').toLowerCase();
+    const page = Number(req.params.get('page') ?? 1);
+    const limit = Number(req.params.get('limit') ?? 20);
+    let rows = DEMO_VENDORS;
+    if (statusParam) rows = rows.filter((v) => v.status === statusParam);
+    if (search) rows = rows.filter((v) => v.businessName.toLowerCase().includes(search));
     return ok(paginate(rows, page, limit));
   }
 

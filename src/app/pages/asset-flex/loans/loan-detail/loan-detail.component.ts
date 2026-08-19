@@ -86,6 +86,12 @@ export class LoanDetailComponent {
   protected readonly repayDate = new FormControl(this.today(), { nonNullable: true });
   protected readonly repayMethod = new FormControl('Cash', { nonNullable: true });
   protected readonly repayReference = new FormControl('', { nonNullable: true });
+  protected readonly repayReceiptName = signal<string | null>(null);
+
+  protected onReceiptSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.repayReceiptName.set(input.files?.[0]?.name ?? null);
+  }
 
   private today(): string {
     return new Date().toISOString().slice(0, 10);
@@ -101,6 +107,7 @@ export class LoanDetailComponent {
     this.repayDate.setValue(this.today());
     this.repayMethod.setValue('Cash');
     this.repayReference.setValue('');
+    this.repayReceiptName.set(null);
     this.repayDialogOpen.set(true);
   }
 

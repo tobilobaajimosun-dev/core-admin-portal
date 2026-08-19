@@ -3,6 +3,7 @@ import { LoanCategory } from '@pages/asset-flex/shared/models/category.model';
 import { Settlement } from '@pages/asset-flex/shared/models/settlement.model';
 import { Customer, CustomerDocument, IdVerification, WorkDetails } from '@pages/asset-flex/shared/models/customer.model';
 import { LoanProduct } from '@pages/asset-flex/shared/models/loan-product.model';
+import { Vendor, VendorDocument, VendorOwner, VendorStatus, DocumentStatus } from '@pages/asset-flex/shared/models/vendor.model';
 
 const TEAM = ['Wisdom Okafor', 'Blessing Ade', 'Emeka Obi', 'Ngozi Umeh'];
 const BANKS = [
@@ -239,7 +240,14 @@ export const DEMO_CUSTOMERS: Customer[] = CUSTOMERS.map((c, i) => {
     status: 'ACTIVE',
     createdAt: created,
     updatedAt: created,
+    homeAddress: `${12 + i} ${['Bourdillon Rd, Ikoyi', 'Admiralty Way, Lekki', 'Adeola Odeku, Victoria Island', 'Opebi Rd, Ikeja', 'Ozumba Mbadiwe, Victoria Island'][i % 5]}, Lagos`,
     work,
+    salaryPartner: {
+      provider: ['Remita', 'WACS Payroll', 'Dedukt'][i % 3],
+      employer: job.employer,
+      staffId: `STF-${1000 + i}`,
+      accountNumber: `0${345678900 + i}`,
+    },
     bvnVerification: idCheck('Mono BVN'),
     ninVerification: idCheck('Prembly NIN'),
     documents,
@@ -275,6 +283,71 @@ export function findDemoProduct(id: string): LoanProduct | undefined {
 
 export function demoLoansForProduct(productId: string): Loan[] {
   return DEMO_LOANS.filter((l) => l.loanProductId === productId);
+}
+
+const VENDOR_META = [
+  { industry: 'Retail & Supermarkets', address: '14 Adeniran Ogunsanya St, Surulere, Lagos', cac: 'RC-482910' },
+  { industry: 'Automotive', address: '3 Awolowo Rd, Ikoyi, Lagos', cac: 'RC-591027' },
+  { industry: 'Home & Appliances', address: '22 Ogui Rd, Enugu', cac: 'RC-337218' },
+  { industry: 'Consumer Electronics', address: '7 Aba Rd, Port Harcourt', cac: 'RC-778452' },
+  { industry: 'Fashion & Apparel', address: '19 Allen Ave, Ikeja, Lagos', cac: 'RC-220913' },
+];
+const OWNER_FIRST = ['Chidi', 'Bello', 'Ada', 'Emeka', 'Ngozi'];
+const PARTNER_FIRST = ['Ronke', 'Sadiq', 'Ify', 'Tayo', 'Uche'];
+
+export const DEMO_VENDORS: Vendor[] = VENDORS.map((v, i) => {
+  const meta = VENDOR_META[i % VENDOR_META.length];
+  const bank = BANKS[i % BANKS.length];
+  const status: VendorStatus = i === 0 ? 'PENDING_APPROVAL' : i === 4 ? 'SUSPENDED' : 'APPROVED';
+  const owners: VendorOwner[] = [
+    { fullName: `${OWNER_FIRST[i]} ${v.businessName.split(' ')[0]}`, role: 'Director / CEO', bvn: `221${pad(i)}9988${i}`, nin: `${20000000000 + i * 17}`, sharePercentage: 60 },
+    { fullName: `${PARTNER_FIRST[i]} Adewale`, role: 'Co-founder', bvn: `221${pad(i)}1122${i}`, nin: `${21000000000 + i * 13}`, sharePercentage: 40 },
+  ];
+  return {
+    id: v.id,
+    businessName: v.businessName,
+    contactEmail: `finance@${v.businessName.toLowerCase().replace(/[^a-z]/g, '')}.ng`,
+    contactPhone: `+23480${pad(i)}5566${i}`,
+    status,
+    cacRegistrationNumber: meta.cac,
+    businessAddress: meta.address,
+    industry: meta.industry,
+    owners,
+    webhookUrl: null,
+    platformFeePercentage: '2.5',
+    settlementBankCode: `${bank.name} · ${bank.code}`,
+    settlementAccountNumber: `0${234567890 + i}`,
+    settlementAccountName: v.businessName,
+    settlementSchedule: 'T_PLUS_1',
+    apiKeyLive: `af_live_pk_${i}9x2beff2e3cf860560ac9b8e10`,
+    createdAt: isoDaysAgo(120 - i * 10),
+    updatedAt: isoDaysAgo(5),
+  };
+});
+
+const VENDOR_DOC_TYPES = ['CAC Certificate', 'TIN Certificate', 'Proof of Address', "Director's ID", 'Bank Statement (3 months)'];
+
+/** All required documents uploaded — approved for onboarded vendors, still under
+ * review for the pending one. */
+export function demoVendorDocuments(vendorId: string): VendorDocument[] {
+  const idx = DEMO_VENDORS.findIndex((v) => v.id === vendorId);
+  const i = idx < 0 ? 0 : idx;
+  return VENDOR_DOC_TYPES.map((t, k) => ({
+    id: `vdoc_${vendorId}_${k}`,
+    vendorId,
+    documentType: t,
+    fileUrl: `https://files.demo/${vendorId}/${t.toLowerCase().replace(/[^a-z]/g, '')}.pdf`,
+    status: (i === 0 && k >= 3 ? 'PENDING' : 'APPROVED') as DocumentStatus,
+    uploadedAt: isoDaysAgo(115 - i * 10),
+  }));
+}
+
+export function findDemoVendor(id: string): Vendor | undefined {
+  return DEMO_VENDORS.find((v) => v.id === id);
+}
+
+export function demoLoansForVendor(vendorId: string): Loan[] {
+  return DEMO_LOANS.filter((l) => l.vendorId === vendorId);
 }
 
 export function findDemoSettlement(id: string): Settlement | undefined {

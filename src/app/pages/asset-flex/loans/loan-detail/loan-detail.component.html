@@ -211,6 +211,13 @@
         <label class="pa-field__label" for="rp-ref">Reference (optional)</label>
         <input id="rp-ref" class="pa-input" type="text" [formControl]="repayReference" placeholder="e.g. teller no." />
       </div>
+      <div class="pa-field">
+        <label class="pa-field__label" for="rp-receipt">Receipt (optional)</label>
+        <label class="rp-receipt">
+          <input id="rp-receipt" class="rp-receipt__input" type="file" accept="image/*,application/pdf" (change)="onReceiptSelected($event)" />
+          <span class="rp-receipt__cta">{{ repayReceiptName() || 'Upload receipt (image or PDF)' }}</span>
+        </label>
+      </div>
       <ng-container modalFooter>
         <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeRepay()" [disabled]="loggingRepay()">Cancel</button>
         <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="submitRepay()" [disabled]="loggingRepay()">

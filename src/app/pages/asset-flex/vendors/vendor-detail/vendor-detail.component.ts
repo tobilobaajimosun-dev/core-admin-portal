@@ -10,10 +10,15 @@ import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 
 import { VendorService } from '../../shared/services/vendor.service';
 import { LoanProductService } from '../../shared/services/loan-product.service';
+import { LoanService } from '../../shared/services/loan.service';
 import { LoanProduct } from '../../shared/models/loan-product.model';
+import { Loan } from '../../shared/models/loan.model';
 import { Vendor, VendorDocument, VendorStatus } from '../../shared/models/vendor.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { CategoryChipComponent } from '../../shared/components/category-chip/category-chip.component';
+import { NairaPipe } from '../../shared/pipes/naira.pipe';
 import { statusTone } from '../../shared/utils/status-tone';
+import { fetchAllPages } from '@pages/asset-flex/shared/utils/fetch-all-pages';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/detail-skeleton/detail-skeleton.component';
@@ -28,6 +33,8 @@ type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
     ReactiveFormsModule,
     HugeiconsIconComponent,
     StatusBadgeComponent,
+    CategoryChipComponent,
+    NairaPipe,
     ModalShellComponent,
     ErrorStateComponent,
     DetailSkeletonComponent,
@@ -39,7 +46,13 @@ type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
 export class VendorDetailComponent {
   private readonly vendorService = inject(VendorService);
   private readonly loanProductService = inject(LoanProductService);
+  private readonly loanService = inject(LoanService);
   private readonly toast = inject(PsToastService);
+
+  protected readonly loans = signal<Loan[]>([]);
+  protected readonly loansDisbursed = computed(() =>
+    this.loans().reduce((s, l) => s + Number(l.amountDisbursed || l.principalAmount || 0), 0),
+  );
 
   /** Bound from the :id route param via withComponentInputBinding. */
   readonly id = input<string>('');
@@ -143,6 +156,11 @@ export class VendorDetailComponent {
     this.vendorService.getDocuments(id).subscribe({
       next: (res) => this.documents.set(res.data ?? []),
       error: () => this.documents.set([]),
+    });
+    this.loans.set([]);
+    fetchAllPages((page) => this.loanService.list({ page, limit: 100 })).subscribe({
+      next: (loans) => this.loans.set(loans.filter((l) => l.vendorId === id)),
+      error: () => this.loans.set([]),
     });
   }
 

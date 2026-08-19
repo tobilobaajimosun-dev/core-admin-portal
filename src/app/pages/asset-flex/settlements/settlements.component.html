@@ -11,6 +11,24 @@
   </div>
 </app-page-header>
 
+<div class="stl-summary">
+  <div class="stl-stat">
+    <span class="stl-stat__label">Pending payout</span>
+    <span class="stl-stat__value">{{ summary().pendingAmount | naira }}</span>
+    <span class="stl-stat__meta">{{ summary().pendingCount }} awaiting settlement</span>
+  </div>
+  <div class="stl-stat">
+    <span class="stl-stat__label">Settled</span>
+    <span class="stl-stat__value">{{ summary().settledAmount | naira }}</span>
+    <span class="stl-stat__meta">{{ summary().settledCount }} paid out</span>
+  </div>
+  <div class="stl-stat">
+    <span class="stl-stat__label">Total ledger</span>
+    <span class="stl-stat__value">{{ summary().totalAmount | naira }}</span>
+    <span class="stl-stat__meta">{{ summary().totalCount }} settlements</span>
+  </div>
+</div>
+
 <div class="pa-toolbar">
   <div class="pa-toolbar__actions">
     <app-filters [sections]="filterSections()" (checklistChange)="onChecklistChange($event)" (dateRangeChange)="onDateRangeChange($event)" />

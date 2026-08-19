@@ -79,6 +79,22 @@ export class SettlementsComponent {
     });
   });
 
+  /** Ledger totals for the summary cards. */
+  protected readonly summary = computed(() => {
+    const rows = this.allSettlements();
+    const sum = (list: Settlement[]) => list.reduce((s, r) => s + Number(r.netSettlementAmount), 0);
+    const pending = rows.filter((r) => r.status !== 'SETTLED');
+    const settled = rows.filter((r) => r.status === 'SETTLED');
+    return {
+      pendingCount: pending.length,
+      pendingAmount: sum(pending),
+      settledCount: settled.length,
+      settledAmount: sum(settled),
+      totalCount: rows.length,
+      totalAmount: sum(rows),
+    };
+  });
+
   protected readonly selectedCount = computed(() => this.selected().size);
   protected readonly allSelected = computed(() => {
     const rows = this.settlements();

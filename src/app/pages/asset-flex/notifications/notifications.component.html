@@ -53,18 +53,16 @@
         <div class="pa-field">
           <label class="pa-field__label">Delivery channel</label>
           <div class="notif-channels">
-            <label class="notif-channel">
-              <input class="pa-checkbox" type="checkbox" [checked]="dashboardChannel()" (change)="dashboardChannel.set($any($event.target).checked)" />
-              <span>Dashboard</span>
-            </label>
-            <label class="notif-channel">
-              <input class="pa-checkbox" type="checkbox" [checked]="emailChannel()" (change)="emailChannel.set($any($event.target).checked)" />
-              <span>Email</span>
-            </label>
+            <button type="button" class="notif-chip" [class.notif-chip--on]="dashboardChannel()" [attr.aria-pressed]="dashboardChannel()" (click)="dashboardChannel.set(!dashboardChannel())">
+              <span class="notif-chip__box"></span> Dashboard
+            </button>
+            <button type="button" class="notif-chip" [class.notif-chip--on]="emailChannel()" [attr.aria-pressed]="emailChannel()" (click)="emailChannel.set(!emailChannel())">
+              <span class="notif-chip__box"></span> Email
+            </button>
           </div>
         </div>
 
-        <button class="pa-btn pa-btn--primary pa-btn--md" type="submit">Send notification</button>
+        <button class="pa-btn pa-btn--primary pa-btn--md pa-btn--block" type="submit">Send notification</button>
       </form>
     </section>
 

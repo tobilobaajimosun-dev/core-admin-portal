@@ -22,6 +22,14 @@ export interface WorkDetails {
   workEmail?: string | null;
 }
 
+/** Salary payment partner used to collect repayments via salary deduction. */
+export interface SalaryPartner {
+  provider: string;
+  employer: string;
+  staffId?: string | null;
+  accountNumber?: string | null;
+}
+
 export interface Customer {
   id: string;
   internalCustomerId: string | null;
@@ -36,7 +44,9 @@ export interface Customer {
   status: string;
   createdAt: string;
   updatedAt: string;
+  homeAddress?: string | null;
   work?: WorkDetails | null;
+  salaryPartner?: SalaryPartner | null;
   bvnVerification?: IdVerification | null;
   ninVerification?: IdVerification | null;
   documents?: CustomerDocument[];

@@ -80,3 +80,21 @@
 
 .c-loan-gtable { --gt-cols: 1.4fr 1.4fr 1fr 1fr 1fr; }
 .c-rpy-gtable { --gt-cols: 1.4fr 1fr 1.4fr 1.2fr; }
+
+/* Risk assessment (Whop-style score + factors) */
+.c-risk__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.c-risk__head .pa-card__title { margin: 0; }
+.c-risk__note { font-size: 12px; color: var(--ca-text-muted); margin: 4px 0 0; max-width: 46ch; line-height: 1.5; }
+.c-risk__score { display: flex; align-items: baseline; gap: 6px; margin: 14px 0 8px; }
+.c-risk__num { font-size: 40px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.c-risk__outof { font-size: 14px; color: var(--ca-text-faint); }
+.c-risk__bar { height: 8px; border-radius: 999px; background: var(--ca-border); overflow: hidden; }
+.c-risk__fill { height: 100%; border-radius: 999px; transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1); }
+.c-risk__factors { display: grid; gap: 10px; margin: 16px 0 0; padding: 0; list-style: none; }
+.c-risk__factor { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+.c-risk__dot { width: 8px; height: 8px; border-radius: 999px; }
+.c-risk__dot--positive { background: #16a34a; }
+.c-risk__dot--neutral { background: #d97706; }
+.c-risk__dot--negative { background: #dc2626; }
+.c-risk__flabel { font-size: 13px; color: var(--ca-text); }
+.c-risk__fdetail { font-size: 12px; color: var(--ca-text-muted); }

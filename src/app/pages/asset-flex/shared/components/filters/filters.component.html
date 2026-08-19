@@ -9,12 +9,12 @@
       } @else {
         <span class="filter-pill__set">
           <button type="button" class="filter-pill__remove" (click)="clearSection(s, $event)" [attr.aria-label]="'Remove ' + s.label + ' filter'">
-            <hugeicons-icon [icon]="removeIcon" [size]="13" [strokeWidth]="1.75" color="currentColor" />
+            <hugeicons-icon [icon]="removeIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
           </button>
           <button type="button" class="filter-pill__body" (click)="toggleOpen(s.key)">
             <span class="filter-pill__label">{{ s.label }}</span>
             <span class="filter-pill__value">{{ chipValue(s) }}</span>
-            <hugeicons-icon [icon]="arrowIcon" [size]="13" [strokeWidth]="1.75" color="currentColor" [class.filter-pill__chevron--open]="openKey() === s.key" />
+            <hugeicons-icon [icon]="arrowIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" [class.filter-pill__chevron--open]="openKey() === s.key" />
           </button>
         </span>
       }

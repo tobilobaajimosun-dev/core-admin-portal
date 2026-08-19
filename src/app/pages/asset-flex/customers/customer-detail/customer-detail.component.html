@@ -33,6 +33,30 @@
 
   <div class="af-detail-layout">
     <div class="af-detail-main">
+      <section class="pa-card c-risk">
+        <div class="c-risk__head">
+          <div>
+            <h2 class="pa-card__title">Risk assessment</h2>
+            <p class="c-risk__note">Computed from repayment behaviour, identity verification, and debt-to-income.</p>
+          </div>
+          <app-status-badge [tone]="riskTone()" [text]="riskBand()" />
+        </div>
+        <div class="c-risk__score">
+          <span class="c-risk__num" [style.color]="riskColor()">{{ riskScore() }}</span>
+          <span class="c-risk__outof">/ 100</span>
+        </div>
+        <div class="c-risk__bar"><div class="c-risk__fill" [style.width.%]="riskScore()" [style.background]="riskColor()"></div></div>
+        <ul class="c-risk__factors">
+          @for (f of riskFactors(); track f.label) {
+            <li class="c-risk__factor">
+              <span class="c-risk__dot" [class]="'c-risk__dot--' + f.impact" aria-hidden="true"></span>
+              <span class="c-risk__flabel">{{ f.label }}</span>
+              <span class="c-risk__fdetail">{{ f.detail }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+
       <section class="pa-card">
         <h2 class="pa-card__title">Loan history</h2>
         @if (loans().length) {
@@ -106,6 +130,7 @@
         <dl class="pa-kv">
           <div class="pa-kv__row"><dt>Phone</dt><dd>{{ c.phoneNumber }}</dd></div>
           <div class="pa-kv__row"><dt>Email</dt><dd>{{ c.email || '—' }}</dd></div>
+          <div class="pa-kv__row"><dt>Home address</dt><dd>{{ c.homeAddress || '—' }}</dd></div>
           <div class="pa-kv__row"><dt>BVN</dt><dd class="pa-mono">{{ maskedBvn() }}</dd></div>
           <div class="pa-kv__row"><dt>NIN</dt><dd class="pa-mono">{{ maskedNin() }}</dd></div>
           <div class="pa-kv__row"><dt>Date of birth</dt><dd>{{ c.dateOfBirth || '—' }}</dd></div>
@@ -126,6 +151,20 @@
           </dl>
         } @else {
           <p class="c-empty">No work details on file.</p>
+        }
+      </section>
+
+      <section class="pa-card">
+        <h2 class="pa-card__title">Salary payment partner</h2>
+        @if (c.salaryPartner) {
+          <dl class="pa-kv">
+            <div class="pa-kv__row"><dt>Provider</dt><dd>{{ c.salaryPartner.provider }}</dd></div>
+            <div class="pa-kv__row"><dt>Employer</dt><dd>{{ c.salaryPartner.employer }}</dd></div>
+            <div class="pa-kv__row"><dt>Staff ID</dt><dd class="pa-mono">{{ c.salaryPartner.staffId || '—' }}</dd></div>
+            <div class="pa-kv__row"><dt>Account</dt><dd class="pa-mono">{{ c.salaryPartner.accountNumber || '—' }}</dd></div>
+          </dl>
+        } @else {
+          <p class="c-empty">No salary partner on file.</p>
         }
       </section>
 

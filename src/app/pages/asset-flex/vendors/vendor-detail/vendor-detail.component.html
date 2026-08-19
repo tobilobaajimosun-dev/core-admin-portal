@@ -56,11 +56,60 @@
         <h2 class="card__title">Business information</h2>
         <dl class="kv">
           <div class="kv__row"><dt>Business name</dt><dd>{{ v.businessName }}</dd></div>
+          <div class="kv__row"><dt>Industry</dt><dd>{{ v.industry || '—' }}</dd></div>
+          <div class="kv__row"><dt>CAC number</dt><dd class="mono">{{ v.cacRegistrationNumber || '—' }}</dd></div>
+          <div class="kv__row"><dt>Business address</dt><dd>{{ v.businessAddress || '—' }}</dd></div>
           <div class="kv__row"><dt>Contact email</dt><dd>{{ v.contactEmail }}</dd></div>
           <div class="kv__row"><dt>Contact phone</dt><dd>{{ v.contactPhone }}</dd></div>
           <div class="kv__row"><dt>Webhook URL</dt><dd>{{ v.webhookUrl || '—' }}</dd></div>
           <div class="kv__row"><dt>Platform fee</dt><dd>{{ v.platformFeePercentage }}%</dd></div>
         </dl>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">Ownership</h2>
+        @if (v.owners?.length) {
+          <ul class="owner-list">
+            @for (o of v.owners; track o.fullName) {
+              <li class="owner">
+                <span class="owner__avatar" aria-hidden="true">{{ o.fullName.charAt(0) }}</span>
+                <div class="owner__body">
+                  <span class="owner__name">{{ o.fullName }}</span>
+                  <span class="owner__meta">{{ o.role }}@if (o.sharePercentage != null) {<span> · {{ o.sharePercentage }}%</span>} · BVN {{ o.bvn ? '••••' + o.bvn.slice(-4) : '—' }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="card__empty">No ownership details on file.</p>
+        }
+      </section>
+
+      <section class="card">
+        <div class="card__title-row">
+          <h2 class="card__title">Loans processed</h2>
+          <span class="loans-summary">{{ loans().length }} loans · {{ loansDisbursed() | naira }} disbursed</span>
+        </div>
+        @if (loans().length) {
+          <div class="pa-gtable-wrap">
+            <div class="pa-gtable ven-loan-gtable">
+              <div class="pa-gtable__head">
+                <span>Reference</span><span>Category</span><span class="pa-gtable__cell--right">Principal</span><span>Status</span><span class="pa-gtable__cell--right">Created</span>
+              </div>
+              @for (l of loans(); track l.id) {
+                <div class="pa-gtable__row">
+                  <div class="pa-gtable__cell"><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', l.id]">{{ l.loanReference }}</a></div>
+                  <div class="pa-gtable__cell"><af-category-chip [category]="l.category" /></div>
+                  <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ l.principalAmount | naira }}</div>
+                  <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(l.status)" [text]="l.status" /></div>
+                  <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ l.createdAt | date: 'mediumDate' }}</div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <p class="card__empty">No loans processed yet.</p>
+        }
       </section>
 
       <section class="card">

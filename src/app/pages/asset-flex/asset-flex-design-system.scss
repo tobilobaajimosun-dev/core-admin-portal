@@ -455,7 +455,7 @@
 .pa-row:hover, .pa-row:focus-within { background: var(--ca-card-bg); }
 
 .pa-cell-primary { display: block; font-weight: 500; color: var(--ca-text); }
-.pa-cell-sub { display: block; font-size: 12px; color: var(--ca-text-muted); margin-top: 2px; }
+.pa-cell-sub { display: block; font-size: 13px; color: var(--ca-text-muted); margin-top: 2px; }
 .pa-cell-link { display: block; font-weight: 500; color: var(--ca-text); text-decoration: none; }
 .pa-cell-link::after { content: ""; position: absolute; inset: 0; }
 .pa-cell-link:focus-visible { outline: none; text-decoration: underline; color: var(--color-primary-text-hex); }

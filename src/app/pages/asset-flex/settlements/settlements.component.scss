@@ -18,3 +18,22 @@
   color: #475569;
   margin: 0 0 14px;
 }
+
+/* Dub-style ledger summary cards */
+.stl-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stl-stat {
+  border: 1px solid var(--ca-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stl-stat__label { font-size: 12px; color: var(--ca-text-muted); }
+.stl-stat__value { font-size: 20px; font-weight: 600; color: var(--ca-text); font-variant-numeric: tabular-nums; }
+.stl-stat__meta { font-size: 12px; color: var(--ca-text-faint); }
