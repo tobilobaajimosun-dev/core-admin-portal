@@ -1,6 +1,8 @@
 import { Loan, LoanStatus, RepaymentInstallment, RepaymentRecord } from '@pages/asset-flex/shared/models/loan.model';
 import { LoanCategory } from '@pages/asset-flex/shared/models/category.model';
 import { Settlement } from '@pages/asset-flex/shared/models/settlement.model';
+import { Customer, CustomerDocument, IdVerification, WorkDetails } from '@pages/asset-flex/shared/models/customer.model';
+import { LoanProduct } from '@pages/asset-flex/shared/models/loan-product.model';
 
 const TEAM = ['Wisdom Okafor', 'Blessing Ade', 'Emeka Obi', 'Ngozi Umeh'];
 const BANKS = [
@@ -185,6 +187,94 @@ export const DEMO_SETTLEMENTS: Settlement[] = DEMO_LOANS
 
 export function findDemoLoan(id: string): Loan | undefined {
   return DEMO_LOANS.find((l) => l.id === id);
+}
+
+/** Loans belonging to a customer — for the customer detail loan history. */
+export function demoLoansForCustomer(customerId: string): Loan[] {
+  return DEMO_LOANS.filter((l) => l.customerId === customerId);
+}
+
+const EMPLOYERS = [
+  { employer: 'Dangote Group', jobTitle: 'Operations Lead', income: 850_000, type: 'Full-time' },
+  { employer: 'MTN Nigeria', jobTitle: 'Account Manager', income: 620_000, type: 'Full-time' },
+  { employer: 'GTBank', jobTitle: 'Relationship Officer', income: 540_000, type: 'Full-time' },
+  { employer: 'Independent', jobTitle: 'Fashion Retailer', income: 480_000, type: 'Self-employed' },
+];
+
+export const DEMO_CUSTOMERS: Customer[] = CUSTOMERS.map((c, i) => {
+  const job = EMPLOYERS[i % EMPLOYERS.length];
+  const created = isoDaysAgo(30 + i * 5);
+  const verifiedAt = isoDaysAgo(29 + i * 5);
+  const dob = `199${i % 8}-0${(i % 8) + 1}-1${i % 8}`;
+  const idCheck = (provider: string): IdVerification => ({
+    status: 'SUCCESS',
+    matchedName: `${c.firstName} ${c.lastName}`,
+    dateOfBirth: dob,
+    provider,
+    verifiedAt,
+  });
+  const work: WorkDetails = {
+    employer: job.employer,
+    jobTitle: job.jobTitle,
+    monthlyIncome: String(job.income),
+    employmentType: job.type,
+    workEmail: `${c.firstName.toLowerCase()}@${job.employer.toLowerCase().replace(/[^a-z]/g, '')}.com`,
+  };
+  const documents: CustomerDocument[] = [
+    { id: `doc_${i}_1`, name: 'Government ID (NIN slip)', type: 'Identity', uploadedAt: created, status: 'VERIFIED' },
+    { id: `doc_${i}_2`, name: 'Proof of address', type: 'Address', uploadedAt: created, status: i % 3 === 0 ? 'PENDING' : 'VERIFIED' },
+    { id: `doc_${i}_3`, name: 'Payslip (last 3 months)', type: 'Income', uploadedAt: created, status: 'VERIFIED' },
+  ];
+  return {
+    id: c.id,
+    internalCustomerId: c.ref,
+    phoneNumber: `+23480${pad(i)}${1234567 + i}`,
+    email: `${c.firstName.toLowerCase()}.${c.lastName.toLowerCase()}@gmail.com`,
+    bvn: `221${pad(i)}45${pad(i + 3)}88`,
+    nin: `${10000000000 + i * 111}`,
+    dateOfBirth: dob,
+    isTriadVerified: true,
+    firstName: c.firstName,
+    lastName: c.lastName,
+    status: 'ACTIVE',
+    createdAt: created,
+    updatedAt: created,
+    work,
+    bvnVerification: idCheck('Mono BVN'),
+    ninVerification: idCheck('Prembly NIN'),
+    documents,
+  };
+});
+
+export function findDemoCustomer(id: string): Customer | undefined {
+  return DEMO_CUSTOMERS.find((c) => c.id === id);
+}
+
+const PRODUCT_CATEGORIES: LoanCategory[] = ['GADGETS', 'FASHION', 'HOME', 'SERVICES'];
+
+export const DEMO_PRODUCTS: LoanProduct[] = PRODUCTS.map((p, i) => ({
+  id: p.id,
+  code: p.code,
+  caltosProductId: String(20 + i),
+  name: p.name,
+  category: PRODUCT_CATEGORIES[i % PRODUCT_CATEGORIES.length],
+  description: `${p.tenor}-month financing offered at vendor checkout.`,
+  tenorMonths: p.tenor,
+  interestRatePercentage: '1',
+  minPrincipalAmount: '1000',
+  maxPrincipalAmount: i === 0 ? '500000' : '2500000',
+  isActive: true,
+  autoDisburse: i % 2 === 0,
+  createdAt: isoDaysAgo(60 - i * 5),
+  updatedAt: isoDaysAgo(10),
+}));
+
+export function findDemoProduct(id: string): LoanProduct | undefined {
+  return DEMO_PRODUCTS.find((p) => p.id === id);
+}
+
+export function demoLoansForProduct(productId: string): Loan[] {
+  return DEMO_LOANS.filter((l) => l.loanProductId === productId);
 }
 
 export function findDemoSettlement(id: string): Settlement | undefined {

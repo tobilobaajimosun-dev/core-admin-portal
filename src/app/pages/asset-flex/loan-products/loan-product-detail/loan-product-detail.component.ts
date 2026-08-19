@@ -1,14 +1,19 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { ArrowLeft01Icon } from '@hugeicons-pro/core-stroke-rounded';
 
 import { LoanProductService } from '../../shared/services/loan-product.service';
+import { LoanService } from '../../shared/services/loan.service';
 import { LoanProduct } from '../../shared/models/loan-product.model';
+import { Loan } from '../../shared/models/loan.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { CategoryChipComponent } from '../../shared/components/category-chip/category-chip.component';
 import { NairaPipe } from '../../shared/pipes/naira.pipe';
+import { statusTone } from '../../shared/utils/status-tone';
+import { fetchAllPages } from '@pages/asset-flex/shared/utils/fetch-all-pages';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/detail-skeleton/detail-skeleton.component';
 
@@ -19,6 +24,7 @@ import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/det
     RouterLink,
     HugeiconsIconComponent,
     StatusBadgeComponent,
+    CategoryChipComponent,
     NairaPipe,
     ErrorStateComponent,
     DetailSkeletonComponent,
@@ -34,9 +40,22 @@ export class LoanProductDetailComponent {
 
   protected readonly backIcon = ArrowLeft01Icon;
 
+  private readonly loanService = inject(LoanService);
+  protected readonly statusTone = statusTone;
+
   protected readonly product = signal<LoanProduct | null>(null);
+  protected readonly loans = signal<Loan[]>([]);
   protected readonly loading = signal(true);
   protected readonly loadError = signal(false);
+
+  protected readonly totalDisbursed = computed(() =>
+    this.loans().reduce((s, l) => s + Number(l.amountDisbursed || l.principalAmount || 0), 0),
+  );
+  protected readonly statusSplit = computed(() => {
+    const by: Record<string, number> = {};
+    for (const l of this.loans()) by[l.status] = (by[l.status] ?? 0) + 1;
+    return Object.entries(by).map(([status, count]) => ({ status, count }));
+  });
 
   constructor() {
     effect(() => {
@@ -57,15 +76,24 @@ export class LoanProductDetailComponent {
     }
     this.loading.set(true);
     this.loadError.set(false);
+    this.loans.set([]);
     this.productService.getOne(id).subscribe({
       next: (res) => {
         this.product.set(res.data ?? null);
         this.loading.set(false);
+        this.loadLoans(id);
       },
       error: () => {
         this.loadError.set(true);
         this.loading.set(false);
       },
+    });
+  }
+
+  private loadLoans(id: string): void {
+    fetchAllPages((page) => this.loanService.list({ page, limit: 100 })).subscribe({
+      next: (loans) => this.loans.set(loans.filter((l) => l.loanProductId === id)),
+      error: () => this.loans.set([]),
     });
   }
 }

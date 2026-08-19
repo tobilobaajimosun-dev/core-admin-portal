@@ -61,3 +61,11 @@
 @media (min-width: 820px) {
   .detail-grid { grid-template-columns: 1fr 1fr; align-items: start; }
 }
+
+.lp-loans { margin-top: 16px; }
+.lp-loans__head { margin-bottom: 12px; }
+.lp-summary { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 6px; font-size: 13px; color: var(--ca-text-muted); }
+.lp-summary__item strong { color: var(--ca-text); }
+.lp-status { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ca-text-muted); }
+.lp-gtable { --gt-cols: 1.4fr 1.2fr 1fr 1fr 1fr; }
+.lp-empty { font-size: 13px; color: var(--ca-text-muted); margin: 4px 0 0; }

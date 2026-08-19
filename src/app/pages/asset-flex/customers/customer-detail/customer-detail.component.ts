@@ -6,9 +6,14 @@ import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { ArrowLeft01Icon } from '@hugeicons-pro/core-stroke-rounded';
 
 import { CustomerService } from '../../shared/services/customer.service';
+import { LoanService } from '../../shared/services/loan.service';
 import { Customer } from '../../shared/models/customer.model';
-import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { Loan, RepaymentRecord } from '../../shared/models/loan.model';
+import { StatusBadgeComponent, BadgeTone } from '../../shared/components/status-badge/status-badge.component';
+import { CategoryChipComponent } from '../../shared/components/category-chip/category-chip.component';
+import { NairaPipe } from '../../shared/pipes/naira.pipe';
 import { statusTone } from '../../shared/utils/status-tone';
+import { fetchAllPages } from '@pages/asset-flex/shared/utils/fetch-all-pages';
 import { ErrorStateComponent } from '@pages/asset-flex/shared/components/error-state/error-state.component';
 import { DetailSkeletonComponent } from '@pages/asset-flex/shared/components/detail-skeleton/detail-skeleton.component';
 
@@ -21,77 +26,30 @@ function mask(value: string | null | undefined): string {
 
 @Component({
   selector: 'app-customer-detail',
-  imports: [DatePipe, RouterLink, HugeiconsIconComponent, StatusBadgeComponent, ErrorStateComponent, DetailSkeletonComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="p-4 sm:p-6">
-    @if (loading()) {
-      <app-detail-skeleton label="Loading customer" />
-    } @else if (loadError()) {
-      <app-error-state message="Couldn't load this customer. Check your connection and try again." (retry)="retry()" />
-    } @else if (!customer()) {
-      <div class="c-loading">Customer not found.</div>
-    } @else {
-      <a class="breadcrumb" routerLink="/asset-flex/customers">
-        <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
-        <span>Customers</span>
-      </a>
-
-      <header class="c-head">
-        <span class="c-avatar" aria-hidden="true">{{ initials() }}</span>
-        <div>
-          <h1 class="c-name">{{ fullName() }}</h1>
-          <div class="c-meta">
-            <app-status-badge [tone]="statusTone(customer()!.status)" [text]="customer()!.status" />
-            <span class="c-sep">·</span>
-            <span class="c-muted">{{ customer()!.email || customer()!.phoneNumber }}</span>
-          </div>
-        </div>
-      </header>
-
-      <section class="pa-card c-card">
-        <h2 class="pa-card__title">Identity &amp; contact</h2>
-        <dl class="pa-kv">
-          <div class="pa-kv__row"><dt>Phone</dt><dd>{{ customer()!.phoneNumber }}</dd></div>
-          <div class="pa-kv__row"><dt>Email</dt><dd>{{ customer()!.email || '—' }}</dd></div>
-          <div class="pa-kv__row"><dt>BVN</dt><dd class="pa-mono">{{ maskedBvn() }}</dd></div>
-          <div class="pa-kv__row"><dt>NIN</dt><dd class="pa-mono">{{ maskedNin() }}</dd></div>
-          <div class="pa-kv__row"><dt>Date of birth</dt><dd>{{ customer()!.dateOfBirth || '—' }}</dd></div>
-          <div class="pa-kv__row">
-            <dt>Triad verified</dt>
-            <dd><app-status-badge [tone]="customer()!.isTriadVerified ? 'success' : 'neutral'" [text]="customer()!.isTriadVerified ? 'VERIFIED' : 'UNVERIFIED'" /></dd>
-          </div>
-          <div class="pa-kv__row"><dt>Internal ID</dt><dd class="pa-mono">{{ customer()!.internalCustomerId || '—' }}</dd></div>
-          <div class="pa-kv__row"><dt>Joined</dt><dd>{{ customer()!.createdAt | date: 'medium' }}</dd></div>
-        </dl>
-      </section>
-    }
-    </div>
-  `,
-  styles: [
-    `
-      :host { display: block; }
-      .c-loading { padding: 60px 0; text-align: center; color: var(--ca-text-muted); font-size: 14px; }
-      .breadcrumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ca-text-muted); text-decoration: none; margin-bottom: 16px; }
-      .breadcrumb:hover { color: var(--ca-text); }
-      .c-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-      .c-avatar { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: var(--color-primary-active-hex); color: var(--color-primary-text-hex); font-size: 18px; font-weight: 700; }
-      .c-name { font-size: 20px; font-weight: 700; color: var(--ca-text); margin: 0 0 4px; }
-      .c-meta { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-      .c-sep { color: #cbd5e1; }
-      .c-muted { color: var(--ca-text-muted); }
-      .c-card { max-width: 560px; }
-    `,
+  imports: [
+    DatePipe,
+    RouterLink,
+    HugeiconsIconComponent,
+    StatusBadgeComponent,
+    CategoryChipComponent,
+    NairaPipe,
+    ErrorStateComponent,
+    DetailSkeletonComponent,
   ],
+  templateUrl: './customer-detail.component.html',
+  styleUrl: './customer-detail.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerDetailComponent {
   private readonly customerService = inject(CustomerService);
+  private readonly loanService = inject(LoanService);
 
   readonly id = input<string>('');
   protected readonly backIcon = ArrowLeft01Icon;
   protected readonly statusTone = statusTone;
 
   protected readonly customer = signal<Customer | null>(null);
+  protected readonly loans = signal<Loan[]>([]);
   protected readonly loading = signal(true);
   protected readonly loadError = signal(false);
 
@@ -106,6 +64,35 @@ export class CustomerDetailComponent {
   });
   protected readonly maskedBvn = computed(() => mask(this.customer()?.bvn));
   protected readonly maskedNin = computed(() => mask(this.customer()?.nin));
+
+  protected readonly repayments = computed<RepaymentRecord[]>(() =>
+    this.loans()
+      .flatMap((l) => l.repayments ?? [])
+      .sort((a, b) => b.date.localeCompare(a.date)),
+  );
+  protected readonly totalBorrowed = computed(() =>
+    this.loans().reduce((s, l) => s + Number(l.amountDisbursed || l.principalAmount || 0), 0),
+  );
+  protected readonly outstanding = computed(() => {
+    const active = this.loans().filter((l) => l.status === 'ACTIVE' || l.status === 'OVERDUE' || l.status === 'DISBURSED');
+    const owed = active.reduce((s, l) => s + Number(l.totalRepayable || 0), 0);
+    const paid = active.flatMap((l) => l.repayments ?? []).reduce((s, r) => s + Number(r.amount), 0);
+    return Math.max(0, owed - paid);
+  });
+  protected readonly onTimeRate = computed(() => {
+    const insts = this.loans().flatMap((l) => l.repaymentSchedule ?? []);
+    const paid = insts.filter((i) => i.status === 'PAID').length;
+    const overdue = insts.filter((i) => i.status === 'OVERDUE').length;
+    const denom = paid + overdue;
+    return denom ? Math.round((paid / denom) * 100) : 100;
+  });
+
+  protected verificationTone(status: string | undefined): BadgeTone {
+    return status === 'SUCCESS' ? 'success' : status === 'FAILED' ? 'danger' : 'warning';
+  }
+  protected docTone(status: string): BadgeTone {
+    return status === 'VERIFIED' ? 'success' : status === 'REJECTED' ? 'danger' : 'warning';
+  }
 
   constructor() {
     effect(() => {
@@ -126,15 +113,24 @@ export class CustomerDetailComponent {
     }
     this.loading.set(true);
     this.loadError.set(false);
+    this.loans.set([]);
     this.customerService.getOne(id).subscribe({
       next: (res) => {
         this.customer.set(res.data ?? null);
         this.loading.set(false);
+        this.loadLoans(id);
       },
       error: () => {
         this.loadError.set(true);
         this.loading.set(false);
       },
+    });
+  }
+
+  private loadLoans(id: string): void {
+    fetchAllPages((page) => this.loanService.list({ page, limit: 100 })).subscribe({
+      next: (loans) => this.loans.set(loans.filter((l) => l.customerId === id)),
+      error: () => this.loans.set([]),
     });
   }
 }

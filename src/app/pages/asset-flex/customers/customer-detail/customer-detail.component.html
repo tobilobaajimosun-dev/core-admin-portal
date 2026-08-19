@@ -1,0 +1,152 @@
+<div class="p-4 sm:p-6">
+@if (loading()) {
+  <app-detail-skeleton label="Loading customer" />
+} @else if (loadError()) {
+  <app-error-state message="Couldn't load this customer. Check your connection and try again." (retry)="retry()" />
+} @else if (!customer()) {
+  <div class="c-loading">Customer not found.</div>
+} @else {
+  @let c = customer()!;
+
+  <a class="breadcrumb" routerLink="/asset-flex/customers">
+    <hugeicons-icon [icon]="backIcon" [size]="16" [strokeWidth]="1.75" color="currentColor" />
+    <span>Customers</span>
+  </a>
+
+  <header class="c-head">
+    <span class="c-avatar" aria-hidden="true">{{ initials() }}</span>
+    <div class="c-head__main">
+      <h1 class="c-name">{{ fullName() }}</h1>
+      <div class="c-meta">
+        <app-status-badge [tone]="statusTone(c.status)" [text]="c.status" />
+        @if (c.isTriadVerified) { <app-status-badge tone="success" text="VERIFIED" /> }
+        <span class="c-sep">·</span>
+        <span class="c-muted">{{ c.email || c.phoneNumber }}</span>
+      </div>
+    </div>
+    <div class="c-stats">
+      <div class="c-stat"><span class="c-stat__label">Borrowed</span><span class="c-stat__value">{{ totalBorrowed() | naira }}</span></div>
+      <div class="c-stat"><span class="c-stat__label">Outstanding</span><span class="c-stat__value">{{ outstanding() | naira }}</span></div>
+      <div class="c-stat"><span class="c-stat__label">On-time</span><span class="c-stat__value">{{ onTimeRate() }}%</span></div>
+    </div>
+  </header>
+
+  <div class="c-grid">
+    <section class="pa-card">
+      <h2 class="pa-card__title">Identity &amp; contact</h2>
+      <dl class="pa-kv">
+        <div class="pa-kv__row"><dt>Phone</dt><dd>{{ c.phoneNumber }}</dd></div>
+        <div class="pa-kv__row"><dt>Email</dt><dd>{{ c.email || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>BVN</dt><dd class="pa-mono">{{ maskedBvn() }}</dd></div>
+        <div class="pa-kv__row"><dt>NIN</dt><dd class="pa-mono">{{ maskedNin() }}</dd></div>
+        <div class="pa-kv__row"><dt>Date of birth</dt><dd>{{ c.dateOfBirth || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Internal ID</dt><dd class="pa-mono">{{ c.internalCustomerId || '—' }}</dd></div>
+        <div class="pa-kv__row"><dt>Joined</dt><dd>{{ c.createdAt | date: 'medium' }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="pa-card">
+      <h2 class="pa-card__title">Work &amp; income</h2>
+      @if (c.work) {
+        <dl class="pa-kv">
+          <div class="pa-kv__row"><dt>Employer</dt><dd>{{ c.work.employer }}</dd></div>
+          <div class="pa-kv__row"><dt>Job title</dt><dd>{{ c.work.jobTitle }}</dd></div>
+          <div class="pa-kv__row"><dt>Employment</dt><dd>{{ c.work.employmentType }}</dd></div>
+          <div class="pa-kv__row"><dt>Monthly income</dt><dd>{{ c.work.monthlyIncome | naira }}</dd></div>
+          <div class="pa-kv__row"><dt>Work email</dt><dd>{{ c.work.workEmail || '—' }}</dd></div>
+        </dl>
+      } @else {
+        <p class="c-empty">No work details on file.</p>
+      }
+    </section>
+  </div>
+
+  <div class="c-grid c-grid--spaced">
+    <section class="pa-card">
+      <h2 class="pa-card__title">Identity verification</h2>
+      <div class="c-verif">
+        <div class="c-verif__row">
+          <div>
+            <span class="c-verif__label">BVN</span>
+            @if (c.bvnVerification) { <span class="c-verif__sub">{{ c.bvnVerification.provider }} · matched {{ c.bvnVerification.matchedName }}</span> }
+          </div>
+          <app-status-badge [tone]="verificationTone(c.bvnVerification?.status)" [text]="c.bvnVerification?.status || 'PENDING'" />
+        </div>
+        <div class="c-verif__row">
+          <div>
+            <span class="c-verif__label">NIN</span>
+            @if (c.ninVerification) { <span class="c-verif__sub">{{ c.ninVerification.provider }} · matched {{ c.ninVerification.matchedName }}</span> }
+          </div>
+          <app-status-badge [tone]="verificationTone(c.ninVerification?.status)" [text]="c.ninVerification?.status || 'PENDING'" />
+        </div>
+      </div>
+    </section>
+
+    <section class="pa-card">
+      <h2 class="pa-card__title">Documents</h2>
+      @if (c.documents?.length) {
+        <ul class="c-docs">
+          @for (d of c.documents; track d.id) {
+            <li class="c-doc">
+              <div class="c-doc__main">
+                <span class="c-doc__name">{{ d.name }}</span>
+                <span class="c-doc__meta">{{ d.type }} · {{ d.uploadedAt | date: 'mediumDate' }}</span>
+              </div>
+              <app-status-badge [tone]="docTone(d.status)" [text]="d.status" />
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="c-empty">No documents uploaded.</p>
+      }
+    </section>
+  </div>
+
+  <section class="pa-card c-card--spaced">
+    <h2 class="pa-card__title">Loan history</h2>
+    @if (loans().length) {
+      <div class="pa-gtable-wrap">
+        <div class="pa-gtable c-loan-gtable">
+          <div class="pa-gtable__head">
+            <span>Reference</span><span>Category</span><span class="pa-gtable__cell--right">Principal</span><span>Status</span><span class="pa-gtable__cell--right">Applied</span>
+          </div>
+          @for (l of loans(); track l.id) {
+            <div class="pa-gtable__row">
+              <div class="pa-gtable__cell"><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', l.id]">{{ l.loanReference }}</a></div>
+              <div class="pa-gtable__cell"><af-category-chip [category]="l.category" /></div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ l.principalAmount | naira }}</div>
+              <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(l.status)" [text]="l.status" /></div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ (l.appliedAt || l.createdAt) | date: 'mediumDate' }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <p class="c-empty">No loans yet.</p>
+    }
+  </section>
+
+  <section class="pa-card c-card--spaced">
+    <h2 class="pa-card__title">Repayment history</h2>
+    @if (repayments().length) {
+      <div class="pa-gtable-wrap">
+        <div class="pa-gtable c-rpy-gtable">
+          <div class="pa-gtable__head">
+            <span>Date</span><span class="pa-gtable__cell--right">Amount</span><span>Method</span><span>Reference</span>
+          </div>
+          @for (r of repayments(); track r.id) {
+            <div class="pa-gtable__row">
+              <div class="pa-gtable__cell pa-cell-sub">{{ r.date | date: 'medium' }}</div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ r.amount | naira }}</div>
+              <div class="pa-gtable__cell pa-cell-sub">{{ r.method }}</div>
+              <div class="pa-gtable__cell pa-cell-sub pa-mono">{{ r.reference }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <p class="c-empty">No repayments recorded yet.</p>
+    }
+  </section>
+}
+</div>

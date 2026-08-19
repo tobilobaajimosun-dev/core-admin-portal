@@ -1,0 +1,82 @@
+:host { display: block; }
+
+.c-loading { padding: 60px 0; text-align: center; color: var(--ca-text-muted); font-size: 14px; }
+
+.breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ca-text-muted);
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+.breadcrumb:hover { color: var(--ca-text); }
+
+.c-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.c-head__main { flex: 1; min-width: 200px; }
+.c-avatar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--color-primary-active-hex);
+  color: var(--color-primary-text-hex);
+  font-size: 18px;
+  font-weight: 700;
+}
+.c-name { font-size: 20px; font-weight: 700; color: var(--ca-text); margin: 0 0 4px; }
+.c-meta { display: flex; align-items: center; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+.c-sep { color: #cbd5e1; }
+.c-muted { color: var(--ca-text-muted); }
+
+.c-stats { display: flex; gap: 24px; }
+.c-stat { display: flex; flex-direction: column; gap: 2px; }
+.c-stat__label { font-size: 12px; color: var(--ca-text-faint); }
+.c-stat__value { font-size: 16px; font-weight: 600; color: var(--ca-text); }
+
+.c-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 820px) {
+  .c-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+.c-grid--spaced { margin-top: 16px; }
+.c-card--spaced { margin-top: 16px; }
+
+.c-empty { font-size: 13px; color: var(--ca-text-muted); margin: 4px 0 0; }
+
+.c-verif { display: grid; gap: 10px; }
+.c-verif__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ca-border);
+  border-radius: 10px;
+}
+.c-verif__label { font-weight: 600; font-size: 14px; color: var(--ca-text); margin-right: 8px; }
+.c-verif__sub { font-size: 12px; color: var(--ca-text-muted); }
+
+.c-docs { display: grid; gap: 8px; }
+.c-doc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ca-border);
+  border-radius: 10px;
+}
+.c-doc__main { display: flex; flex-direction: column; gap: 2px; }
+.c-doc__name { font-size: 14px; color: var(--ca-text); }
+.c-doc__meta { font-size: 12px; color: var(--ca-text-faint); }
+
+.c-loan-gtable { --gt-cols: 1.4fr 1.4fr 1fr 1fr 1fr; }
+.c-rpy-gtable { --gt-cols: 1.4fr 1fr 1.4fr 1.2fr; }

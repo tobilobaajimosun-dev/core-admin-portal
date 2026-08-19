@@ -18,6 +18,7 @@
       <h1 class="detail-head__name">{{ p.name }}</h1>
       <div class="detail-head__meta">
         <app-status-badge [tone]="p.isActive ? 'success' : 'neutral'" [text]="p.isActive ? 'Active' : 'Inactive'" />
+        @if (p.category) { <af-category-chip [category]="p.category" /> }
         <span class="detail-head__sep">·</span>
         <span class="detail-head__muted pa-mono">{{ p.code }}</span>
       </div>
@@ -48,5 +49,38 @@
       </dl>
     </section>
   </div>
+
+  <section class="pa-card lp-loans">
+    <div class="lp-loans__head">
+      <h2 class="pa-card__title">Loans on this product</h2>
+      <div class="lp-summary">
+        <span class="lp-summary__item"><strong>{{ loans().length }}</strong> loans</span>
+        <span class="lp-summary__item"><strong>{{ totalDisbursed() | naira }}</strong> disbursed</span>
+        @for (s of statusSplit(); track s.status) {
+          <span class="lp-status"><app-status-badge [tone]="statusTone(s.status)" [text]="s.status" /> {{ s.count }}</span>
+        }
+      </div>
+    </div>
+    @if (loans().length) {
+      <div class="pa-gtable-wrap">
+        <div class="pa-gtable lp-gtable">
+          <div class="pa-gtable__head">
+            <span>Reference</span><span>Vendor</span><span class="pa-gtable__cell--right">Principal</span><span>Status</span><span class="pa-gtable__cell--right">Created</span>
+          </div>
+          @for (l of loans(); track l.id) {
+            <div class="pa-gtable__row">
+              <div class="pa-gtable__cell"><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', l.id]">{{ l.loanReference }}</a></div>
+              <div class="pa-gtable__cell pa-cell-sub">{{ l.vendor?.businessName || '—' }}</div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ l.principalAmount | naira }}</div>
+              <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(l.status)" [text]="l.status" /></div>
+              <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ l.createdAt | date: 'mediumDate' }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <p class="lp-empty">No loans have used this product yet.</p>
+    }
+  </section>
 }
 </div>

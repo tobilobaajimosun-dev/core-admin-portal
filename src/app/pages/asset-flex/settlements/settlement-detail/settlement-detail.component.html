@@ -49,5 +49,27 @@
       </dl>
     </section>
   </div>
+
+  <section class="pa-card stl-timeline">
+    <h2 class="pa-card__title">Timeline</h2>
+    <ul class="tl">
+      <li class="tl__item tl__item--done">
+        <span class="tl__dot"></span>
+        <div class="tl__body"><span class="tl__label">Created</span><span class="tl__date">{{ s.createdAt | date: 'medium' }}</span></div>
+      </li>
+      <li class="tl__item" [class.tl__item--done]="!!s.settledAt">
+        <span class="tl__dot"></span>
+        <div class="tl__body"><span class="tl__label">Due</span><span class="tl__date">{{ s.settlementDueDate ? (s.settlementDueDate | date: 'medium') : '—' }}</span></div>
+      </li>
+      <li class="tl__item" [class.tl__item--done]="!!s.settledAt">
+        <span class="tl__dot"></span>
+        <div class="tl__body">
+          <span class="tl__label">Settled</span>
+          <span class="tl__date">{{ s.settledAt ? (s.settledAt | date: 'medium') : 'Pending' }}</span>
+          @if (s.batchPayoutReference) { <span class="tl__ref pa-mono">{{ s.batchPayoutReference }}</span> }
+        </div>
+      </li>
+    </ul>
+  </section>
 }
 </div>
