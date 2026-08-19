@@ -198,3 +198,77 @@ detail page needs (installments, amounts, due dates, paid status). If not, add
 3. **A security fix** — stop leaking `passwordHash`/`secretKeyLive`.
 4. **B2 Payment-method create**, **B4 Notifications** — remove the last prototypes.
 5. **B5 / B6** — polish.
+
+---
+
+## Part C — Detail-page & feature data (added this round)
+
+The redesigned detail pages, risk scoring, and notifications need the following.
+Fields marked **(persist)** are collected in the UI but currently discarded.
+
+### C1. Vendor — persist onboarding data + expose on GET
+`GET /api/v1/admin/vendors/:id` should return (and onboarding should persist):
+```jsonc
+{
+  "cacRegistrationNumber": "RC-482910",     // (persist)
+  "businessAddress": "14 Adeniran Ogunsanya St, Surulere, Lagos", // (persist)
+  "industry": "Retail & Supermarkets",       // (persist)
+  "owners": [                                  // (persist) ownership / directors
+    { "fullName": "Chidi Northgate", "role": "Director / CEO", "bvn": "…", "nin": "…", "sharePercentage": 60 }
+  ]
+}
+```
+- `GET /api/v1/admin/vendors/:id/documents` — already exists; ensure it returns every
+  required doc (CAC, TIN, proof of address, director ID, bank statement) with status.
+- **Vendor loans**: the vendor detail lists loans processed by the vendor. Either add a
+  `vendorId` filter to `GET /api/v1/admin/loans?vendorId=` or a
+  `GET /api/v1/admin/vendors/:id/loans`.
+
+### C2. Customer — richer profile
+`GET /api/v1/admin/customers/:id` should return:
+```jsonc
+{
+  "homeAddress": "13 Admiralty Way, Lekki, Lagos",
+  "work": { "employer": "MTN Nigeria", "jobTitle": "Account Manager", "monthlyIncome": "620000", "employmentType": "Full-time", "workEmail": "…" },
+  "salaryPartner": { "provider": "Remita", "employer": "MTN Nigeria", "staffId": "STF-1000", "accountNumber": "…" },
+  "bvnVerification": { "status": "SUCCESS", "matchedName": "…", "dateOfBirth": "…", "provider": "Mono BVN", "verifiedAt": "…" },
+  "ninVerification": { "status": "SUCCESS", "provider": "Prembly NIN", "verifiedAt": "…" },
+  "documents": [ { "id": "…", "name": "Government ID", "type": "Identity", "uploadedAt": "…", "status": "VERIFIED" } ]
+}
+```
+- **Customer loans / repayments**: same as vendor — filter loans by `customerId` (or
+  `GET /api/v1/admin/customers/:id/loans`) to power loan + repayment history.
+
+### C3. Risk score
+The customer risk score is computed client-side today from on-time rate, verification,
+debt-to-income, and history. Preferred: compute server-side and return
+```json
+{ "riskScore": 82, "riskBand": "LOW", "factors": [ { "key": "onTime", "impact": "positive", "detail": "…" } ] }
+```
+on the customer payload, so the model is centralized and auditable.
+
+### C4. Loan repayments + manual repayment
+- `GET /api/v1/admin/loans/:id` (or `/repayments`) must return the **repayment schedule**
+  (installments: number, dueDate, amount, status, paidAt) and **repayment records**.
+- **NEW — log a manual repayment (with receipt upload):**
+  `POST /api/v1/admin/loans/:id/repayments` (multipart/form-data)
+  ```
+  amount, date, method, reference?, receipt (file)
+  ```
+  returns the created repayment record.
+
+### C5. Notifications to businesses
+- `POST /api/v1/admin/notifications` — send to one/many/all vendors:
+  ```json
+  { "recipientVendorIds": ["…"] , "allVendors": false, "subject": "…", "body": "…",
+    "ctaLabel": "View settlements", "ctaUrl": "/…", "channels": ["dashboard","email"] }
+  ```
+  → creates in-app notifications for those vendors and/or queues emails.
+- `GET /api/v1/admin/notifications/sent` — the sent log (subject, recipientCount,
+  channels, sentAt, sentBy).
+
+### C6. Reporting — add category dimension
+Extend the reporting endpoints (Part B1) with a **category** breakdown and per-category
+filters: `GET /api/v1/admin/reports/loans-by-category` →
+`[ { "category": "GADGETS", "count": 268 } ]`, and accept `?category=` on loan list +
+payout-volume reports.
