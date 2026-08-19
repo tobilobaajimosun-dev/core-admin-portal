@@ -190,6 +190,25 @@ Confirm `GET /api/v1/admin/loans/:id` returns the repayment schedule / history t
 detail page needs (installments, amounts, due dates, paid status). If not, add
 **GET `/api/v1/admin/loans/:id/repayments`**.
 
+### B7. Global search (client-side today)
+The top-nav search and the `/asset-flex/search` results screen currently fetch the
+**entire** customers, loans and vendors datasets and filter in the browser. That is fine
+for the demo but does not scale. Needed:
+
+**GET `/api/v1/admin/search?q=&limit=`** → grouped matches across entities:
+```json
+{ "message": "OK", "data": {
+  "customers": [ { "id": "cus_…", "firstName": "Ifeoma", "lastName": "Chukwu", "email": "…",
+                   "internalCustomerId": "AF-CUST-00412", "isTriadVerified": true, "status": "ACTIVE" } ],
+  "loans":     [ { "id": "loan_…", "loanReference": "AF-LN-2026-0103", "itemDescription": "iPhone 15 Pro Max",
+                   "category": "GADGETS", "principalAmount": 1320000, "status": "ACTIVE",
+                   "vendor": { "businessName": "Northgate Retail Ltd" } } ],
+  "vendors":   [ { "id": "ven_…", "businessName": "Bluewave Electronics", "industry": "…", "status": "APPROVED" } ]
+} }
+```
+The query must match customer name/email/reference, loan reference/item/customer/vendor, and
+business name/industry (the fields the client filters on today).
+
 ---
 
 ## Priority for go-live
@@ -197,7 +216,7 @@ detail page needs (installments, amounts, due dates, paid status). If not, add
 2. **B3 Vendor fields** — CAC/address/ownership are compliance data that must persist.
 3. **A security fix** — stop leaking `passwordHash`/`secretKeyLive`.
 4. **B2 Payment-method create**, **B4 Notifications** — remove the last prototypes.
-5. **B5 / B6** — polish.
+5. **B5 / B6 / B7** — polish (search can stay client-side until dataset size forces B7).
 
 ---
 
