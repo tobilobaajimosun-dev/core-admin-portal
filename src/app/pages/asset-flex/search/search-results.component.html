@@ -1,0 +1,72 @@
+<div class="p-4 sm:p-6">
+  <header class="sr-head">
+    <h1 class="sr-title">Search results</h1>
+    @if (q().trim()) {
+      <p class="sr-sub">{{ total() }} result{{ total() === 1 ? '' : 's' }} for “{{ q() }}”</p>
+    } @else {
+      <p class="sr-sub">Type a customer name, loan reference, or business to search.</p>
+    }
+  </header>
+
+  @if (q().trim() && total() === 0) {
+    <div class="sr-empty">
+      <p class="sr-empty__title">No matches for “{{ q() }}”</p>
+      <p class="sr-empty__sub">Try a different name, loan reference, or business.</p>
+    </div>
+  }
+
+  @if (customers().length) {
+    <section class="sr-group">
+      <h2 class="sr-group__title">Customers <span class="sr-count">{{ customers().length }}</span></h2>
+      <div class="sr-list">
+        @for (c of customers(); track c.id) {
+          <a class="sr-item" [routerLink]="['/asset-flex/customers', c.id]">
+            <span class="sr-avatar" aria-hidden="true">{{ initials(fullName(c)) }}</span>
+            <span class="sr-item__main">
+              <span class="sr-item__name">{{ fullName(c) }}</span>
+              <span class="sr-item__meta">{{ c.email }} · {{ c.referredByVendor?.businessName || '—' }}</span>
+            </span>
+            <app-status-badge [tone]="c.isTriadVerified ? 'success' : 'neutral'" [text]="c.isTriadVerified ? 'VERIFIED' : 'UNVERIFIED'" />
+          </a>
+        }
+      </div>
+    </section>
+  }
+
+  @if (loans().length) {
+    <section class="sr-group">
+      <h2 class="sr-group__title">Loans <span class="sr-count">{{ loans().length }}</span></h2>
+      <div class="sr-list">
+        @for (l of loans(); track l.id) {
+          <a class="sr-item" [routerLink]="['/asset-flex/loans', l.id]">
+            <span class="sr-item__main">
+              <span class="sr-item__name">{{ l.loanReference }}</span>
+              <span class="sr-item__meta">{{ l.itemDescription || l.loanProduct?.name }} · {{ l.vendor?.businessName }}</span>
+            </span>
+            @if (l.category) { <af-category-chip [category]="l.category" /> }
+            <span class="sr-amount">{{ l.principalAmount | naira }}</span>
+            <app-status-badge [tone]="statusTone(l.status)" [text]="l.status" />
+          </a>
+        }
+      </div>
+    </section>
+  }
+
+  @if (vendors().length) {
+    <section class="sr-group">
+      <h2 class="sr-group__title">Businesses <span class="sr-count">{{ vendors().length }}</span></h2>
+      <div class="sr-list">
+        @for (v of vendors(); track v.id) {
+          <a class="sr-item" [routerLink]="['/asset-flex/vendors', v.id]">
+            <span class="sr-avatar" aria-hidden="true">{{ v.businessName.charAt(0) }}</span>
+            <span class="sr-item__main">
+              <span class="sr-item__name">{{ v.businessName }}</span>
+              <span class="sr-item__meta">{{ v.industry || '—' }}</span>
+            </span>
+            <app-status-badge [tone]="statusTone(v.status)" [text]="v.status" />
+          </a>
+        }
+      </div>
+    </section>
+  }
+</div>

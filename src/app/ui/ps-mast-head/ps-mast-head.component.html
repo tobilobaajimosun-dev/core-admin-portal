@@ -38,18 +38,31 @@
       <!-- Search — full input from md up -->
       <div class="relative hidden md:block">
         <input
+          #desktopSearchInput
           type="text"
           [(ngModel)]="searchText"
           (ngModelChange)="onSearchChange($event)"
           (keyup.enter)="submitSearch()"
-          placeholder="Search by customer name or loan id"
-          class="text-sm outline-none rounded-lg border border-[#D2DBE1] py-2 pl-9 pr-4 w-[380px]"
+          placeholder="Search customers, loans or businesses"
+          class="text-sm outline-none rounded-lg border border-[#D2DBE1] bg-white py-2 pl-9 pr-9 w-[380px] transition-colors placeholder:text-[#9CA3AF] hover:border-[#B0BAC4] focus:border-primary focus:ring-1 focus:ring-primary"
         />
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none"
           fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
+        @if (searchText) {
+          <button
+            type="button"
+            (click)="clearSearch(desktopSearchInput)"
+            aria-label="Clear search"
+            class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full text-[#9CA3AF] hover:text-[#2B3033] hover:bg-[#F5F7FA] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        }
       </div>
 
       <!-- Search — icon toggle below md -->
@@ -109,14 +122,26 @@
           [(ngModel)]="searchText"
           (ngModelChange)="onSearchChange($event)"
           (keyup.enter)="submitSearch()"
-          placeholder="Search by customer name or loan id"
-          class="text-base outline-none rounded-lg border border-[#D2DBE1] py-2.5 pl-9 pr-4 w-full"
+          placeholder="Search customers, loans or businesses"
+          class="text-base outline-none rounded-lg border border-[#D2DBE1] bg-white py-2.5 pl-9 pr-10 w-full transition-colors placeholder:text-[#9CA3AF] hover:border-[#B0BAC4] focus:border-primary focus:ring-1 focus:ring-primary"
         />
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]"
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none"
           fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
+        @if (searchText) {
+          <button
+            type="button"
+            (click)="clearSearch(mobileSearchInput)"
+            aria-label="Clear search"
+            class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full text-[#9CA3AF] hover:text-[#2B3033] hover:bg-[#F5F7FA] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        }
       </div>
     </div>
   }

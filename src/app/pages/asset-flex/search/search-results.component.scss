@@ -1,0 +1,142 @@
+:host {
+  display: block;
+}
+
+.sr-head {
+  margin-bottom: 24px;
+}
+
+.sr-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ca-text);
+  margin: 0;
+}
+
+.sr-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ca-text-muted);
+}
+
+.sr-group {
+  margin-bottom: 32px;
+}
+
+.sr-group__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ca-text-faint);
+  margin: 0 0 8px;
+}
+
+.sr-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ca-border);
+  color: var(--ca-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.sr-list {
+  border-top: 1px solid var(--ca-border);
+}
+
+.sr-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--ca-border);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 120ms ease;
+}
+
+.sr-item:hover {
+  background: var(--ca-card-bg, rgba(0, 0, 0, 0.02));
+}
+
+.sr-item:focus-visible {
+  outline: 2px solid var(--color-primary-hex);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+.sr-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ca-border);
+  color: var(--ca-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sr-item__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.sr-item__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ca-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sr-item__meta {
+  font-size: 12px;
+  color: var(--ca-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sr-amount {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ca-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sr-empty {
+  padding: 48px 0;
+  text-align: center;
+}
+
+.sr-empty__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ca-text);
+}
+
+.sr-empty__sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ca-text-muted);
+}

@@ -37,7 +37,32 @@
 <ng-template #statBody let-stat>
   <div class="stat__label-row">
     <span class="stat__label">{{ stat.label }}</span>
-    <hugeicons-icon [icon]="stat.icon" [size]="14" [strokeWidth]="1.75" color="var(--color-primary-hex)" class="stat__icon" />
+    @switch (stat.key) {
+      @case ('pending') {
+        <svg class="stat__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.9" />
+          <path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      }
+      @case ('approved') {
+        <svg class="stat__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.9" />
+          <path d="M8.25 12.25l2.5 2.5 4.75-5.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      }
+      @case ('blacklisted') {
+        <svg class="stat__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.9" />
+          <path d="M5.7 5.7l12.6 12.6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+        </svg>
+      }
+      @default {
+        <svg class="stat__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 20V6a1 1 0 011-1h12a1 1 0 011 1v14" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" />
+          <path d="M3 20h18M9.5 20v-4.5h5V20" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      }
+    }
     <app-info-tooltip [text]="stat.description" [label]="stat.label + ' — what does this mean?'" class="stat__info-tooltip" />
   </div>
   <div class="stat__box">

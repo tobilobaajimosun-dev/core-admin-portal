@@ -162,13 +162,23 @@ export class PsMastHeadComponent implements OnInit, OnDestroy {
     this.showSearchDropdown = !!searchTerm.trim();
   }
 
-  /** Global search: route loan-ish queries to loans, otherwise to customers. */
+  /** Global search: show matches across customers, loans and businesses on a
+   * dedicated results screen (not a single list). */
   submitSearch(): void {
     const q = this.searchText.trim();
     if (!q) return;
-    const target = /\b(ln|loan)\b|af-ln|af-/i.test(q) ? '/asset-flex/loans' : '/asset-flex/customers';
-    this.router.navigate([target], { queryParams: { search: q } });
+    this.router.navigate(['/asset-flex/search'], { queryParams: { q } });
+    this.showSearchDropdown = false;
     this.showMobileSearch = false;
+  }
+
+  /** Clear the search input via the trailing clear (×) button. */
+  clearSearch(input?: HTMLInputElement): void {
+    this.searchText = '';
+    this.showSearchDropdown = false;
+    this.isSearching.set(false);
+    this.searchSubject$.next('');
+    input?.focus();
   }
 
   hideDropdownWithDelay(): void {

@@ -69,5 +69,9 @@ export const ASSET_FLEX_ROUTES: Routes = [
     data: { kind: 'utilities' },
     loadComponent: () => import('./providers/providers.component').then((m) => m.ProvidersComponent),
   },
+  {
+    path: 'search',
+    loadComponent: () => import('./search/search-results.component').then((m) => m.SearchResultsComponent),
+  },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 ];

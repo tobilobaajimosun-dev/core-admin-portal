@@ -84,10 +84,12 @@ h2, h3, h4 {
 }
 
 .stat__icon {
-  /* Colored via color="var(--color-primary-hex)" on the icon itself, not
-     this class — it used to sit on var(--ca-placeholder) unconditionally,
-     which made every card's icon a flat, barely-visible grey. */
+  /* Inline SVG (not hugeicons) — a few hugeicons glyphs render as broken partial
+     strokes at 14px in this build, so the stat glyphs are hand-authored SVG that
+     inherit the primary colour via currentColor. */
   flex-shrink: 0;
+  display: block;
+  color: var(--color-primary-hex);
 }
 
 .stat__info-tooltip {
