@@ -1,0 +1,200 @@
+# Asset Flex Admin — API Requirements
+
+> Source of truth for the backend team. Generated from the actual HTTP calls in
+> `src/app/pages/asset-flex/shared/services/*`. Base URL: `assetFlexApiBaseUrl`
+> (env `NG_APP_...`). Auth: `Authorization: Bearer <admin access_token>`.
+>
+> Two parts:
+> - **Part A — Implemented** (UI depends on these; keep the contract stable).
+> - **Part B — Missing** (UI ships sample/prototype data today; build these to go live). Each includes an example payload so the data shape is unambiguous.
+
+## Response envelope conventions
+
+```jsonc
+// ApiResponse<T>
+{ "message": "OK", "data": { /* T */ } }
+
+// PaginatedResponse<T>  (list endpoints)
+{ "message": "OK", "data": { "data": [ /* T[] */ ], "pagination": { "total": 42, "page": 1, "limit": 20, "totalPages": 3 } } }
+```
+
+---
+
+## Part A — Implemented endpoints (UI depends on these)
+
+### Vendors
+| Method | Path | Query / Body | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/admin/vendors` | `status, search, page, limit` | List / filter vendors |
+| GET | `/api/v1/admin/vendors/:id` | — | Vendor detail |
+| GET | `/api/v1/admin/vendors/:id/documents` | — | KYB documents |
+| POST | `/api/v1/vendors/onboard` | onboard payload | Create vendor (self-serve or admin) |
+| POST | `/api/v1/admin/vendors/:id/approve` | `{}` | Approve KYB |
+| POST | `/api/v1/admin/vendors/:id/kyc/reject` | `{ reason }` | Reject KYC |
+| POST | `/api/v1/admin/vendors/:id/blacklist` | `{}` | Blacklist |
+| PATCH | `/api/v1/admin/vendors/:id/status` | `{ status }` | Change status |
+| POST | `/api/v1/admin/vendors/:id/assign-products` | `{ loanProductIds: [] }` | Assign loan products |
+
+### Loans
+| Method | Path | Query / Body | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/admin/loans` | `status, search, page, limit` | List / filter loans |
+| GET | `/api/v1/admin/loans/:id` | — | Loan detail |
+| PATCH | `/api/v1/admin/loans/:id/status` | `{ status }` | Change loan status |
+
+### Loan products
+| Method | Path | Body | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/loan-products` | — | List |
+| GET | `/api/v1/loan-products/:id` | — | Detail |
+| POST | `/api/v1/loan-products` | product | Create |
+| PATCH | `/api/v1/loan-products/:id` | product | Update |
+| DELETE | `/api/v1/loan-products/:id` | — | Delete |
+| PATCH | `/api/v1/loan-products/:id/auto-disburse` | `{ autoDisburse }` | Toggle auto-disburse |
+| GET | `/api/v1/loan-products/caltos-catalog` | — | Caltos catalog for creation |
+| GET | `/api/v1/loan-products/:id/payment-methods` | — | Linked payment methods |
+| POST | `/api/v1/loan-products/:id/payment-methods` | rule | Link a payment method |
+| DELETE | `/api/v1/loan-products/:id/payment-methods/:methodId` | — | Unlink |
+
+### Customers
+| Method | Path | Query | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/admin/customers` | `status, search, page, limit` | List / filter |
+| GET | `/api/v1/admin/customers/:id` | — | Detail |
+
+### Settlements
+| Method | Path | Body | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/admin/settlements` | `status` (query) | List settlement ledger |
+| POST | `/api/v1/admin/settlements/mark-settled` | `{ settlement_ids: [], batch_payout_reference }` | Mark batch paid |
+| POST | `/api/v1/admin/settlements/trigger-t1-cutoff` | `{}` | Run T+1 cutoff |
+
+### Payment methods
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/v1/admin/payment-methods` | List collection methods |
+
+### Providers
+| Method | Path | Body | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/admin/identity-providers` | — | List identity providers |
+| PATCH | `/api/v1/admin/identity-providers/:code/set-default` | `{}` | Set default |
+| GET | `/api/v1/admin/utilities/providers` | — | List utility providers |
+| PATCH | `/api/v1/admin/utilities/providers/:code/set-default` | `{}` | Set default |
+
+### Identity / utilities verification
+| Method | Path | Body | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/utilities/banks` | — | Bank list |
+| POST | `/api/v1/identity/account/verify` | `{ accountNumber, bankCode }` | Resolve account |
+| POST | `/api/v1/identity/bvn/verify` | `{ bvn }` | Verify BVN |
+| POST | `/api/v1/identity/nin/verify` | `{ nin }` | Verify NIN |
+
+### ⚠️ Security defect (existing)
+Vendor responses currently leak `passwordHash` and `secretKeyLive`. Strip these
+from all admin vendor payloads — the UI never needs them and they must not cross the wire.
+
+---
+
+## Part B — Missing endpoints the UI needs (build to go live)
+
+These power screens that currently render **sample/prototype data**. Example
+payloads below are the exact shapes the UI expects.
+
+### B1. Reporting / analytics — Dashboard (highest priority)
+The whole dashboard "Reports" section (gross payout volume, loan status
+breakdown, top vendors/customers/categories, money movement) is sample data —
+there is no analytics endpoint. Proposed:
+
+**GET `/api/v1/admin/reports/payout-volume?from=&to=`**
+```json
+{ "message": "OK", "data": {
+  "total": 24600000, "previousTotal": 25080000,
+  "series": [
+    { "period": "2025-09", "value": 12400000, "vendorsServed": 18 },
+    { "period": "2025-10", "value": 14100000, "vendorsServed": 21 }
+  ] } }
+```
+
+**GET `/api/v1/admin/reports/loan-status-breakdown`**
+```json
+{ "message": "OK", "data": [
+  { "status": "ACTIVE", "count": 412 },
+  { "status": "PAID_OFF", "count": 268 },
+  { "status": "OVERDUE", "count": 34 },
+  { "status": "PENDING_DISBURSEMENT", "count": 19 } ] }
+```
+
+**GET `/api/v1/admin/reports/top?metric=vendors|customers|categories&limit=5`**
+```json
+{ "message": "OK", "data": [ { "name": "Northgate Retail", "amount": 18400000 } ] }
+```
+
+**GET `/api/v1/admin/reports/money-movement?month=YYYY-MM`**
+```json
+{ "message": "OK", "data": {
+  "moneyIn": 6318385, "moneyOut": 3547727,
+  "topSources": [ { "name": "Ifeoma Chukwu", "amount": 2140000 } ],
+  "topSpend":   [ { "name": "Northgate Retail", "amount": 1840000 } ] } }
+```
+
+Also: the dashboard summary cards currently make 4 separate list calls just to read
+`pagination.total`. A single **GET `/api/v1/admin/vendors/summary?from=&to=`** returning
+`{ total, pending, approved, blacklisted }` would replace that.
+
+### B2. Payment method — create (prototype today)
+`Add payment method` is client-only; there is no create endpoint.
+**POST `/api/v1/admin/payment-methods`**
+```json
+{ "name": "Opay Direct Debit", "code": "OPAY_DD", "type": "DIRECT_DEBIT" }
+```
+Returns the created `PaymentMethod`.
+
+### B3. Vendor onboarding — persist extra fields
+The onboarding wizard collects and live-verifies **CAC registration number**,
+**business address**, and **ownership BVN/NIN**, but the vendor model has no
+fields for them, so they are discarded. Add to the vendor entity + accept on
+`POST /api/v1/vendors/onboard`:
+```jsonc
+{
+  "businessName": "Northgate Retail Ltd",
+  "cacRegistrationNumber": "RC1234567",   // NEW
+  "businessAddress": "12 Admiralty Way, Lekki, Lagos", // NEW
+  "contactPhone": "+234...", "contactEmail": "ops@vendor.com",
+  "owners": [ { "fullName": "...", "bvn": "...", "nin": "..." } ], // NEW (verified, persist result)
+  "settlement": { "accountName": "...", "accountNumber": "...", "bankCode": "058" }
+}
+```
+
+### B4. Notifications feed (mock today)
+The header bell renders a hardcoded list. Needed:
+- **GET `/api/v1/admin/notifications?page=&limit=`** → paginated notifications
+  `{ id, type, title, body, createdAt, readAt }`
+- **PATCH `/api/v1/admin/notifications/read-all`** → mark all read
+- **PATCH `/api/v1/admin/notifications/:id/read`** → mark one read
+
+```json
+{ "id": "ntf_01", "type": "LOAN_REPAYMENT", "title": "Loan repayment",
+  "body": "John Doe (₦50,000) made a repayment", "createdAt": "2026-08-19T11:00:00Z", "readAt": null }
+```
+(Note: the future workspace hub also wants a separate **product updates / release notes**
+channel — keep that distinct from transactional notifications.)
+
+### B5. Customer reference (nice-to-have)
+The list can show a human-facing `internalCustomerId` (e.g. `AF-CUST-00412`) under the
+name. It's currently absent, so the UI shows nothing there. Add if a customer-facing
+reference is desired.
+
+### B6. Loan detail sub-resources (verify)
+Confirm `GET /api/v1/admin/loans/:id` returns the repayment schedule / history the
+detail page needs (installments, amounts, due dates, paid status). If not, add
+**GET `/api/v1/admin/loans/:id/repayments`**.
+
+---
+
+## Priority for go-live
+1. **B1 Reporting** — the dashboard is the first screen; sample data is the biggest gap.
+2. **B3 Vendor fields** — CAC/address/ownership are compliance data that must persist.
+3. **A security fix** — stop leaking `passwordHash`/`secretKeyLive`.
+4. **B2 Payment-method create**, **B4 Notifications** — remove the last prototypes.
+5. **B5 / B6** — polish.
