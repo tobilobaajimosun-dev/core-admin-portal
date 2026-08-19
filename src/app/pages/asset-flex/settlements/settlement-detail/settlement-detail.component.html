@@ -24,52 +24,56 @@
     </div>
   </header>
 
-  <div class="detail-grid">
-    <section class="pa-card">
-      <h2 class="pa-card__title">Payout amounts</h2>
-      <dl class="pa-kv">
-        <div class="pa-kv__row"><dt>Gross order amount</dt><dd>{{ s.grossOrderAmount | naira }}</dd></div>
-        <div class="pa-kv__row"><dt>Platform fee</dt><dd>{{ s.platformFeeDeduction | naira }}</dd></div>
-        <div class="pa-kv__row"><dt>Net settlement</dt><dd class="detail-strong">{{ s.netSettlementAmount | naira }}</dd></div>
-      </dl>
-    </section>
+  <div class="af-detail-layout">
+    <div class="af-detail-main">
+      <section class="pa-card">
+        <h2 class="pa-card__title">Payout amounts</h2>
+        <dl class="pa-kv">
+          <div class="pa-kv__row"><dt>Gross order amount</dt><dd>{{ s.grossOrderAmount | naira }}</dd></div>
+          <div class="pa-kv__row"><dt>Platform fee</dt><dd>{{ s.platformFeeDeduction | naira }}</dd></div>
+          <div class="pa-kv__row"><dt>Net settlement</dt><dd class="detail-strong">{{ s.netSettlementAmount | naira }}</dd></div>
+        </dl>
+      </section>
 
-    <section class="pa-card">
-      <h2 class="pa-card__title">Ledger &amp; parties</h2>
-      <dl class="pa-kv">
-        <div class="pa-kv__row"><dt>Vendor</dt><dd>{{ s.vendor?.businessName || s.vendorId }}</dd></div>
-        <div class="pa-kv__row">
-          <dt>Loan</dt>
-          <dd><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', s.loanId]">{{ s.loan?.loanReference || s.loanId }}</a></dd>
-        </div>
-        <div class="pa-kv__row"><dt>Due date</dt><dd>{{ s.settlementDueDate ? (s.settlementDueDate | date: 'medium') : '—' }}</dd></div>
-        <div class="pa-kv__row"><dt>Settled</dt><dd>{{ s.settledAt ? (s.settledAt | date: 'medium') : '—' }}</dd></div>
-        <div class="pa-kv__row"><dt>Batch reference</dt><dd class="pa-mono">{{ s.batchPayoutReference || '—' }}</dd></div>
-        <div class="pa-kv__row"><dt>Created</dt><dd>{{ s.createdAt | date: 'medium' }}</dd></div>
-      </dl>
-    </section>
+      <section class="pa-card stl-timeline">
+        <h2 class="pa-card__title">Timeline</h2>
+        <ul class="tl">
+          <li class="tl__item tl__item--done">
+            <span class="tl__dot"></span>
+            <div class="tl__body"><span class="tl__label">Created</span><span class="tl__date">{{ s.createdAt | date: 'medium' }}</span></div>
+          </li>
+          <li class="tl__item" [class.tl__item--done]="!!s.settledAt">
+            <span class="tl__dot"></span>
+            <div class="tl__body"><span class="tl__label">Due</span><span class="tl__date">{{ s.settlementDueDate ? (s.settlementDueDate | date: 'medium') : '—' }}</span></div>
+          </li>
+          <li class="tl__item" [class.tl__item--done]="!!s.settledAt">
+            <span class="tl__dot"></span>
+            <div class="tl__body">
+              <span class="tl__label">Settled</span>
+              <span class="tl__date">{{ s.settledAt ? (s.settledAt | date: 'medium') : 'Pending' }}</span>
+              @if (s.batchPayoutReference) { <span class="tl__ref pa-mono">{{ s.batchPayoutReference }}</span> }
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <aside class="af-detail-rail">
+      <section class="pa-card">
+        <h2 class="pa-card__title">Ledger &amp; parties</h2>
+        <dl class="pa-kv">
+          <div class="pa-kv__row"><dt>Vendor</dt><dd>{{ s.vendor?.businessName || s.vendorId }}</dd></div>
+          <div class="pa-kv__row">
+            <dt>Loan</dt>
+            <dd><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', s.loanId]">{{ s.loan?.loanReference || s.loanId }}</a></dd>
+          </div>
+          <div class="pa-kv__row"><dt>Due date</dt><dd>{{ s.settlementDueDate ? (s.settlementDueDate | date: 'mediumDate') : '—' }}</dd></div>
+          <div class="pa-kv__row"><dt>Settled</dt><dd>{{ s.settledAt ? (s.settledAt | date: 'mediumDate') : '—' }}</dd></div>
+          <div class="pa-kv__row"><dt>Batch reference</dt><dd class="pa-mono">{{ s.batchPayoutReference || '—' }}</dd></div>
+          <div class="pa-kv__row"><dt>Created</dt><dd>{{ s.createdAt | date: 'mediumDate' }}</dd></div>
+        </dl>
+      </section>
+    </aside>
   </div>
-
-  <section class="pa-card stl-timeline">
-    <h2 class="pa-card__title">Timeline</h2>
-    <ul class="tl">
-      <li class="tl__item tl__item--done">
-        <span class="tl__dot"></span>
-        <div class="tl__body"><span class="tl__label">Created</span><span class="tl__date">{{ s.createdAt | date: 'medium' }}</span></div>
-      </li>
-      <li class="tl__item" [class.tl__item--done]="!!s.settledAt">
-        <span class="tl__dot"></span>
-        <div class="tl__body"><span class="tl__label">Due</span><span class="tl__date">{{ s.settlementDueDate ? (s.settlementDueDate | date: 'medium') : '—' }}</span></div>
-      </li>
-      <li class="tl__item" [class.tl__item--done]="!!s.settledAt">
-        <span class="tl__dot"></span>
-        <div class="tl__body">
-          <span class="tl__label">Settled</span>
-          <span class="tl__date">{{ s.settledAt ? (s.settledAt | date: 'medium') : 'Pending' }}</span>
-          @if (s.batchPayoutReference) { <span class="tl__ref pa-mono">{{ s.batchPayoutReference }}</span> }
-        </div>
-      </li>
-    </ul>
-  </section>
 }
 </div>

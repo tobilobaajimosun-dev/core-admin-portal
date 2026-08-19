@@ -28,59 +28,63 @@
     </div>
   </header>
 
-  <div class="detail-grid">
-    <section class="pa-card">
-      <h2 class="pa-card__title">Product terms</h2>
-      <dl class="pa-kv">
-        <div class="pa-kv__row"><dt>Interest rate</dt><dd>{{ p.interestRatePercentage }}%</dd></div>
-        <div class="pa-kv__row"><dt>Tenor</dt><dd>{{ p.tenorMonths }} {{ p.tenorMonths === 1 ? 'month' : 'months' }}</dd></div>
-        <div class="pa-kv__row"><dt>Minimum principal</dt><dd>{{ p.minPrincipalAmount | naira }}</dd></div>
-        <div class="pa-kv__row"><dt>Maximum principal</dt><dd>{{ p.maxPrincipalAmount | naira }}</dd></div>
-      </dl>
-    </section>
-
-    <section class="pa-card">
-      <h2 class="pa-card__title">Configuration</h2>
-      <dl class="pa-kv">
-        <div class="pa-kv__row"><dt>Product code</dt><dd class="pa-mono">{{ p.code }}</dd></div>
-        <div class="pa-kv__row"><dt>Caltos product ID</dt><dd class="pa-mono">{{ p.caltosProductId }}</dd></div>
-        <div class="pa-kv__row"><dt>Auto-disburse</dt><dd>{{ p.autoDisburse ? 'On' : 'Off' }}</dd></div>
-        <div class="pa-kv__row"><dt>Created</dt><dd>{{ p.createdAt | date: 'medium' }}</dd></div>
-      </dl>
-    </section>
-  </div>
-
-  <section class="pa-card lp-loans">
-    <div class="lp-loans__head">
-      <h2 class="pa-card__title">Loans on this product</h2>
-      <div class="lp-summary">
-        <span class="lp-summary__item"><strong>{{ loans().length }}</strong> loans</span>
-        <span class="lp-summary__item"><strong>{{ totalDisbursed() | naira }}</strong> disbursed</span>
-        @for (s of statusSplit(); track s.status) {
-          <span class="lp-status"><app-status-badge [tone]="statusTone(s.status)" [text]="s.status" /> {{ s.count }}</span>
-        }
-      </div>
-    </div>
-    @if (loans().length) {
-      <div class="pa-gtable-wrap">
-        <div class="pa-gtable lp-gtable">
-          <div class="pa-gtable__head">
-            <span>Reference</span><span>Vendor</span><span class="pa-gtable__cell--right">Principal</span><span>Status</span><span class="pa-gtable__cell--right">Created</span>
+  <div class="af-detail-layout">
+    <div class="af-detail-main">
+      <section class="pa-card lp-loans">
+        <div class="lp-loans__head">
+          <h2 class="pa-card__title">Loans on this product</h2>
+          <div class="lp-summary">
+            <span class="lp-summary__item"><strong>{{ loans().length }}</strong> loans</span>
+            <span class="lp-summary__item"><strong>{{ totalDisbursed() | naira }}</strong> disbursed</span>
+            @for (s of statusSplit(); track s.status) {
+              <span class="lp-status"><app-status-badge [tone]="statusTone(s.status)" [text]="s.status" /> {{ s.count }}</span>
+            }
           </div>
-          @for (l of loans(); track l.id) {
-            <div class="pa-gtable__row">
-              <div class="pa-gtable__cell"><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', l.id]">{{ l.loanReference }}</a></div>
-              <div class="pa-gtable__cell pa-cell-sub">{{ l.vendor?.businessName || '—' }}</div>
-              <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ l.principalAmount | naira }}</div>
-              <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(l.status)" [text]="l.status" /></div>
-              <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ l.createdAt | date: 'mediumDate' }}</div>
-            </div>
-          }
         </div>
-      </div>
-    } @else {
-      <p class="lp-empty">No loans have used this product yet.</p>
-    }
-  </section>
+        @if (loans().length) {
+          <div class="pa-gtable-wrap">
+            <div class="pa-gtable lp-gtable">
+              <div class="pa-gtable__head">
+                <span>Reference</span><span>Vendor</span><span class="pa-gtable__cell--right">Principal</span><span>Status</span><span class="pa-gtable__cell--right">Created</span>
+              </div>
+              @for (l of loans(); track l.id) {
+                <div class="pa-gtable__row">
+                  <div class="pa-gtable__cell"><a class="pa-cell-link" [routerLink]="['/asset-flex/loans', l.id]">{{ l.loanReference }}</a></div>
+                  <div class="pa-gtable__cell pa-cell-sub">{{ l.vendor?.businessName || '—' }}</div>
+                  <div class="pa-gtable__cell pa-gtable__cell--right pa-amount">{{ l.principalAmount | naira }}</div>
+                  <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(l.status)" [text]="l.status" /></div>
+                  <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ l.createdAt | date: 'mediumDate' }}</div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <p class="lp-empty">No loans have used this product yet.</p>
+        }
+      </section>
+    </div>
+
+    <aside class="af-detail-rail">
+      <section class="pa-card">
+        <h2 class="pa-card__title">Product terms</h2>
+        <dl class="pa-kv">
+          <div class="pa-kv__row"><dt>Interest rate</dt><dd>{{ p.interestRatePercentage }}%</dd></div>
+          <div class="pa-kv__row"><dt>Tenor</dt><dd>{{ p.tenorMonths }} {{ p.tenorMonths === 1 ? 'month' : 'months' }}</dd></div>
+          <div class="pa-kv__row"><dt>Minimum principal</dt><dd>{{ p.minPrincipalAmount | naira }}</dd></div>
+          <div class="pa-kv__row"><dt>Maximum principal</dt><dd>{{ p.maxPrincipalAmount | naira }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="pa-card">
+        <h2 class="pa-card__title">Configuration</h2>
+        <dl class="pa-kv">
+          <div class="pa-kv__row"><dt>Product code</dt><dd class="pa-mono">{{ p.code }}</dd></div>
+          <div class="pa-kv__row"><dt>Caltos product ID</dt><dd class="pa-mono">{{ p.caltosProductId }}</dd></div>
+          <div class="pa-kv__row"><dt>Auto-disburse</dt><dd>{{ p.autoDisburse ? 'On' : 'Off' }}</dd></div>
+          <div class="pa-kv__row"><dt>Created</dt><dd>{{ p.createdAt | date: 'mediumDate' }}</dd></div>
+        </dl>
+      </section>
+    </aside>
+  </div>
 }
 </div>

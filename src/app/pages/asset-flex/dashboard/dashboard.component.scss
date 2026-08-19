@@ -405,6 +405,16 @@ h2, h3, h4 {
 /* ── Panel variants ── */
 .panel--wide { margin-bottom: 16px; }
 
+.reports__donuts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (min-width: 820px) {
+  .reports__donuts { grid-template-columns: 1fr 1fr; }
+}
+
 .panel__head-row {
   display: flex;
   align-items: flex-start;
