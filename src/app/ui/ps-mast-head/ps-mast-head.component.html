@@ -41,6 +41,7 @@
           type="text"
           [(ngModel)]="searchText"
           (ngModelChange)="onSearchChange($event)"
+          (keyup.enter)="submitSearch()"
           placeholder="Search by customer name or loan id"
           class="text-sm outline-none rounded-lg border border-[#D2DBE1] py-2 pl-9 pr-4 w-[380px]"
         />
@@ -107,6 +108,7 @@
           type="text"
           [(ngModel)]="searchText"
           (ngModelChange)="onSearchChange($event)"
+          (keyup.enter)="submitSearch()"
           placeholder="Search by customer name or loan id"
           class="text-base outline-none rounded-lg border border-[#D2DBE1] py-2.5 pl-9 pr-4 w-full"
         />
