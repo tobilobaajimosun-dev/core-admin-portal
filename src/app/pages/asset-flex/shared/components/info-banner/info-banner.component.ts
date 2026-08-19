@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { InformationCircleIcon, Cancel01Icon } from '@hugeicons-pro/core-stroke-rounded';
+import { Cancel01Icon } from '@hugeicons-pro/core-stroke-rounded';
 
 const STORAGE_PREFIX = 'pa-dismissed-banner:';
 
@@ -19,7 +19,6 @@ export class InfoBannerComponent {
   readonly ctaLabel = input('');
   readonly ctaClick = output<void>();
 
-  protected readonly ideaIcon = InformationCircleIcon;
   protected readonly closeIcon = Cancel01Icon;
   protected readonly dismissed = signal(false);
 

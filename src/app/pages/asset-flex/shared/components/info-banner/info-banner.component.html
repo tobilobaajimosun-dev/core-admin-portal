@@ -1,6 +1,10 @@
 @if (!dismissed()) {
   <div class="info-banner" role="status">
-    <hugeicons-icon [icon]="ideaIcon" [size]="20" [strokeWidth]="1.75" color="currentColor" class="info-banner__icon" />
+    <svg class="info-banner__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75" />
+      <path d="M12 11.25v4.75" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+      <circle cx="12" cy="7.75" r="1.1" fill="currentColor" />
+    </svg>
     <p class="info-banner__message">{{ message() }}</p>
     @if (ctaLabel()) {
       <button type="button" class="info-banner__cta" (click)="ctaClick.emit()">{{ ctaLabel() }}</button>

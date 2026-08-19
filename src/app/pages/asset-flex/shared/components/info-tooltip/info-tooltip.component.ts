@@ -1,6 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded';
 
 let nextId = 0;
 
@@ -11,7 +9,7 @@ let nextId = 0;
  */
 @Component({
   selector: 'app-info-tooltip',
-  imports: [HugeiconsIconComponent],
+  imports: [],
   templateUrl: './info-tooltip.component.html',
   styleUrl: './info-tooltip.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +18,6 @@ export class InfoTooltipComponent {
   readonly text = input.required<string>();
   readonly label = input('More info');
 
-  protected readonly infoIcon = InformationCircleIcon;
   protected readonly open = signal(false);
   protected readonly tooltipId = `info-tooltip-${nextId++}`;
 

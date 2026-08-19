@@ -8,7 +8,11 @@
     (focus)="show()"
     (blur)="hide()"
   >
-    <hugeicons-icon [icon]="infoIcon" [size]="14" [strokeWidth]="1.75" color="currentColor" />
+    <svg class="info-tooltip__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.9" />
+      <path d="M12 11.25v4.75" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+      <circle cx="12" cy="7.75" r="1.15" fill="currentColor" />
+    </svg>
   </button>
 
   @if (open()) {
