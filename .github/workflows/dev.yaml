@@ -66,6 +66,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
+          secrets: |
+            npm_token=${{ secrets.NPM_TOKEN }}
           tags: ghcr.io/princeps-finance/core-admin-portal:dev
   
   docker-deploy:

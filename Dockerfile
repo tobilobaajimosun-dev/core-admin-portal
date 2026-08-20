@@ -2,8 +2,12 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+COPY package*.json .npmrc ./
+# NPM_TOKEN (private Hugeicons registry) is passed as a BuildKit secret so it is
+# only present for this command and never written to an image layer. .npmrc reads
+# it via ${NPM_TOKEN}. Local dev needs no change — the token is in the shell env.
+RUN --mount=type=secret,id=npm_token \
+    NPM_TOKEN="$(cat /run/secrets/npm_token 2>/dev/null)" npm ci
 
 COPY . .
 RUN npm run build -- --configuration production
