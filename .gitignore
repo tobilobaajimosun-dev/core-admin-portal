@@ -43,3 +43,19 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 .env
+# --- Local tooling & ShipSecure scaffolding (fork cruft — never commit to dev) ---
+# Next.js leftovers from the stale fork this Angular app was ported into
+.next/
+next-env.d.ts
+tsconfig.tsbuildinfo
+# AI assistant rule files (local-only)
+.clinerules
+.cursorrules
+.windsurfrules
+.github/copilot-instructions.md
+# ShipSecure local scaffolding + policy docs (kept locally, not part of the repo)
+.secure-repo-initialized
+/SECURITY.md
+/AUTH.md
+/API.md
+/ACCESSIBILITY.md
