@@ -41,6 +41,10 @@ let uid = 0;
     <div class="afs" [class.afs--open]="open()" [class.afs--searchable]="searchable()">
       @if (searchable() && open()) {
         <div class="afs__searchwrap">
+          <svg class="afs__searchicon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.25" stroke="currentColor" stroke-width="1.6" />
+            <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
           <input
             #searchInput
             type="text"
@@ -57,9 +61,6 @@ let uid = 0;
             (input)="onQuery($event)"
             (keydown)="onKeydown($event)"
           />
-          <svg class="afs__caret afs__caret--input" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
         </div>
       } @else {
         <button
@@ -92,6 +93,7 @@ let uid = 0;
               [attr.tabindex]="searchable() ? -1 : null"
               role="option"
               [attr.aria-selected]="o.value === value()"
+              (mouseenter)="onHover(i)"
               (mousedown)="$event.preventDefault()"
               (click)="select(o.value)"
             >
@@ -187,6 +189,11 @@ export class SelectComponent implements ControlValueAccessor {
   protected onQuery(event: Event): void {
     this.query.set((event.target as HTMLInputElement).value);
     this.activeIndex.set(0);
+  }
+
+  /** Sync the keyboard-active row to the hovered one so only one option highlights. */
+  protected onHover(i: number): void {
+    if (this.searchable()) this.activeIndex.set(i);
   }
 
   protected onKeydown(event: KeyboardEvent): void {

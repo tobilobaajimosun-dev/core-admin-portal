@@ -33,20 +33,22 @@
 .afs__caret { flex-shrink: 0; color: var(--ca-text-muted); transition: transform 130ms cubic-bezier(0.22, 1, 0.36, 1); }
 .afs--open .afs__caret { transform: rotate(180deg); }
 
-/* Searchable (combobox) mode: the trigger becomes a text input. */
+/* Searchable (combobox) mode: the trigger becomes a text input with a leading
+   search icon (a dropdown chevron reads wrong on a field you type into). */
 .afs__searchwrap { position: relative; }
-.afs__search { padding-right: 34px; } /* room for the caret */
+.afs__search { padding-left: 36px; padding-right: 12px; }
 .afs__search::placeholder { color: var(--ca-text-faint); }
 .afs__search:focus {
   outline: none;
   border-color: var(--color-primary-hex);
   box-shadow: 0 0 0 3px rgba(0, 179, 255, 0.15);
 }
-.afs__caret--input {
+.afs__searchicon {
   position: absolute;
   top: 50%;
-  right: 12px;
-  transform: translateY(-50%) rotate(180deg);
+  left: 12px;
+  transform: translateY(-50%);
+  color: var(--ca-text-muted);
   pointer-events: none;
 }
 
@@ -87,7 +89,10 @@
   font-family: inherit;
   cursor: pointer;
 }
-.afs__option:hover,
+/* Non-searchable keeps hover highlight; searchable syncs hover -> active index
+   (via onHover) and highlights only the single active row, avoiding a
+   double-highlight when the pointer and keyboard cursor differ. */
+.afs:not(.afs--searchable) .afs__option:hover,
 .afs__option--focus { background: var(--ca-card-bg); }
 .afs__option--active {
   background: color-mix(in srgb, var(--color-primary-hex) 10%, #fff);
