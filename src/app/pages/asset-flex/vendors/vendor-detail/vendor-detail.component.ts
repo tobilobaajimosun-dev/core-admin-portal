@@ -195,9 +195,14 @@ export class VendorDetailComponent {
       return;
     }
 
+    // Captured before the action so a reversible change can be undone.
+    const prevStatus = this.vendor()?.status;
+
     this.acting.set(true);
-    const done = (message: string) => {
-      this.toast.success(message);
+    // `undo`, when provided, shows a dark Undo toast that restores the prior status.
+    const done = (message: string, undo?: () => void) => {
+      if (undo) this.toast.undo(message, undo);
+      else this.toast.success(message);
       this.acting.set(false);
       this.dialog.set(null);
       this.load();
@@ -206,6 +211,17 @@ export class VendorDetailComponent {
       this.acting.set(false);
       this.toast.error(`Could not ${this.dialogTitle(type).toLowerCase()}. Please try again.`);
     };
+
+    const restore = prevStatus
+      ? () =>
+          this.vendorService.updateStatus(id, { status: prevStatus }).subscribe({
+            next: () => {
+              this.toast.success('Change reverted.');
+              this.load();
+            },
+            error: () => this.toast.error('Could not undo. Please try again.'),
+          })
+      : undefined;
 
     switch (type) {
       case 'approve':
@@ -217,10 +233,10 @@ export class VendorDetailComponent {
           .subscribe({ next: () => done('Vendor KYC rejected.'), error: fail });
         break;
       case 'blacklist':
-        this.vendorService.blacklist(id).subscribe({ next: () => done('Vendor blacklisted.'), error: fail });
+        this.vendorService.blacklist(id).subscribe({ next: () => done('Vendor blacklisted.', restore), error: fail });
         break;
       case 'suspend':
-        this.setStatus(id, 'SUSPENDED', 'Vendor suspended.', done, fail);
+        this.setStatus(id, 'SUSPENDED', 'Vendor suspended.', (m) => done(m, restore), fail);
         break;
       case 'activate':
         this.setStatus(id, 'APPROVED', 'Vendor reactivated.', done, fail);
