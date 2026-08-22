@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiResponse } from '@pages/asset-flex/shared/models/generic.model';
 import {
   CaltosCatalogItem,
@@ -52,7 +53,16 @@ export class LoanProductService {
   }
 
   caltosCatalog(): Observable<ApiResponse<CaltosCatalogItem[]>> {
-    return this.http.get<ApiResponse<CaltosCatalogItem[]>>(`${this.base}/caltos-catalog`);
+    // The catalog endpoint returns a bare array (not the standard { data } envelope),
+    // so normalise both shapes into ApiResponse.data for consistent consumption.
+    return this.http
+      .get<ApiResponse<CaltosCatalogItem[]> | CaltosCatalogItem[]>(`${this.base}/caltos-catalog`)
+      .pipe(
+        map((res) => {
+          const data = Array.isArray(res) ? res : (res?.data ?? []);
+          return { status: 'success', message: 'OK', data };
+        }),
+      );
   }
 
   listPaymentMethods(id: string): Observable<ApiResponse<LinkedPaymentMethod[]>> {
