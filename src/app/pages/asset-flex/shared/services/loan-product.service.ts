@@ -53,16 +53,23 @@ export class LoanProductService {
   }
 
   caltosCatalog(): Observable<ApiResponse<CaltosCatalogItem[]>> {
-    // The catalog endpoint returns a bare array (not the standard { data } envelope),
-    // so normalise both shapes into ApiResponse.data for consistent consumption.
-    return this.http
-      .get<ApiResponse<CaltosCatalogItem[]> | CaltosCatalogItem[]>(`${this.base}/caltos-catalog`)
-      .pipe(
-        map((res) => {
-          const data = Array.isArray(res) ? res : (res?.data ?? []);
-          return { status: 'success', message: 'OK', data };
-        }),
-      );
+    // The catalog endpoint wraps its rows in a paginated envelope: the items live at
+    // data.items (with a sibling pagination object), not at data. Normalise the known
+    // shapes — { data: { items } }, { data: [] }, or a bare array — into a flat
+    // ApiResponse.data array so callers can read res.data directly.
+    return this.http.get<unknown>(`${this.base}/caltos-catalog`).pipe(
+      map((res) => {
+        const body = res as { data?: CaltosCatalogItem[] | { items?: CaltosCatalogItem[] } } | CaltosCatalogItem[];
+        const data = Array.isArray(body)
+          ? body
+          : Array.isArray(body?.data)
+            ? body.data
+            : Array.isArray((body?.data as { items?: CaltosCatalogItem[] })?.items)
+              ? (body.data as { items: CaltosCatalogItem[] }).items
+              : [];
+        return { status: 'success', message: 'OK', data };
+      }),
+    );
   }
 
   listPaymentMethods(id: string): Observable<ApiResponse<LinkedPaymentMethod[]>> {
