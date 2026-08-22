@@ -43,6 +43,10 @@ import { SelectComponent } from '@pages/asset-flex/shared/components/select/sele
       </ng-container>
     </app-modal-shell>
   `,
+  // This modal is standalone with an inline template, so it needs its own field
+  // spacing — the .form rule in loan-products.component.scss is view-encapsulated
+  // and does not reach here. Gap follows the 4/8px scale.
+  styles: `.form { display: flex; flex-direction: column; gap: 20px; }`,
 })
 export class LoanProductCreateModalComponent {
   private readonly service = inject(LoanProductService);
