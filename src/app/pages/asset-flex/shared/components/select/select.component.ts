@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   forwardRef,
@@ -33,7 +34,6 @@ let uid = 0;
   selector: 'af-select',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '(document:click)': 'onDocumentClick($event)',
     '(document:keydown.escape)': 'close()',
   },
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => SelectComponent), multi: true }],
@@ -110,6 +110,7 @@ let uid = 0;
 })
 export class SelectComponent implements ControlValueAccessor {
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly options = input<SelectOption[]>([]);
   readonly placeholder = input('Select…');
@@ -158,6 +159,13 @@ export class SelectComponent implements ControlValueAccessor {
       const el = this.menu()?.nativeElement.querySelector<HTMLElement>(`#${CSS.escape(this.optionId(this.activeIndex()))}`);
       el?.scrollIntoView({ block: 'nearest' });
     });
+
+    // Close on outside click. Listen in the capture phase so it still fires when
+    // an ancestor (e.g. a modal panel) stops click propagation in the bubble
+    // phase to guard its backdrop.
+    const onDocClick = (event: Event) => this.onDocumentClick(event);
+    document.addEventListener('click', onDocClick, true);
+    this.destroyRef.onDestroy(() => document.removeEventListener('click', onDocClick, true));
   }
 
   protected optionId(i: number): string {
