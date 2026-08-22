@@ -74,6 +74,10 @@
 .ms-body {
   padding: 0 24px 16px;
   overflow-y: auto;
+  /* Grow to fit content, but stay within the panel's max-height and scroll
+     internally instead of overflowing it (e.g. an expanded in-flow combobox). */
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .ms-foot:not(:empty) {

@@ -21,7 +21,14 @@ import { SelectComponent } from '@pages/asset-flex/shared/components/select/sele
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="form" id="lp-create-modal">
         <div class="pa-field">
           <label class="pa-field__label" for="lpc-caltos">Caltos product</label>
-          <af-select formControlName="caltos_product_id" [options]="catalogOptions()" placeholder="Select from catalog" />
+          <af-select
+            inputId="lpc-caltos"
+            formControlName="caltos_product_id"
+            [options]="catalogOptions()"
+            [searchable]="true"
+            placeholder="Select from catalog"
+            searchPlaceholder="Search loan products…"
+          />
         </div>
         <div class="pa-field">
           <label class="pa-field__label" for="lpc-code">Product code</label>
