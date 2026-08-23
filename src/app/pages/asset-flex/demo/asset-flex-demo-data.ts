@@ -3,7 +3,7 @@ import { LoanCategory } from '@pages/asset-flex/shared/models/category.model';
 import { Settlement } from '@pages/asset-flex/shared/models/settlement.model';
 import { Customer, CustomerDocument, IdVerification, WorkDetails } from '@pages/asset-flex/shared/models/customer.model';
 import { LoanProduct } from '@pages/asset-flex/shared/models/loan-product.model';
-import { Vendor, VendorDocument, VendorOwner, VendorStatus, DocumentStatus } from '@pages/asset-flex/shared/models/vendor.model';
+import { CaltosVendor, Vendor, VendorDocument, VendorOwner, VendorStatus, DocumentStatus } from '@pages/asset-flex/shared/models/vendor.model';
 
 const TEAM = ['Wisdom Okafor', 'Blessing Ade', 'Emeka Obi', 'Ngozi Umeh'];
 const BANKS = [
@@ -332,10 +332,28 @@ const VENDOR_META = [
 const OWNER_FIRST = ['Chidi', 'Bello', 'Ada', 'Emeka', 'Ngozi'];
 const PARTNER_FIRST = ['Ronke', 'Sadiq', 'Ify', 'Tayo', 'Uche'];
 
+/** Caltos vendor directory used by the sync picker. */
+export const DEMO_CALTOS_VENDORS: CaltosVendor[] = [
+  { id: 'CV-1001', name: 'Everstone Motors (Caltos)', email: 'ops@everstone.caltos.io', status: 'ACTIVE' },
+  { id: 'CV-1002', name: 'Bluewave Electronics (Caltos)', email: 'ops@bluewave.caltos.io', status: 'ACTIVE' },
+  { id: 'CV-1003', name: 'Northgate Retail (Caltos)', email: 'ops@northgate.caltos.io', status: 'ACTIVE' },
+  { id: 'CV-1004', name: 'Palm Court Appliances (Caltos)', email: 'ops@palmcourt.caltos.io', status: 'ACTIVE' },
+  { id: 'CV-1005', name: 'Aro Fashion House (Caltos)', email: 'ops@arofashion.caltos.io', status: 'ACTIVE' },
+  { id: 'CV-1006', name: 'Zenith Traders (Caltos)', email: 'ops@zenithtraders.caltos.io', status: 'ACTIVE' },
+];
+
+export function findDemoCaltosVendor(id: string): CaltosVendor | undefined {
+  return DEMO_CALTOS_VENDORS.find((c) => c.id === id);
+}
+
+// Pre-link a couple of vendors so the "linked" state is visible out of the box.
+const CALTOS_PRELINK: Record<number, string> = { 1: 'CV-1001', 3: 'CV-1002' };
+
 export const DEMO_VENDORS: Vendor[] = VENDORS.map((v, i) => {
   const meta = VENDOR_META[i % VENDOR_META.length];
   const bank = BANKS[i % BANKS.length];
   const status: VendorStatus = i === 0 ? 'PENDING_APPROVAL' : i === 4 ? 'SUSPENDED' : 'APPROVED';
+  const caltos = CALTOS_PRELINK[i] ? findDemoCaltosVendor(CALTOS_PRELINK[i]) : undefined;
   const owners: VendorOwner[] = [
     { fullName: `${OWNER_FIRST[i]} ${v.businessName.split(' ')[0]}`, role: 'Director / CEO', bvn: `221${pad(i)}9988${i}`, nin: `${20000000000 + i * 17}`, sharePercentage: 60 },
     { fullName: `${PARTNER_FIRST[i]} Adewale`, role: 'Co-founder', bvn: `221${pad(i)}1122${i}`, nin: `${21000000000 + i * 13}`, sharePercentage: 40 },
@@ -357,6 +375,9 @@ export const DEMO_VENDORS: Vendor[] = VENDORS.map((v, i) => {
     settlementAccountName: v.businessName,
     settlementSchedule: 'T_PLUS_1',
     apiKeyLive: `af_live_pk_${i}9x2beff2e3cf860560ac9b8e10`,
+    caltosVendorId: caltos?.id ?? null,
+    caltosVendorName: caltos?.name ?? null,
+    caltosLinkedAt: caltos ? isoDaysAgo(20 - i) : null,
     createdAt: isoDaysAgo(120 - i * 10),
     updatedAt: isoDaysAgo(5),
   };

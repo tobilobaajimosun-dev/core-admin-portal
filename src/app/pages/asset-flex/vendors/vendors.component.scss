@@ -10,7 +10,24 @@
 }
 
 .vendors-gtable {
-  --gt-cols: 1.8fr 1.6fr 1.6fr 1fr 1fr;
+  --gt-cols: 1.8fr 1.5fr 1.4fr 0.9fr 0.8fr 1fr;
+  /* Six two-line columns need more room than the 640px base; widen so the
+     wrapper scrolls horizontally on tablet instead of cramping the columns. */
+  min-width: 960px;
+}
+
+.caltos-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ca-text);
+}
+.caltos-tag__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #12b76a;
 }
 
 .identity {

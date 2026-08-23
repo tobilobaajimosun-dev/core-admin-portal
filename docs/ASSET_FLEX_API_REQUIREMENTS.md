@@ -291,3 +291,30 @@ Extend the reporting endpoints (Part B1) with a **category** breakdown and per-c
 filters: `GET /api/v1/admin/reports/loans-by-category` →
 `[ { "category": "GADGETS", "count": 268 } ]`, and accept `?category=` on loan list +
 payout-volume reports.
+
+### C7. Caltos vendor sync
+Map an Asset Flex vendor to its Caltos vendor record so settlements/reporting can
+reconcile across systems. The admin links this manually from the vendor detail view.
+
+- **Vendor payload** — extend the vendor record (list + detail) with:
+  ```
+  caltosVendorId: string | null
+  caltosVendorName: string | null   // resolved Caltos name, for display
+  caltosLinkedAt: string | null     // ISO timestamp
+  ```
+- `GET /api/v1/admin/caltos/vendors?search=` — searchable Caltos vendor directory
+  for the link picker:
+  ```json
+  [ { "id": "CV-1001", "name": "Everstone Motors", "email": "ops@…", "status": "ACTIVE" } ]
+  ```
+  (Bare array, `{data:[…]}`, or `{data:{items:[…]}}` all accepted client-side.)
+- `POST /api/v1/admin/vendors/:id/caltos-link` — body `{ "caltos_vendor_id": "CV-1001" }`
+  → returns the updated Vendor with the `caltos*` fields populated. Should validate
+  the Caltos ID exists; consider enforcing one Caltos vendor ↔ one Asset Flex vendor
+  and rejecting (409) if already linked elsewhere.
+- `DELETE /api/v1/admin/vendors/:id/caltos-link` → clears the link, returns the vendor.
+- **Filtering**: ideally accept `?caltosLinked=true|false` on the vendor list so the
+  "Linked / Not linked" table filter can be server-side (currently client-side).
+- **Audit**: record who linked/unlinked and when.
+
+_Until these ship, the UI runs against demo-mode fixtures (see demo-mode.interceptor)._

@@ -14,6 +14,7 @@ import { LoanService } from '../../shared/services/loan.service';
 import { LoanProduct } from '../../shared/models/loan-product.model';
 import { Loan } from '../../shared/models/loan.model';
 import { Vendor, VendorDocument, VendorStatus } from '../../shared/models/vendor.model';
+import { SelectComponent, SelectOption } from '../../shared/components/select/select.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { CategoryChipComponent } from '../../shared/components/category-chip/category-chip.component';
 import { NairaPipe } from '../../shared/pipes/naira.pipe';
@@ -33,6 +34,7 @@ type DialogType = 'approve' | 'reject' | 'blacklist' | 'suspend' | 'activate';
     ReactiveFormsModule,
     HugeiconsIconComponent,
     StatusBadgeComponent,
+    SelectComponent,
     CategoryChipComponent,
     NairaPipe,
     ModalShellComponent,
@@ -75,6 +77,73 @@ export class VendorDetailComponent {
   protected readonly isPending = computed(() => this.vendor()?.status === 'PENDING_APPROVAL');
   protected readonly isBlacklisted = computed(() => this.vendor()?.status === 'BLACKLISTED');
   protected readonly isSuspended = computed(() => this.vendor()?.status === 'SUSPENDED');
+
+  // Caltos sync
+  protected readonly isCaltosLinked = computed(() => !!this.vendor()?.caltosVendorId);
+  protected readonly linkOpen = signal(false);
+  protected readonly linking = signal(false);
+  protected readonly caltosOptions = signal<SelectOption[]>([]);
+  protected readonly linkControl = new FormControl('', { nonNullable: true, validators: [Validators.required] });
+
+  protected openLinkCaltos(): void {
+    this.linkControl.setValue(this.vendor()?.caltosVendorId ?? '');
+    this.caltosOptions.set([]);
+    this.linkOpen.set(true);
+    this.vendorService.searchCaltosVendors().subscribe({
+      next: (res) =>
+        this.caltosOptions.set(
+          (res.data ?? []).map((c) => ({ label: c.name, value: c.id, description: c.email ? `${c.id} · ${c.email}` : c.id })),
+        ),
+    });
+  }
+
+  protected closeLinkCaltos(): void {
+    if (this.linking()) return;
+    this.linkOpen.set(false);
+  }
+
+  protected confirmLinkCaltos(): void {
+    const id = this.id();
+    const caltosId = this.linkControl.value;
+    if (!id || !caltosId) {
+      this.linkControl.markAsTouched();
+      return;
+    }
+    this.linking.set(true);
+    this.vendorService.linkCaltosVendor(id, caltosId).subscribe({
+      next: () => {
+        this.toast.success('Caltos vendor linked.');
+        this.linking.set(false);
+        this.linkOpen.set(false);
+        this.load();
+      },
+      error: () => {
+        this.linking.set(false);
+        this.toast.error('Could not link the Caltos vendor. Please try again.');
+      },
+    });
+  }
+
+  protected unlinkCaltos(): void {
+    const id = this.id();
+    const prev = this.vendor()?.caltosVendorId;
+    if (!id || !prev) return;
+    this.vendorService.unlinkCaltosVendor(id).subscribe({
+      next: () => {
+        this.toast.undo('Caltos vendor unlinked.', () =>
+          this.vendorService.linkCaltosVendor(id, prev).subscribe({
+            next: () => {
+              this.toast.success('Link restored.');
+              this.load();
+            },
+            error: () => this.toast.error('Could not undo. Please try again.'),
+          }),
+        );
+        this.load();
+      },
+      error: () => this.toast.error('Could not unlink the Caltos vendor. Please try again.'),
+    });
+  }
 
   // Assign-products modal
   protected readonly assignOpen = signal(false);

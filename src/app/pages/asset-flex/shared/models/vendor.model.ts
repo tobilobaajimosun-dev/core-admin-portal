@@ -29,8 +29,24 @@ export interface Vendor {
   settlementAccountName: string;
   settlementSchedule: SettlementSchedule;
   loanProducts?: unknown[];
+  /** Linked Caltos vendor, if this Asset Flex vendor has been synced. */
+  caltosVendorId?: string | null;
+  caltosVendorName?: string | null;
+  caltosLinkedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** A vendor record in Caltos, for the sync picker. */
+export interface CaltosVendor {
+  id: string;
+  name: string;
+  email?: string | null;
+  status?: string | null;
+}
+
+export interface LinkCaltosVendorPayload {
+  caltos_vendor_id: string;
 }
 
 export interface VendorDocument {

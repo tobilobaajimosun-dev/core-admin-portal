@@ -39,6 +39,7 @@
       <span>Contact</span>
       <span>Settlement</span>
       <span>Status</span>
+      <span>Caltos</span>
       <span class="pa-gtable__cell--right">Onboarded</span>
     </div>
 
@@ -66,6 +67,13 @@
             <span class="pa-cell-sub">{{ v.settlementAccountNumber }}</span>
           </div>
           <div class="pa-gtable__cell"><app-status-badge [tone]="statusTone(v.status)" [text]="v.status" /></div>
+          <div class="pa-gtable__cell">
+            @if (v.caltosVendorId) {
+              <span class="caltos-tag" [title]="v.caltosVendorId"><span class="caltos-tag__dot" aria-hidden="true"></span>Linked</span>
+            } @else {
+              <span class="pa-cell-sub">Not linked</span>
+            }
+          </div>
           <div class="pa-gtable__cell pa-gtable__cell--right pa-cell-sub">{{ v.createdAt | date: 'mediumDate' }}</div>
         </div>
       }

@@ -60,6 +60,7 @@ export class VendorsComponent {
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
   protected readonly activeStatuses = signal<VendorStatus[]>([]);
+  protected readonly activeCaltos = signal<string[]>([]);
   protected readonly page = signal(1);
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
@@ -95,17 +96,34 @@ export class VendorsComponent {
   protected filterSections(): FilterSection[] {
     return [
       { key: 'status', label: 'Status', icon: Tag01Icon, kind: 'checklist', options: this.filters, active: this.activeStatuses() },
+      {
+        key: 'caltos',
+        label: 'Caltos',
+        icon: Tag01Icon,
+        kind: 'checklist',
+        options: [
+          { label: 'Linked', value: 'linked' },
+          { label: 'Not linked', value: 'unlinked' },
+        ],
+        active: this.activeCaltos(),
+      },
       { key: 'onboarded', label: 'Date onboarded', icon: Calendar01Icon, kind: 'date-range', from: this.onboardedFrom(), to: this.onboardedTo() },
     ];
   }
 
-  /** No server-side date filter for vendors — filtering by it means the
-   * fetch-all path below runs even for 0/1 selected statuses, not just 2+. */
+  /** No server-side filter for date/Caltos — when either is active the fetch-all
+   * path below runs even for 0/1 selected statuses, not just 2+. */
   private hasClientOnlyFilter(): boolean {
-    return !!(this.onboardedFrom() || this.onboardedTo());
+    return !!(this.onboardedFrom() || this.onboardedTo()) || this.activeCaltos().length === 1;
   }
 
   private matchesClientOnlyFilters(v: Vendor): boolean {
+    const caltos = this.activeCaltos();
+    if (caltos.length === 1) {
+      const linked = !!v.caltosVendorId;
+      if (caltos[0] === 'linked' && !linked) return false;
+      if (caltos[0] === 'unlinked' && linked) return false;
+    }
     const from = this.onboardedFrom();
     const to = this.onboardedTo();
     if (!from && !to) return true;
@@ -117,6 +135,11 @@ export class VendorsComponent {
 
   protected onChecklistChange(event: { key: string; values: string[] }): void {
     if (event.key === 'status') this.setStatuses(event.values);
+    else if (event.key === 'caltos') {
+      this.activeCaltos.set(event.values);
+      this.page.set(1);
+      this.load();
+    }
   }
 
   protected onDateRangeChange(event: { key: string; from: string; to: string }): void {

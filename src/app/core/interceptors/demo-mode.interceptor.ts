@@ -15,6 +15,8 @@ import {
   findDemoProduct,
   findDemoVendor,
   demoVendorDocuments,
+  DEMO_CALTOS_VENDORS,
+  findDemoCaltosVendor,
 } from '@pages/asset-flex/demo/asset-flex-demo-data';
 import { Loan } from '@pages/asset-flex/shared/models/loan.model';
 
@@ -68,6 +70,32 @@ export const demoModeInterceptor: HttpInterceptorFn = (req, next) => {
     if (statuses.length) rows = rows.filter((l) => statuses.includes(l.status));
     if (search) rows = rows.filter((l) => l.loanReference.toLowerCase().includes(search));
     return ok(paginate(rows, page, limit));
+  }
+
+  // ── Caltos vendor sync ───────────────────────────────────────────────────
+  if (/\/api\/v1\/admin\/caltos\/vendors$/.test(path) && method === 'GET') {
+    const search = (req.params.get('search') ?? '').toLowerCase();
+    const rows = search
+      ? DEMO_CALTOS_VENDORS.filter((c) => c.name.toLowerCase().includes(search) || c.id.toLowerCase().includes(search))
+      : DEMO_CALTOS_VENDORS;
+    return ok({ message: 'OK', data: rows });
+  }
+  const caltosLinkMatch = path.match(/\/api\/v1\/admin\/vendors\/([^/]+)\/caltos-link$/);
+  if (caltosLinkMatch && (method === 'POST' || method === 'DELETE')) {
+    const vendor = findDemoVendor(caltosLinkMatch[1]);
+    if (!vendor) return ok({ message: 'Not found', data: null });
+    if (method === 'DELETE') {
+      vendor.caltosVendorId = null;
+      vendor.caltosVendorName = null;
+      vendor.caltosLinkedAt = null;
+    } else {
+      const caltosId = (req.body as { caltos_vendor_id?: string })?.caltos_vendor_id ?? '';
+      const caltos = findDemoCaltosVendor(caltosId);
+      vendor.caltosVendorId = caltosId;
+      vendor.caltosVendorName = caltos?.name ?? caltosId;
+      vendor.caltosLinkedAt = new Date().toISOString();
+    }
+    return ok({ message: 'OK', data: vendor });
   }
 
   // ── Vendors ────────────────────────────────────────────────────────────────

@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ApiResponse, PaginatedResponse, PaginatedSearchParams } from '@pages/asset-flex/shared/models/generic.model';
 import {
+  CaltosVendor,
   RejectVendorKycPayload,
   UpdateVendorStatusPayload,
   Vendor,
@@ -66,6 +67,35 @@ export class VendorService {
 
   blacklist(id: string): Observable<ApiResponse<Vendor>> {
     return this.http.post<ApiResponse<Vendor>>(`${this.base}/${id}/blacklist`, {});
+  }
+
+  // ── Caltos sync ────────────────────────────────────────────────────────────
+  /** Search Caltos vendors for the link picker. Tolerates bare array / {data} /
+   * {data:{items}} response shapes like the Caltos product catalog. */
+  searchCaltosVendors(search?: string): Observable<ApiResponse<CaltosVendor[]>> {
+    let params = new HttpParams();
+    if (search) params = params.set('search', search);
+    return this.http.get<unknown>(`${assetFlexApiBaseUrl}/api/v1/admin/caltos/vendors`, { params }).pipe(
+      map((res) => {
+        const body = res as { data?: CaltosVendor[] | { items?: CaltosVendor[] } } | CaltosVendor[];
+        const data = Array.isArray(body)
+          ? body
+          : Array.isArray(body?.data)
+            ? body.data
+            : Array.isArray((body?.data as { items?: CaltosVendor[] })?.items)
+              ? (body.data as { items: CaltosVendor[] }).items
+              : [];
+        return { status: 'success', message: 'OK', data };
+      }),
+    );
+  }
+
+  linkCaltosVendor(id: string, caltosVendorId: string): Observable<ApiResponse<Vendor>> {
+    return this.http.post<ApiResponse<Vendor>>(`${this.base}/${id}/caltos-link`, { caltos_vendor_id: caltosVendorId });
+  }
+
+  unlinkCaltosVendor(id: string): Observable<ApiResponse<Vendor>> {
+    return this.http.delete<ApiResponse<Vendor>>(`${this.base}/${id}/caltos-link`);
   }
 
   updateStatus(id: string, payload: UpdateVendorStatusPayload): Observable<ApiResponse<Vendor>> {

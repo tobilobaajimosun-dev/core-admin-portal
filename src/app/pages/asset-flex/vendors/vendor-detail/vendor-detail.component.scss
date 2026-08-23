@@ -333,3 +333,7 @@
 .owner__meta { font-size: 12px; color: var(--ca-text-muted); }
 
 .ven-loan-gtable { --gt-cols: 1.4fr 1.4fr 1fr 1fr 1fr; }
+
+.caltos-actions { display: flex; gap: 8px; margin-top: 12px; }
+/* Breathing room between the "Not linked" line and its CTA. */
+.caltos-empty { margin: 0 0 12px; }

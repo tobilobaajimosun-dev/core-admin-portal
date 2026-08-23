@@ -148,6 +148,24 @@
       </section>
 
       <section class="card">
+        <h2 class="card__title">Caltos sync</h2>
+        @if (isCaltosLinked()) {
+          <dl class="kv">
+            <div class="kv__row"><dt>Caltos vendor</dt><dd>{{ v.caltosVendorName || '—' }}</dd></div>
+            <div class="kv__row"><dt>Caltos ID</dt><dd class="mono">{{ v.caltosVendorId }}</dd></div>
+            <div class="kv__row"><dt>Linked</dt><dd>{{ v.caltosLinkedAt ? (v.caltosLinkedAt | date: 'medium') : '—' }}</dd></div>
+          </dl>
+          <div class="caltos-actions">
+            <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="openLinkCaltos()">Change</button>
+            <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="unlinkCaltos()">Unlink</button>
+          </div>
+        } @else {
+          <p class="card__empty caltos-empty">Not linked to Caltos.</p>
+          <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="openLinkCaltos()">Link Caltos vendor</button>
+        }
+      </section>
+
+      <section class="card">
         <h2 class="card__title">API keys</h2>
         <dl class="kv">
           <div class="kv__row"><dt>Live public key</dt><dd class="mono">{{ v.apiKeyLive || '—' }}</dd></div>
@@ -228,6 +246,29 @@
         <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeAssign()" [disabled]="assigning()">Cancel</button>
         <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="confirmAssign()" [disabled]="assigning() || assignSelected().size === 0">
           {{ assigning() ? 'Assigning…' : 'Assign' }}
+        </button>
+      </ng-container>
+    </app-modal-shell>
+  }
+
+  @if (linkOpen()) {
+    <app-modal-shell title="Link Caltos vendor" [dismissable]="!linking()" maxWidth="460px" (closed)="closeLinkCaltos()">
+      <p class="dialog-text">Link <strong>{{ v.businessName }}</strong> to its Caltos vendor record.</p>
+      <div class="pa-field">
+        <label class="pa-field__label" for="caltos-vendor">Caltos vendor</label>
+        <af-select
+          inputId="caltos-vendor"
+          [options]="caltosOptions()"
+          [searchable]="true"
+          [formControl]="linkControl"
+          placeholder="Select a Caltos vendor"
+          searchPlaceholder="Search Caltos vendors…"
+        />
+      </div>
+      <ng-container modalFooter>
+        <button class="pa-btn pa-btn--white pa-btn--sm" type="button" (click)="closeLinkCaltos()" [disabled]="linking()">Cancel</button>
+        <button class="pa-btn pa-btn--primary pa-btn--sm" type="button" (click)="confirmLinkCaltos()" [disabled]="linking() || linkControl.invalid">
+          {{ linking() ? 'Linking…' : 'Link vendor' }}
         </button>
       </ng-container>
     </app-modal-shell>
