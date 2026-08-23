@@ -16,6 +16,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 export interface SelectOption {
   label: string;
   value: string;
+  /** Optional secondary line shown under the label in the dropdown. */
+  description?: string;
 }
 
 let uid = 0;
@@ -97,7 +99,10 @@ let uid = 0;
               (mousedown)="$event.preventDefault()"
               (click)="select(o.value)"
             >
-              {{ o.label }}
+              <span class="afs__option-label">{{ o.label }}</span>
+              @if (o.description) {
+                <span class="afs__option-desc">{{ o.description }}</span>
+              }
             </button>
           } @empty {
             <p class="afs__empty">No options</p>

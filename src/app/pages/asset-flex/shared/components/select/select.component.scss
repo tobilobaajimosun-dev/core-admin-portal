@@ -77,7 +77,9 @@
 }
 
 .afs__option {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   width: 100%;
   text-align: left;
   padding: 8px 10px;
@@ -89,6 +91,11 @@
   font-family: inherit;
   cursor: pointer;
 }
+.afs__option-desc {
+  font-size: 12px;
+  color: var(--ca-text-muted);
+}
+.afs__option--active .afs__option-desc { color: inherit; opacity: 0.8; }
 /* Non-searchable keeps hover highlight; searchable syncs hover -> active index
    (via onHover) and highlights only the single active row, avoiding a
    double-highlight when the pointer and keyboard cursor differ. */

@@ -7,7 +7,7 @@ import { PlusSignIcon, PencilEdit02Icon, Delete02Icon } from '@hugeicons-pro/cor
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 
 import { LoanProductService } from '../shared/services/loan-product.service';
-import { CaltosCatalogItem, LoanProduct } from '../shared/models/loan-product.model';
+import { CaltosCatalogItem, LoanProduct, caltosCatalogDescription } from '../shared/models/loan-product.model';
 import { PageHeaderComponent } from '@pages/asset-flex/shared/components/page-header/page-header.component';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { SelectComponent } from '@pages/asset-flex/shared/components/select/select.component';
@@ -56,7 +56,11 @@ export class LoanProductsComponent {
 
   protected readonly dialogOpen = computed(() => this.mode() !== null);
   protected readonly catalogOptions = computed(() =>
-    (Array.isArray(this.catalog()) ? this.catalog() : []).map((item) => ({ label: this.catalogLabel(item), value: item.id })),
+    (Array.isArray(this.catalog()) ? this.catalog() : []).map((item) => ({
+      label: this.catalogLabel(item),
+      value: item.id,
+      description: caltosCatalogDescription(item),
+    })),
   );
 
   protected readonly createForm = this.fb.nonNullable.group({

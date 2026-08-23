@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PsToastService } from '@pcsl-ui/ui/ps-toast/ps-toast.service';
 
 import { LoanProductService } from '../../shared/services/loan-product.service';
-import { CaltosCatalogItem, LoanProduct } from '../../shared/models/loan-product.model';
+import { CaltosCatalogItem, LoanProduct, caltosCatalogDescription } from '../../shared/models/loan-product.model';
 import { ModalShellComponent } from '@pages/asset-flex/shared/components/modal-shell/modal-shell.component';
 import { SelectComponent } from '@pages/asset-flex/shared/components/select/select.component';
 
@@ -59,7 +59,11 @@ export class LoanProductCreateModalComponent {
   protected readonly saving = signal(false);
   protected readonly catalog = signal<CaltosCatalogItem[]>([]);
   protected readonly catalogOptions = computed(() =>
-    this.catalog().map((item) => ({ label: this.catalogLabel(item), value: item.id })),
+    this.catalog().map((item) => ({
+      label: this.catalogLabel(item),
+      value: item.id,
+      description: caltosCatalogDescription(item),
+    })),
   );
   protected readonly form = this.fb.nonNullable.group({
     caltos_product_id: ['', Validators.required],

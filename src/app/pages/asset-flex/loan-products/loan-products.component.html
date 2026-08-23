@@ -78,7 +78,14 @@
       <form [formGroup]="createForm" (ngSubmit)="save()" novalidate class="form" id="lp-create">
         <div class="pa-field">
           <label class="pa-field__label" for="caltos">Caltos product</label>
-          <af-select formControlName="caltos_product_id" [options]="catalogOptions()" placeholder="Select from catalog" />
+          <af-select
+            inputId="caltos"
+            formControlName="caltos_product_id"
+            [options]="catalogOptions()"
+            [searchable]="true"
+            placeholder="Select from catalog"
+            searchPlaceholder="Search loan products…"
+          />
         </div>
         <div class="pa-field">
           <label class="pa-field__label" for="code">Product code</label>
